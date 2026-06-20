@@ -6,6 +6,7 @@ import { useAuth } from '@/composables/useAuth';
 import { useShift } from '@/composables/useShift';
 import { useToast } from 'primevue/usetoast';
 import ShiftDialog from '@/components/shift/ShiftDialog.vue';
+import AppConfigurator from './AppConfigurator.vue';
 
 const router = useRouter();
 const toast = useToast();
@@ -87,11 +88,21 @@ onMounted(async () => {
                     severity="success" outlined @click="openShiftDialog('open')" />
             </div>
 
-            <!-- Dark mode toggle -->
+            <!-- Config menu (Dark mode & Theme Palette) -->
             <div class="layout-config-menu">
                 <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
                     <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
                 </button>
+                <div class="relative">
+                    <button
+                        v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }"
+                        type="button"
+                        class="layout-topbar-action layout-topbar-action-highlight"
+                    >
+                        <i class="pi pi-palette"></i>
+                    </button>
+                    <AppConfigurator />
+                </div>
             </div>
 
             <!-- User menu -->
