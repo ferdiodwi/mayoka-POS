@@ -13,10 +13,12 @@ class PurchaseSeeder extends Seeder
     public function run(): void
     {
         $owner = User::where('role', 'owner')->first();
-        if (!$owner) return;
+        if (!$owner)
+            return;
 
         $products = Product::where('type', 'barang')->get();
-        if ($products->isEmpty()) return;
+        if ($products->isEmpty())
+            return;
 
         $suppliers = [
             'Toko Jaya Abadi',

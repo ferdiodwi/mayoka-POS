@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             AddonServiceSeeder::class,
             PurchaseSeeder::class,
             ExpenseSeeder::class,
+            TransactionSeeder::class,
         ]);
     }
 }
