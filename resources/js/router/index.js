@@ -83,6 +83,25 @@ const router = createRouter({
                     component: () => import('@/views/pages/reports/StockReport.vue'),
                     meta: { role: 'owner' }
                 },
+                {
+                    path: '/reports/profit-loss',
+                    name: 'reportProfitLoss',
+                    component: () => import('@/views/pages/reports/ProfitLoss.vue'),
+                    meta: { role: 'owner' }
+                },
+                // Keuangan (Owner)
+                {
+                    path: '/purchases',
+                    name: 'purchases',
+                    component: () => import('@/views/pages/Purchases.vue'),
+                    meta: { role: 'owner' }
+                },
+                {
+                    path: '/expenses',
+                    name: 'expenses',
+                    component: () => import('@/views/pages/Expenses.vue'),
+                    meta: { role: 'owner' }
+                },
             ]
         },
         {

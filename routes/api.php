@@ -5,6 +5,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PrintPriceController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ReportController;
@@ -94,5 +96,18 @@ Route::middleware('auth:web')->group(function () {
         Route::get('/reports/cashier', [ReportController::class, 'cashierReport']);
         Route::get('/reports/shifts', [ReportController::class, 'shiftReport']);
         Route::get('/reports/stock', [ReportController::class, 'stockReport']);
+        Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss']);
+
+        // Purchases (Pembelian Barang)
+        Route::get('/purchases', [PurchaseController::class, 'index']);
+        Route::post('/purchases', [PurchaseController::class, 'store']);
+        Route::get('/purchases/{purchase}', [PurchaseController::class, 'show']);
+        Route::delete('/purchases/{purchase}', [PurchaseController::class, 'destroy']);
+
+        // Expenses (Pengeluaran Operasional)
+        Route::get('/expenses', [ExpenseController::class, 'index']);
+        Route::post('/expenses', [ExpenseController::class, 'store']);
+        Route::put('/expenses/{expense}', [ExpenseController::class, 'update']);
+        Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy']);
     });
 });

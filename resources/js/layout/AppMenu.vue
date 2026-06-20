@@ -23,6 +23,14 @@ const ownerMenu = [
         ]
     },
     {
+        label: 'Keuangan',
+        items: [
+            { label: 'Pembelian Barang', icon: 'pi pi-fw pi-truck', to: '/purchases' },
+            { label: 'Pengeluaran', icon: 'pi pi-fw pi-credit-card', to: '/expenses' },
+            { label: 'Laba Rugi', icon: 'pi pi-fw pi-chart-line', to: '/reports/profit-loss' },
+        ]
+    },
+    {
         label: 'Laporan',
         items: [
             { label: 'Riwayat Transaksi', icon: 'pi pi-fw pi-history', to: '/transactions' },

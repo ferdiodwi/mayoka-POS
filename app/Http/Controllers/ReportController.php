@@ -7,6 +7,8 @@ use App\Models\Shift;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\StockMovement;
+use App\Models\Purchase;
+use App\Models\Expense;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -250,5 +252,73 @@ class ReportController extends Controller
         });
 
         return response()->json(['products' => $products]);
+    }
+
+    /**
+     * Profit & Loss report.
+     */
+    public function profitLoss(Request $request): JsonResponse
+    {
+        $from = $request->get('date_from', now()->startOfMonth()->toDateString());
+        $to = $request->get('date_to', now()->toDateString());
+
+        // Revenue from sales
+        $revenue = (float) Transaction::whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
+            ->sum('total');
+
+        $txCount = Transaction::whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
+            ->count();
+
+        // HPP (Cost of Goods Sold) from transactions
+        $hpp = (float) (TransactionItem::whereHas('transaction', fn ($q) =>
+                $q->whereBetween(DB::raw('DATE(created_at)'), [$from, $to]))
+            ->selectRaw('SUM(qty * cost_price) as total_cost')
+            ->value('total_cost') ?? 0);
+
+        $grossProfit = $revenue - $hpp;
+
+        // Total purchases
+        $totalPurchases = (float) Purchase::whereBetween('purchase_date', [$from, $to])
+            ->sum('total_amount');
+
+        $purchaseCount = Purchase::whereBetween('purchase_date', [$from, $to])
+            ->count();
+
+        // Total expenses
+        $totalExpenses = (float) Expense::whereBetween('expense_date', [$from, $to])
+            ->sum('amount');
+
+        // Expenses by category
+        $expensesByCategory = Expense::whereBetween('expense_date', [$from, $to])
+            ->select('category', DB::raw('SUM(amount) as total'))
+            ->groupBy('category')
+            ->pluck('total', 'category')
+            ->map(fn ($v) => (float) $v);
+
+        // Net profit
+        $netProfit = $grossProfit - $totalExpenses;
+
+        // Revenue by payment method
+        $revenueByMethod = Transaction::whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
+            ->select('payment_method', DB::raw('SUM(total) as total'), DB::raw('COUNT(*) as count'))
+            ->groupBy('payment_method')
+            ->get()
+            ->keyBy('payment_method')
+            ->map(fn ($v) => ['total' => (float) $v->total, 'count' => $v->count]);
+
+        return response()->json([
+            'period' => ['from' => $from, 'to' => $to],
+            'revenue' => $revenue,
+            'tx_count' => $txCount,
+            'hpp' => $hpp,
+            'gross_profit' => $grossProfit,
+            'total_purchases' => $totalPurchases,
+            'purchase_count' => $purchaseCount,
+            'total_expenses' => $totalExpenses,
+            'expenses_by_category' => $expensesByCategory,
+            'net_profit' => $netProfit,
+            'revenue_by_method' => $revenueByMethod,
+            'category_labels' => Expense::categoryLabels(),
+        ]);
     }
 }
