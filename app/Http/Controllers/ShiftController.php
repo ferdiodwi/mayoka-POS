@@ -79,8 +79,15 @@ class ShiftController extends Controller
             ], 422);
         }
 
-        // Calculate expected cash (for now just cash_start, will add transaction totals in Tahap 4)
-        $cashExpected = $shift->cash_start;
+        // Calculate expected cash: cash_start + cash sales - cash change given
+        $cashSales = \App\Models\Transaction::where('shift_id', $shift->id)
+            ->where('payment_method', 'cash')
+            ->sum('total');
+        $cashChangeGiven = \App\Models\Transaction::where('shift_id', $shift->id)
+            ->where('payment_method', 'cash')
+            ->sum('cash_change');
+
+        $cashExpected = $shift->cash_start + $cashSales - $cashChangeGiven;
         $cashDifference = $request->cash_end - $cashExpected;
 
         $shift->update([

@@ -6,6 +6,8 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PrintPriceController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +41,12 @@ Route::middleware('auth:web')->group(function () {
 
     // Addon services list (kasir + owner)
     Route::get('/addon-services', [AddonServiceController::class, 'index']);
+
+    // Transactions (kasir + owner)
+    Route::post('/transactions/checkout', [TransactionController::class, 'checkout']);
+    Route::get('/transactions', [TransactionController::class, 'index']);
+    Route::get('/transactions/{transaction}', [TransactionController::class, 'show']);
+    Route::get('/transactions/{transaction}/receipt', [TransactionController::class, 'receipt']);
 
     // Owner-only routes
     Route::middleware('role:owner')->group(function () {
@@ -79,5 +87,12 @@ Route::middleware('auth:web')->group(function () {
         Route::post('/addon-services', [AddonServiceController::class, 'store']);
         Route::put('/addon-services/{addonService}', [AddonServiceController::class, 'update']);
         Route::delete('/addon-services/{addonService}', [AddonServiceController::class, 'destroy']);
+
+        // Reports & Dashboard
+        Route::get('/reports/dashboard', [ReportController::class, 'dashboard']);
+        Route::get('/reports/sales', [ReportController::class, 'salesReport']);
+        Route::get('/reports/cashier', [ReportController::class, 'cashierReport']);
+        Route::get('/reports/shifts', [ReportController::class, 'shiftReport']);
+        Route::get('/reports/stock', [ReportController::class, 'stockReport']);
     });
 });
