@@ -263,17 +263,32 @@ class ReportController extends Controller
         $to = $request->get('date_to', now()->toDateString());
 
         // Revenue from sales
-        $revenue = (float) Transaction::whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
+        $grossRevenue = (float) Transaction::whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
             ->sum('total');
 
         $txCount = Transaction::whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
             ->count();
 
+        // Calculate returns
+        $returnedRevenue = (float) App\Models\ReturnTransaction::whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
+            ->sum('refund_amount');
+
+        $revenue = $grossRevenue - $returnedRevenue;
+
         // HPP (Cost of Goods Sold) from transactions
-        $hpp = (float) (TransactionItem::whereHas('transaction', fn ($q) =>
+        $grossHpp = (float) (TransactionItem::whereHas('transaction', fn ($q) =>
                 $q->whereBetween(DB::raw('DATE(created_at)'), [$from, $to]))
             ->selectRaw('SUM(qty * cost_price) as total_cost')
             ->value('total_cost') ?? 0);
+
+        // Deduct returned HPP
+        $returnedHpp = (float) (App\Models\ReturnItem::whereHas('returnTransaction', fn ($q) =>
+                $q->whereBetween(DB::raw('DATE(created_at)'), [$from, $to]))
+            ->join('transaction_items', 'return_items.transaction_item_id', '=', 'transaction_items.id')
+            ->selectRaw('SUM(return_items.qty * transaction_items.cost_price) as total_returned_cost')
+            ->value('total_returned_cost') ?? 0);
+
+        $hpp = $grossHpp - $returnedHpp;
 
         $grossProfit = $revenue - $hpp;
 

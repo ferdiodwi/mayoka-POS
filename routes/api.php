@@ -49,6 +49,7 @@ Route::middleware('auth:web')->group(function () {
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::get('/transactions/{transaction}', [TransactionController::class, 'show']);
     Route::get('/transactions/{transaction}/receipt', [TransactionController::class, 'receipt']);
+    Route::post('/transactions/{transaction}/return', [App\Http\Controllers\ReturnController::class, 'store']);
 
     // Owner-only routes
     Route::middleware('role:owner')->group(function () {

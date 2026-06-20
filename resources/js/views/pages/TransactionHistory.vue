@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { apiGet } from '@/composables/useApi';
+import ReturnDialog from '@/components/pos/ReturnDialog.vue';
 
 const loading = ref(false);
 const transactions = ref([]);
@@ -9,6 +10,19 @@ const showReceipt = ref(false);
 const currentPage = ref(1);
 const totalRecords = ref(0);
 const rowsPerPage = ref(20);
+
+const showReturnDialog = ref(false);
+const selectedTransaction = ref(null);
+
+function hasReturnableItems(tx) {
+    if (!tx || !tx.items) return false;
+    return tx.items.some(i => i.item_type === 'product' && (i.qty - (i.returned_qty || 0)) > 0);
+}
+
+function openReturn(tx) {
+    selectedTransaction.value = tx;
+    showReturnDialog.value = true;
+}
 
 function formatRp(v) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v);
@@ -120,16 +134,21 @@ onMounted(fetchTransactions);
                     <span v-else class="text-muted-color">—</span>
                 </template>
             </Column>
-            <Column header="Aksi" style="width: 5rem">
+            <Column header="Aksi" style="width: 8rem">
                 <template #body="{ data }">
-                    <Button icon="pi pi-print" size="small" severity="secondary" outlined
-                        v-tooltip.left="'Cetak Ulang Struk'" @click="reprintReceipt(data.id)" />
+                    <div class="flex gap-2">
+                        <Button icon="pi pi-print" size="small" severity="secondary" outlined
+                            v-tooltip.top="'Cetak Ulang Struk'" @click="reprintReceipt(data.id)" />
+                        <Button v-if="hasReturnableItems(data)" icon="pi pi-receipt" size="small" severity="danger" outlined
+                            v-tooltip.top="'Retur Barang'" @click="openReturn(data)" />
+                    </div>
                 </template>
             </Column>
         </DataTable>
     </div>
 
     <!-- Receipt Dialog -->
+    <ReturnDialog v-model:visible="showReturnDialog" :transaction="selectedTransaction" @success="fetchTransactions" />
     <Dialog :visible="showReceipt" header="Cetak Ulang Struk" modal :style="{ width: '420px' }"
         @update:visible="showReceipt = $event">
         <div v-if="receiptData" id="receipt-print-area" class="font-mono text-sm">

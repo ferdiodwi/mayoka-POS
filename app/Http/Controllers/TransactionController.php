@@ -221,7 +221,7 @@ class TransactionController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Transaction::with('user:id,name');
+        $query = Transaction::with(['user:id,name', 'items']);
 
         // Kasir only sees own transactions
         if ($request->user()->isKasir()) {

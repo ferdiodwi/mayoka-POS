@@ -8,20 +8,29 @@ export function useCart() {
     /**
      * Add a print/fotokopi item to cart.
      */
-    function addPrintItem({ paperSize, colorType, sideType, qty, unitPrice, costPerSheet, printPriceId }) {
+    function addPrintItem({ paperSize, colorType, sideType, qty, unitPrice, costPerSheet, printPriceId, isCustom, addons }) {
         const colorLabel = colorType === 'bw' ? 'Hitam Putih' : 'Warna';
         const sideLabel = sideType === 'single' ? '1 Sisi' : 'Bolak-balik';
+        const customLabel = isCustom ? ' (Kertas Sendiri/Custom)' : '';
+
+        const itemAddons = (addons || []).map(addon => ({
+            id: Date.now() + Math.random(),
+            addonServiceId: addon.id,
+            name: addon.name,
+            price: parseFloat(addon.price),
+            qty: 1,
+        }));
 
         cartItems.value.push({
             id: Date.now() + Math.random(),
             itemType: 'print',
             printPriceId,
-            description: `${paperSize} — ${colorLabel} — ${sideLabel}`,
+            description: `${paperSize} — ${colorLabel} — ${sideLabel}${customLabel}`,
             qty,
             unitPrice: parseFloat(unitPrice),
             costPerSheet: parseFloat(costPerSheet),
             discount: 0,
-            addons: [],
+            addons: itemAddons,
         });
     }
 

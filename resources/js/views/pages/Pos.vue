@@ -7,7 +7,6 @@ import { useHoldTransactions } from '@/composables/useHoldTransactions';
 import { useShift } from '@/composables/useShift';
 import PrintForm from '@/components/pos/PrintForm.vue';
 import ProductSearch from '@/components/pos/ProductSearch.vue';
-import AddonPicker from '@/components/pos/AddonPicker.vue';
 import CartPanel from '@/components/pos/CartPanel.vue';
 import HoldListDialog from '@/components/pos/HoldListDialog.vue';
 import PaymentDialog from '@/components/pos/PaymentDialog.vue';
@@ -45,8 +44,7 @@ function handleAddProduct(product, qty) {
 }
 
 function handleAddAddon(itemIndex, addon) {
-    addAddonToItem(itemIndex, addon);
-    toast.add({ severity: 'info', summary: 'Addon', detail: `${addon.name} ditambahkan`, life: 1500 });
+    // No longer used directly here, Addon added via PrintForm
 }
 
 function handleHold() {
@@ -157,9 +155,8 @@ onUnmounted(() => {
             <div class="card mb-0 p-3">
                 <div class="flex items-center justify-between mb-3">
                     <TabMenu :model="[
-                        { label: 'Jasa Cetak (Alt+C)', icon: 'pi pi-print' },
+                        { label: 'Jasa Cetak & Addon (Alt+C)', icon: 'pi pi-print' },
                         { label: 'Produk ATK (Alt+S)', icon: 'pi pi-box' },
-                        { label: 'Addon', icon: 'pi pi-plus-circle' },
                     ]" v-model:activeIndex="activeTab" />
                     <div class="flex items-center gap-2">
                         <Button v-if="holdCount > 0"
@@ -175,9 +172,6 @@ onUnmounted(() => {
                 </div>
                 <div v-show="activeTab === 1">
                     <ProductSearch ref="productSearchRef" @add="handleAddProduct" />
-                </div>
-                <div v-show="activeTab === 2">
-                    <AddonPicker :cartItems="cartItems" @add="handleAddAddon" />
                 </div>
             </div>
 

@@ -33,6 +33,7 @@ return new class extends Migration
             $table->unsignedBigInteger('parent_item_id')->nullable();
             $table->string('description', 200);
             $table->integer('qty');
+            $table->integer('returned_qty')->default(0);
             $table->decimal('unit_price', 12, 2);
             $table->decimal('cost_price', 12, 2)->default(0);
             $table->decimal('discount', 12, 2)->default(0);

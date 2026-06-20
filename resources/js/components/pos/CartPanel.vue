@@ -64,7 +64,7 @@ function confirmClear() {
                                 <InputNumber v-model="item.qty" :min="1" showButtons
                                     buttonLayout="horizontal" size="small"
                                     incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"
-                                    class="w-28" inputClass="text-center text-sm"
+                                    class="w-28" inputClass="text-center text-sm p-1"
                                     @update:modelValue="(val) => updateItemQty(index, val)" />
                                 <span class="text-sm text-muted-color">× {{ formatRp(item.unitPrice) }}</span>
                             </div>
