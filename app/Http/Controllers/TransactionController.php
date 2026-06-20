@@ -201,7 +201,7 @@ class TransactionController extends Controller
         return response()->json([
             'receipt' => [
                 'store_name' => 'MAYOKA FOTOKOPI & ATK',
-                'store_address' => 'Jl. Contoh Alamat No. 123',
+                'store_address' => 'Jl. Bondowoso - Jember, Utara Sungai, Dadapan, Kec. Grujugan, Kabupaten Bondowoso, Jawa Timur 68261',
                 'invoice_number' => $transaction->invoice_number,
                 'date' => $transaction->created_at->format('d/m/Y H:i'),
                 'cashier' => $transaction->user->name,
