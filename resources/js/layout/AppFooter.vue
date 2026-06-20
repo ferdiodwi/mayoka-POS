@@ -2,7 +2,9 @@
 
 <template>
     <div class="layout-footer">
-        SAKAI by
-        <a href="https://primevue.org" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline">PrimeVue</a>
-    </div>
+    © 2026 MAYOKA POS • Developed by
+    <a href="https://ferdiodwi.me" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline">
+        Ferdio Dwi
+    </a>
+</div>
 </template>
