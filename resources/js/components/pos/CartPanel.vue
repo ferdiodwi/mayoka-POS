@@ -106,9 +106,9 @@ function confirmClear() {
             </div>
 
             <div class="flex gap-2">
-                <Button label="Hold (F8)" icon="pi pi-pause" severity="warn" outlined class="flex-1"
+                <Button label="Hold (Alt+H)" icon="pi pi-pause" severity="warn" outlined class="flex-1"
                     :disabled="isEmpty" @click="emit('hold')" />
-                <Button label="Bayar (F5)" icon="pi pi-money-bill" severity="success" class="flex-1 text-lg font-bold"
+                <Button label="Bayar (Alt+B)" icon="pi pi-money-bill" severity="success" class="flex-1 text-lg font-bold"
                     :disabled="isEmpty" @click="emit('pay')" />
             </div>
         </div>

@@ -4,7 +4,7 @@ import { $t, updatePreset, updateSurfacePalette } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import Lara from '@primeuix/themes/lara';
 import Nora from '@primeuix/themes/nora';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const { layoutConfig, isDarkTheme, changeMenuMode } = useLayout();
 
@@ -192,6 +192,10 @@ function onPresetChange() {
 
     $t().preset(presetValue).preset(getPresetExt()).surfacePalette(surfacePalette).use({ useDefaultOptions: true });
 }
+
+onMounted(() => {
+    onPresetChange();
+});
 </script>
 
 <template>

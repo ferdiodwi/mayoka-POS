@@ -28,20 +28,38 @@ watch(query, (val) => {
     }, 300);
 });
 
+function focusInput() {
+    const el = searchInputRef.value?.$el;
+    if (!el) return;
+    
+    // PrimeVue InputText $el is usually the <input> directly, but fallback just in case
+    if (el.tagName === 'INPUT') {
+        el.focus();
+    } else {
+        el.querySelector('input')?.focus();
+    }
+}
+
 function selectProduct(product) {
     emit('add', product, 1);
     query.value = '';
     results.value = [];
     // Re-focus search input
-    setTimeout(() => searchInputRef.value?.$el?.querySelector('input')?.focus(), 100);
+    setTimeout(() => focusInput(), 100);
+}
+
+function handleEnter() {
+    if (results.value.length === 1) {
+        selectProduct(results.value[0]);
+    } else if (results.value.length > 1) {
+        // If exact barcode match exists, select it
+        const exact = results.value.find(p => p.barcode === query.value);
+        if (exact) selectProduct(exact);
+    }
 }
 
 function formatRp(v) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v);
-}
-
-function focusInput() {
-    searchInputRef.value?.$el?.querySelector('input')?.focus();
 }
 
 defineExpose({ focusInput });
@@ -54,7 +72,7 @@ defineExpose({ focusInput });
                 <InputIcon class="pi pi-search" />
                 <InputText ref="searchInputRef" v-model="query"
                     placeholder="Cari nama produk atau scan barcode..."
-                    class="w-full" />
+                    class="w-full" @keyup.enter="handleEnter" />
             </IconField>
         </div>
 

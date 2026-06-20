@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useCart } from '@/composables/useCart';
 import { usePosData } from '@/composables/usePosData';
@@ -22,6 +22,12 @@ const activeTab = ref(0);
 const holdDialogVisible = ref(false);
 const paymentDialogVisible = ref(false);
 const productSearchRef = ref(null);
+
+watch(activeTab, (val) => {
+    if (val === 1) {
+        setTimeout(() => productSearchRef.value?.focusInput(), 100);
+    }
+});
 
 // --- Event handlers ---
 function handleAddPrint(data) {
@@ -55,6 +61,16 @@ function handleHold() {
 }
 
 function handleResume(index) {
+    if (!isEmpty.value) {
+        try {
+            holdCurrentCart(cartItems.value, transactionDiscount.value);
+            toast.add({ severity: 'info', summary: 'Otomatis Ditahan', detail: 'Keranjang aktif otomatis ditahan.', life: 3000 });
+        } catch (err) {
+            toast.add({ severity: 'error', summary: 'Gagal', detail: err.message, life: 4000 });
+            return;
+        }
+    }
+
     const held = resumeTransaction(index);
     if (!held) return;
 

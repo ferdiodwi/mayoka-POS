@@ -1,12 +1,38 @@
-import { computed, reactive } from 'vue';
+import { computed, reactive, watch } from 'vue';
+
+const STORAGE_KEY = 'mayoka_layout_config';
+
+function loadLayoutConfig() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+    } catch {}
+    return null;
+}
+
+const savedConfig = loadLayoutConfig();
 
 const layoutConfig = reactive({
-    preset: 'Aura',
-    primary: 'emerald',
-    surface: null,
-    darkTheme: false,
-    menuMode: 'static'
+    preset: savedConfig?.preset || 'Aura',
+    primary: savedConfig?.primary || 'emerald',
+    surface: savedConfig?.surface || null,
+    darkTheme: savedConfig?.darkTheme !== undefined ? savedConfig.darkTheme : false,
+    menuMode: savedConfig?.menuMode || 'static'
 });
+
+// Watch for changes and save to localStorage
+watch(layoutConfig, (val) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
+}, { deep: true });
+
+// Apply dark mode class immediately on script evaluation
+if (typeof document !== 'undefined') {
+    if (layoutConfig.darkTheme) {
+        document.documentElement.classList.add('app-dark');
+    } else {
+        document.documentElement.classList.remove('app-dark');
+    }
+}
 
 const layoutState = reactive({
     staticMenuInactive: false,

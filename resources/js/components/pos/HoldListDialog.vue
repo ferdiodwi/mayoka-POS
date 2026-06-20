@@ -47,11 +47,19 @@ function handleRemove(index) {
                     hover:border-primary transition-colors cursor-pointer"
                 @click="handleResume(index)">
                 <div class="flex items-center justify-between">
-                    <div>
+                    <div class="flex-1 mr-4">
                         <p class="m-0 font-semibold">{{ held.label }}</p>
-                        <p class="m-0 text-sm text-muted-color">
-                            {{ held.items.length }} item · {{ formatTime(held.timestamp) }}
+                        <p class="m-0 text-xs text-muted-color mb-2">
+                            {{ formatTime(held.timestamp) }} · {{ held.items.length }} item
                         </p>
+                        <div class="text-xs text-surface-600 dark:text-surface-400 bg-surface-100 dark:bg-surface-800 p-2 rounded border border-surface-200 dark:border-surface-700">
+                            <div v-for="(item, i) in held.items.slice(0, 3)" :key="i" class="truncate">
+                                <span class="font-semibold">{{ item.qty }}x</span> {{ item.description || item.name }}
+                            </div>
+                            <div v-if="held.items.length > 3" class="italic mt-1 text-[10px]">
+                                + {{ held.items.length - 3 }} item lainnya...
+                            </div>
+                        </div>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="text-lg font-bold text-primary">{{ formatRp(calcTotal(held.items)) }}</span>
