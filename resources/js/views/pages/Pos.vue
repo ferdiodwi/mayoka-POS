@@ -83,33 +83,43 @@ function handlePaymentSuccess() {
     setTimeout(() => productSearchRef.value?.focusInput(), 200);
 }
 
-// --- Keyboard Shortcuts ---
+// --- Keyboard Shortcuts (Alt + key) ---
 function handleKeyboard(e) {
-    // F1 = fokus ke pencarian produk
-    if (e.key === 'F1') {
+    if (!e.altKey) {
+        if (e.key === 'Escape') {
+            holdDialogVisible.value = false;
+            paymentDialogVisible.value = false;
+        }
+        return;
+    }
+
+    const key = e.key.toLowerCase();
+
+    // Alt+S = Search produk
+    if (key === 's') {
         e.preventDefault();
         activeTab.value = 1;
         setTimeout(() => productSearchRef.value?.focusInput(), 100);
     }
-    // F2 = tab cetak
-    if (e.key === 'F2') {
+    // Alt+C = tab Cetak
+    if (key === 'c') {
         e.preventDefault();
         activeTab.value = 0;
     }
-    // F5 = bayar
-    if (e.key === 'F5') {
+    // Alt+B = Bayar
+    if (key === 'b') {
         e.preventDefault();
         handlePay();
     }
-    // F8 = hold
-    if (e.key === 'F8') {
+    // Alt+H = Hold
+    if (key === 'h') {
         e.preventDefault();
         handleHold();
     }
-    // Escape = clear / close dialogs
-    if (e.key === 'Escape') {
-        holdDialogVisible.value = false;
-        paymentDialogVisible.value = false;
+    // Alt+R = Resume hold
+    if (key === 'r') {
+        e.preventDefault();
+        if (holdCount.value > 0) holdDialogVisible.value = true;
     }
 }
 
@@ -131,8 +141,8 @@ onUnmounted(() => {
             <div class="card mb-0 p-3">
                 <div class="flex items-center justify-between mb-3">
                     <TabMenu :model="[
-                        { label: 'Jasa Cetak (F2)', icon: 'pi pi-print' },
-                        { label: 'Produk ATK (F1)', icon: 'pi pi-box' },
+                        { label: 'Jasa Cetak (Alt+C)', icon: 'pi pi-print' },
+                        { label: 'Produk ATK (Alt+S)', icon: 'pi pi-box' },
                         { label: 'Addon', icon: 'pi pi-plus-circle' },
                     ]" v-model:activeIndex="activeTab" />
                     <div class="flex items-center gap-2">
@@ -157,10 +167,11 @@ onUnmounted(() => {
 
             <!-- Shortcuts info -->
             <div class="text-xs text-muted-color flex gap-4 px-2">
-                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">F1</kbd> Cari Produk</span>
-                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">F2</kbd> Jasa Cetak</span>
-                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">F5</kbd> Bayar</span>
-                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">F8</kbd> Hold</span>
+                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">Alt+S</kbd> Cari Produk</span>
+                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">Alt+C</kbd> Jasa Cetak</span>
+                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">Alt+B</kbd> Bayar</span>
+                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">Alt+H</kbd> Hold</span>
+                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">Alt+R</kbd> Resume</span>
             </div>
         </div>
 

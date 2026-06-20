@@ -32,9 +32,9 @@ class ProductController extends Controller
             });
         }
 
-        $products = $query->orderBy('name')->get();
+        $products = $query->orderBy('name')->paginate(20);
 
-        return response()->json(['products' => $products]);
+        return response()->json($products);
     }
 
     /**

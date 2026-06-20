@@ -9,7 +9,8 @@ const ownerMenu = [
     {
         label: 'Menu Utama',
         items: [
-            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }
+            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' },
+            { label: 'Point of Sale', icon: 'pi pi-fw pi-shopping-cart', to: '/pos' },
         ]
     },
     {
@@ -24,6 +25,7 @@ const ownerMenu = [
     {
         label: 'Laporan',
         items: [
+            { label: 'Riwayat Transaksi', icon: 'pi pi-fw pi-history', to: '/transactions' },
             { label: 'Laporan Penjualan', icon: 'pi pi-fw pi-chart-bar', to: '/reports/sales' },
             { label: 'Laporan Kasir', icon: 'pi pi-fw pi-users', to: '/reports/cashier' },
             { label: 'Laporan Shift', icon: 'pi pi-fw pi-clock', to: '/reports/shifts' },
@@ -42,7 +44,8 @@ const kasirMenu = [
     {
         label: 'Kasir',
         items: [
-            { label: 'Point of Sale', icon: 'pi pi-fw pi-shopping-cart', to: '/pos' }
+            { label: 'Point of Sale', icon: 'pi pi-fw pi-shopping-cart', to: '/pos' },
+            { label: 'Riwayat Transaksi', icon: 'pi pi-fw pi-history', to: '/transactions' },
         ]
     }
 ];

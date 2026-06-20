@@ -21,6 +21,11 @@ const router = createRouter({
                     name: 'pos',
                     component: () => import('@/views/pages/Pos.vue'),
                 },
+                {
+                    path: '/transactions',
+                    name: 'transactions',
+                    component: () => import('@/views/pages/TransactionHistory.vue'),
+                },
                 // Manajemen (Owner)
                 {
                     path: '/users',

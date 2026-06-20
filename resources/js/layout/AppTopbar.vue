@@ -73,8 +73,8 @@ onMounted(async () => {
         </div>
 
         <div class="layout-topbar-actions">
-            <!-- Shift Status (Kasir only) -->
-            <div v-if="isKasir" class="flex items-center gap-2 mr-4">
+            <!-- Shift Status -->
+            <div v-if="user" class="flex items-center gap-2 mr-4">
                 <Tag v-if="activeShift" severity="success" class="text-sm">
                     <i class="pi pi-clock mr-1"></i> Shift Aktif
                 </Tag>
@@ -104,9 +104,15 @@ onMounted(async () => {
 
             <div class="layout-topbar-menu hidden lg:block">
                 <div class="layout-topbar-menu-content">
-                    <button type="button" class="layout-topbar-action" @click="toggleUserMenu">
-                        <i class="pi pi-user"></i>
-                        <span>{{ user?.name || 'User' }}</span>
+                    <button type="button" class="flex items-center gap-2 hover:bg-surface-100 dark:hover:bg-surface-800 px-3 py-2 rounded-lg transition-colors cursor-pointer border-none bg-transparent" @click="toggleUserMenu">
+                        <div class="w-8 h-8 flex items-center justify-center bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-100 rounded-full">
+                            <i class="pi pi-user"></i>
+                        </div>
+                        <div class="flex flex-col text-left hidden sm:flex">
+                            <span class="font-semibold text-sm leading-none">{{ user?.name || 'User' }}</span>
+                            <span class="text-xs text-muted-color mt-1 capitalize">{{ user?.role || '-' }}</span>
+                        </div>
+                        <i class="pi pi-angle-down text-xs text-muted-color ml-2"></i>
                     </button>
                 </div>
             </div>

@@ -36,20 +36,32 @@ const form = ref({
 const adjustForm = ref({ qty: 0, notes: '' });
 const adjustProduct = ref(null);
 
+const currentPage = ref(1);
+const totalRecords = ref(0);
+const rowsPerPage = ref(20);
+
 async function fetchProducts() {
     loading.value = true;
     try {
         const params = new URLSearchParams();
+        params.append('page', currentPage.value);
         if (filterCategory.value) params.append('category_id', filterCategory.value);
         if (filterType.value) params.append('type', filterType.value);
         if (filterLowStock.value) params.append('low_stock', '1');
         if (searchQuery.value) params.append('search', searchQuery.value);
 
         const data = await apiGet(`/api/products?${params}`);
-        products.value = data.products;
+        products.value = data.data;
+        totalRecords.value = data.total;
+        currentPage.value = data.current_page;
     } finally {
         loading.value = false;
     }
+}
+
+function onPageChange(event) {
+    currentPage.value = event.page + 1;
+    fetchProducts();
 }
 
 async function fetchCategories() {
@@ -166,8 +178,9 @@ onMounted(async () => {
             <Button icon="pi pi-search" severity="info" @click="fetchProducts" />
         </div>
 
-        <DataTable :value="products" :loading="loading" stripedRows paginator :rows="15" dataKey="id"
-            emptyMessage="Tidak ada produk ditemukan.">
+        <DataTable :value="products" :loading="loading" stripedRows lazy paginator
+            :rows="rowsPerPage" :totalRecords="totalRecords" :first="(currentPage - 1) * rowsPerPage"
+            @page="onPageChange" dataKey="id" emptyMessage="Tidak ada produk ditemukan.">
             <Column header="No" style="width: 3rem">
                 <template #body="{ index }">{{ index + 1 }}</template>
             </Column>
