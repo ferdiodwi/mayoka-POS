@@ -42,7 +42,7 @@ function confirmClear() {
         </div>
 
         <!-- Cart Items -->
-        <div class="flex-1 overflow-y-auto" style="max-height: calc(100vh - 380px);">
+        <div class="flex-1 overflow-y-auto min-h-[300px] lg:min-h-0 lg:max-h-[calc(100vh-380px)]">
             <div v-if="isEmpty" class="text-center py-12 text-muted-color">
                 <i class="pi pi-shopping-cart text-5xl mb-3 block opacity-30"></i>
                 <p class="m-0">Keranjang masih kosong</p>

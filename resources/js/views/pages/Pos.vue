@@ -150,9 +150,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="grid grid-cols-12 gap-4" style="height: calc(100vh - 120px);">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[calc(100vh-120px)] lg:h-[calc(100vh-120px)]">
         <!-- Left Panel: Input -->
-        <div class="col-span-7 flex flex-col gap-3">
+        <div class="col-span-1 lg:col-span-7 flex flex-col gap-3">
             <!-- Tabs: Cetak | Produk | Addon -->
             <div class="card mb-0 p-3">
                 <div class="flex items-center justify-between mb-3">
@@ -192,7 +192,7 @@ onUnmounted(() => {
         </div>
 
         <!-- Right Panel: Cart -->
-        <div class="col-span-5">
+        <div class="col-span-1 lg:col-span-5">
             <div class="card h-full p-4">
                 <CartPanel @pay="handlePay" @hold="handleHold" />
             </div>

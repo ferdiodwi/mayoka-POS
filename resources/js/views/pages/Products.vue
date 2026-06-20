@@ -230,8 +230,8 @@ onMounted(async () => {
         <Dialog v-model:visible="dialogVisible"
             :header="dialogMode === 'create' ? 'Tambah Produk' : 'Edit Produk'"
             modal :style="{ width: '580px' }">
-            <div class="grid grid-cols-2 gap-4 pt-4">
-                <div class="col-span-2 flex flex-col gap-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                <div class="col-span-1 md:col-span-2 flex flex-col gap-2">
                     <label class="font-semibold">Nama Produk</label>
                     <InputText v-model="form.name" placeholder="Nama produk" />
                 </div>
@@ -269,7 +269,7 @@ onMounted(async () => {
                     <label class="font-semibold">Minimal Stok</label>
                     <InputNumber v-model="form.min_stock" :min="0" />
                 </div>
-                <div v-if="dialogMode === 'edit'" class="flex items-center gap-2 col-span-2">
+                <div v-if="dialogMode === 'edit'" class="flex items-center gap-2 col-span-1 md:col-span-2">
                     <ToggleSwitch v-model="form.is_active" />
                     <label>{{ form.is_active ? 'Aktif' : 'Nonaktif' }}</label>
                 </div>
