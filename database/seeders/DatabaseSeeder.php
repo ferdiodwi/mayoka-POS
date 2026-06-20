@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             PrintPriceSeeder::class,
             AddonServiceSeeder::class,
+            PurchaseSeeder::class,
+            ExpenseSeeder::class,
         ]);
     }
 }
