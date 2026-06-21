@@ -123,14 +123,14 @@ const router = createRouter({
 });
 
 // Navigation guard
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, from) => {
     const { user, fetchUser, isAuthenticated } = useAuth();
 
     if (to.name === 'login') {
         if (isAuthenticated.value) {
-            return next(user.value.role === 'owner' ? '/' : '/pos');
+            return user.value.role === 'owner' ? '/' : '/pos';
         }
-        return next();
+        return true;
     }
 
     if (!isAuthenticated.value) {
@@ -138,14 +138,14 @@ router.beforeEach(async (to, from, next) => {
     }
 
     if (to.meta.requiresAuth && !isAuthenticated.value) {
-        return next({ name: 'login' });
+        return { name: 'login' };
     }
 
     if (to.meta.role && user.value?.role !== to.meta.role) {
-        return next({ name: 'accessDenied' });
+        return { name: 'accessDenied' };
     }
 
-    next();
+    return true;
 });
 
 export default router;

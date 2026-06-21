@@ -83,7 +83,7 @@ async function handleLogin() {
 
                         <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
                         <Password
-                            id="password"
+                            inputId="password"
                             v-model="password"
                             placeholder="Masukkan password"
                             :toggleMask="true"
