@@ -10,15 +10,13 @@ const { login, loading } = useAuth();
 
 const username = ref('');
 const password = ref('');
+const errorMsg = ref('');
 
 async function handleLogin() {
+    errorMsg.value = '';
+
     if (!username.value || !password.value) {
-        toast.add({
-            severity: 'warn',
-            summary: 'Peringatan',
-            detail: 'Username dan password harus diisi.',
-            life: 3000,
-        });
+        errorMsg.value = 'Username dan password harus diisi.';
         return;
     }
 
@@ -38,6 +36,7 @@ async function handleLogin() {
             router.push('/pos');
         }
     } catch (err) {
+        errorMsg.value = err.message;
         toast.add({
             severity: 'error',
             summary: 'Login Gagal',
@@ -49,6 +48,7 @@ async function handleLogin() {
 </script>
 
 <template>
+    <Toast />
     <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-[100vw] overflow-hidden">
         <div class="flex flex-col items-center justify-center">
             <div
@@ -67,6 +67,8 @@ async function handleLogin() {
                     </div>
 
                     <div>
+                        <Message v-if="errorMsg" severity="error" :closable="false" class="mb-4">{{ errorMsg }}</Message>
+
                         <label for="username" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Username</label>
                         <InputText
                             id="username"
@@ -74,7 +76,9 @@ async function handleLogin() {
                             type="text"
                             placeholder="Masukkan username"
                             class="w-full md:w-[30rem] mb-8"
+                            :invalid="!!errorMsg"
                             @keyup.enter="handleLogin"
+                            @input="errorMsg = ''"
                         />
 
                         <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
@@ -85,8 +89,10 @@ async function handleLogin() {
                             :toggleMask="true"
                             class="mb-8"
                             fluid
+                            :invalid="!!errorMsg"
                             :feedback="false"
                             @keyup.enter="handleLogin"
+                            @input="errorMsg = ''"
                         />
 
                         <Button

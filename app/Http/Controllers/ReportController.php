@@ -20,9 +20,11 @@ class ReportController extends Controller
     /**
      * Dashboard stats (owner).
      */
-    public function dashboard(): JsonResponse
+    public function dashboard(Request $request): JsonResponse
     {
         $today = now()->toDateString();
+        $chartFilter = $request->get('chart_filter', 'week');
+
 
         // Today's revenue (minus returns)
         $todayGrossRevenue = Transaction::whereDate('created_at', $today)->sum('total');
@@ -75,9 +77,11 @@ class ReportController extends Controller
             ->limit(5)
             ->get(['id', 'invoice_number', 'user_id', 'total', 'payment_method', 'created_at']);
 
-        // Revenue chart (last 7 days, minus returns)
+        // Revenue chart (filtered: week or month, minus returns)
         $chartData = [];
-        for ($i = 6; $i >= 0; $i--) {
+        $daysToFetch = $chartFilter === 'month' ? 30 : 7;
+        
+        for ($i = $daysToFetch - 1; $i >= 0; $i--) {
             $date = now()->subDays($i)->toDateString();
             $grossRev = (float) Transaction::whereDate('created_at', $date)->sum('total');
             $dayReturns = (float) ReturnTransaction::whereDate('created_at', $date)->sum('refund_amount');
