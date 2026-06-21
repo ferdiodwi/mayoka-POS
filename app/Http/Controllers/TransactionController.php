@@ -223,9 +223,16 @@ class TransactionController extends Controller
     {
         $query = Transaction::with(['user:id,name', 'items']);
 
-        // Kasir only sees own transactions
-        if ($request->user()->isKasir()) {
-            $query->where('user_id', $request->user()->id);
+        // Check for global search by invoice number
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where('invoice_number', 'like', "%$search%");
+            // Notice: We bypass the Kasir restriction here so they can find ANY transaction by invoice
+        } else {
+            // Kasir only sees own transactions by default
+            if ($request->user()->isKasir()) {
+                $query->where('user_id', $request->user()->id);
+            }
         }
 
         if ($request->has('date_from')) {

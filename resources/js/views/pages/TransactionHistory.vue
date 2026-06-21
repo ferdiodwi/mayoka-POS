@@ -10,6 +10,7 @@ const showReceipt = ref(false);
 const currentPage = ref(1);
 const totalRecords = ref(0);
 const rowsPerPage = ref(20);
+const searchQuery = ref('');
 
 const showReturnDialog = ref(false);
 const selectedTransaction = ref(null);
@@ -35,7 +36,11 @@ function formatTime(dt) {
 async function fetchTransactions() {
     loading.value = true;
     try {
-        const data = await apiGet(`/api/transactions?page=${currentPage.value}`);
+        let url = `/api/transactions?page=${currentPage.value}`;
+        if (searchQuery.value.trim()) {
+            url += `&search=${encodeURIComponent(searchQuery.value.trim())}`;
+        }
+        const data = await apiGet(url);
         transactions.value = data.data || [];
         totalRecords.value = data.total;
         currentPage.value = data.current_page;
@@ -93,11 +98,18 @@ onMounted(fetchTransactions);
 
 <template>
     <div class="card">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <h2 class="text-2xl font-semibold m-0">
                 <i class="pi pi-history mr-2"></i>Riwayat Transaksi
             </h2>
-            <Button label="Refresh" icon="pi pi-refresh" size="small" outlined @click="fetchTransactions" />
+            <div class="flex items-center gap-2">
+                <IconField iconPosition="left">
+                    <InputIcon class="pi pi-search" />
+                    <InputText v-model="searchQuery" placeholder="Cari No. Struk (INV-...)" class="w-full sm:w-64" @keyup.enter="fetchTransactions" />
+                </IconField>
+                <Button label="Cari" icon="pi pi-search" @click="fetchTransactions" />
+                <Button label="Refresh" icon="pi pi-refresh" outlined @click="fetchTransactions" />
+            </div>
         </div>
 
         <DataTable :value="transactions" :loading="loading" stripedRows lazy paginator
