@@ -8,6 +8,9 @@ use App\Models\StockMovement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\PurchasesExport;
 
 class PurchaseController extends Controller
 {
@@ -33,6 +36,33 @@ class PurchaseController extends Controller
         $purchases = $query->paginate(20);
 
         return response()->json($purchases);
+    }
+
+    /**
+     * Export Purchases (Excel/PDF).
+     */
+    public function exportPurchases(Request $request)
+    {
+        $from = $request->get('date_from');
+        $to = $request->get('date_to');
+        $supplier = $request->get('supplier');
+        $format = $request->get('format', 'excel');
+
+        if ($format === 'pdf') {
+            $query = Purchase::with(['user', 'items.product'])
+                ->orderByDesc('purchase_date')
+                ->orderByDesc('id');
+
+            if ($from) $query->whereDate('purchase_date', '>=', $from);
+            if ($to) $query->whereDate('purchase_date', '<=', $to);
+            if ($supplier) $query->where('supplier_name', 'like', '%' . $supplier . '%');
+
+            $purchases = $query->get();
+            $pdf = Pdf::loadView('exports.purchases_pdf', compact('purchases', 'from', 'to', 'supplier'));
+            return $pdf->download('Laporan_Pembelian_MAYOKA_' . date('Ymd_His') . '.pdf');
+        }
+
+        return Excel::download(new PurchasesExport($from, $to, $supplier), 'Laporan_Pembelian_MAYOKA_' . date('Ymd_His') . '.xlsx');
     }
 
     /**

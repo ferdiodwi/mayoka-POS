@@ -99,9 +99,14 @@ Route::middleware('auth:web')->group(function () {
         Route::get('/reports/stock', [ReportController::class, 'stockReport']);
         Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss']);
         Route::get('/reports/cash-flow', [ReportController::class, 'cashFlow']);
+        
+        // Report Exports
+        Route::get('/reports/sales/export', [ReportController::class, 'exportSales']);
+        Route::get('/reports/cash-flow/export', [ReportController::class, 'exportCashFlow']);
 
         // Purchases (Pembelian Barang)
         Route::get('/purchases', [PurchaseController::class, 'index']);
+        Route::get('/purchases/export', [PurchaseController::class, 'exportPurchases']);
         Route::post('/purchases', [PurchaseController::class, 'store']);
         Route::get('/purchases/{purchase}', [PurchaseController::class, 'show']);
         Route::patch('/purchases/{purchase}/mark-paid', [PurchaseController::class, 'markAsPaid']);

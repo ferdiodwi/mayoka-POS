@@ -14,6 +14,9 @@ use App\Models\ReturnItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\SalesExport;
 
 class ReportController extends Controller
 {
@@ -176,6 +179,29 @@ class ReportController extends Controller
             'date_from' => $from,
             'date_to' => $to,
         ]);
+    }
+
+    /**
+     * Export Sales Report (Excel/PDF).
+     */
+    public function exportSales(Request $request)
+    {
+        $from = $request->get('date_from', now()->startOfMonth()->toDateString());
+        $to = $request->get('date_to', now()->toDateString());
+        $format = $request->get('format', 'excel'); // 'excel' or 'pdf'
+
+        if ($format === 'pdf') {
+            $transactions = \App\Models\Transaction::with('user')
+                ->whereBetween(\Illuminate\Support\Facades\DB::raw('DATE(created_at)'), [$from, $to])
+                ->orderBy('created_at', 'asc')
+                ->get();
+                
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.sales_pdf', compact('transactions', 'from', 'to'));
+            return $pdf->download('Laporan_Penjualan_MAYOKA_' . $from . '_sd_' . $to . '.pdf');
+        }
+
+        // Default to Excel
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\SalesExport($from, $to), 'Laporan_Penjualan_MAYOKA_' . $from . '_sd_' . $to . '.xlsx');
     }
 
     /**
@@ -526,5 +552,62 @@ class ReportController extends Controller
             'daily_cash_flow' => $dailyCashFlow,
             'category_labels' => Expense::categoryLabels(),
         ]);
+    }
+
+    /**
+     * Export Cash Flow Report (Excel/PDF).
+     */
+    public function exportCashFlow(Request $request)
+    {
+        $from = $request->get('date_from', now()->startOfMonth()->toDateString());
+        $to = $request->get('date_to', now()->toDateString());
+        $format = $request->get('format', 'excel');
+
+        // Use the same raw SQL query from CashFlowExport to get daily cash flow
+        $dailyCashFlow = DB::select("
+            SELECT dates.date,
+                COALESCE(cash_in.total, 0) as cash_in,
+                COALESCE(cash_out.total, 0) as cash_out
+            FROM (
+                SELECT DATE(created_at) as date FROM transactions
+                WHERE DATE(created_at) BETWEEN ? AND ?
+                UNION
+                SELECT purchase_date as date FROM purchases
+                WHERE purchase_date BETWEEN ? AND ?
+                UNION
+                SELECT expense_date as date FROM expenses
+                WHERE expense_date BETWEEN ? AND ?
+                GROUP BY date
+            ) dates
+            LEFT JOIN (
+                SELECT DATE(created_at) as date, SUM(total) as total
+                FROM transactions
+                WHERE DATE(created_at) BETWEEN ? AND ?
+                GROUP BY date
+            ) cash_in ON dates.date = cash_in.date
+            LEFT JOIN (
+                SELECT date, SUM(total) as total FROM (
+                    SELECT purchase_date as date, SUM(total_amount) as total
+                    FROM purchases WHERE purchase_date BETWEEN ? AND ? AND payment_status = 'paid'
+                    GROUP BY purchase_date
+                    UNION ALL
+                    SELECT expense_date as date, SUM(amount) as total
+                    FROM expenses WHERE expense_date BETWEEN ? AND ?
+                    GROUP BY expense_date
+                    UNION ALL
+                    SELECT DATE(created_at) as date, SUM(refund_amount) as total
+                    FROM returns WHERE DATE(created_at) BETWEEN ? AND ?
+                    GROUP BY date
+                ) combined GROUP BY date
+            ) cash_out ON dates.date = cash_out.date
+            ORDER BY dates.date
+        ", [$from, $to, $from, $to, $from, $to, $from, $to, $from, $to, $from, $to, $from, $to]);
+
+        if ($format === 'pdf') {
+            $pdf = Pdf::loadView('exports.cashflow_pdf', compact('dailyCashFlow', 'from', 'to'));
+            return $pdf->download('Laporan_ArusKas_MAYOKA_' . $from . '_sd_' . $to . '.pdf');
+        }
+
+        return Excel::download(new \App\Exports\CashFlowExport($from, $to), 'Laporan_ArusKas_MAYOKA_' . $from . '_sd_' . $to . '.xlsx');
     }
 }

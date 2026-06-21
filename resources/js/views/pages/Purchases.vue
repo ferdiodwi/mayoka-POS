@@ -76,6 +76,14 @@ function clearFilter() {
     applyFilter();
 }
 
+function exportReport(format) {
+    let url = `/api/purchases/export?format=${format}`;
+    if (filterDateFrom.value) url += `&date_from=${toApiDate(filterDateFrom.value)}`;
+    if (filterDateTo.value) url += `&date_to=${toApiDate(filterDateTo.value)}`;
+    if (filterSupplier.value) url += `&supplier=${encodeURIComponent(filterSupplier.value)}`;
+    window.open(url, '_blank');
+}
+
 async function fetchProducts() {
     const data = await apiGet('/api/products?per_page=all');
     products.value = (Array.isArray(data) ? data : data.data || []).filter(p => p.type === 'barang');
@@ -243,6 +251,10 @@ onMounted(async () => {
             <div class="flex gap-2 w-full sm:w-auto">
                 <Button label="Cari" icon="pi pi-search" @click="applyFilter" />
                 <Button label="Reset" icon="pi pi-filter-slash" severity="secondary" outlined @click="clearFilter" />
+            </div>
+            <div class="ml-auto flex gap-2">
+                <Button label="Excel" icon="pi pi-file-excel" severity="success" outlined @click="exportReport('excel')" />
+                <Button label="PDF" icon="pi pi-file-pdf" severity="danger" outlined @click="exportReport('pdf')" />
             </div>
         </div>
 

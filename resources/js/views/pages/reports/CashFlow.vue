@@ -25,6 +25,11 @@ async function fetchReport() {
     }
 }
 
+function exportReport(format) {
+    const url = `/api/reports/cash-flow/export?format=${format}&date_from=${toApiDate(dateFrom.value)}&date_to=${toApiDate(dateTo.value)}`;
+    window.open(url, '_blank');
+}
+
 onMounted(fetchReport);
 </script>
 
@@ -45,6 +50,10 @@ onMounted(fetchReport);
                 <DatePicker v-model="dateTo" dateFormat="dd/mm/yy" showIcon />
             </div>
             <Button label="Tampilkan" icon="pi pi-search" @click="fetchReport" />
+            <div class="ml-auto flex gap-2">
+                <Button label="Excel" icon="pi pi-file-excel" severity="success" outlined @click="exportReport('excel')" />
+                <Button label="PDF" icon="pi pi-file-pdf" severity="danger" outlined @click="exportReport('pdf')" />
+            </div>
         </div>
 
         <div v-if="loading" class="flex items-center justify-center py-20">
