@@ -163,7 +163,7 @@ onMounted(loadDashboard);
                     </Column>
                     <Column header="Metode" style="width: 5rem">
                         <template #body="{ data: row }">
-                            <Tag :value="row.payment_method.toUpperCase()" :severity="row.payment_method === 'cash' ? 'success' : 'info'" />
+                            <Tag :value="row.payment_method.toUpperCase()" :severity="row.payment_method === 'cash' ? 'success' : row.payment_method === 'qris' ? 'info' : 'warn'" />
                         </template>
                     </Column>
                 </DataTable>

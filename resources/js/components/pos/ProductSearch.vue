@@ -92,6 +92,9 @@ defineExpose({ focusInput });
                         {{ product.category?.name }}
                         <span v-if="product.barcode"> · {{ product.barcode }}</span>
                     </p>
+                    <p v-if="product.type === 'barang' && product.wholesale_min_qty > 0" class="m-0 mt-1 text-[10px] text-orange-500 font-medium">
+                        <i class="pi pi-star-fill text-[9px] mr-1"></i>Grosir: {{ formatRp(product.wholesale_price) }} (min {{ product.wholesale_min_qty }})
+                    </p>
                 </div>
                 <div class="text-right">
                     <p class="m-0 font-bold text-primary">{{ formatRp(product.price) }}</p>

@@ -30,7 +30,7 @@ const typeOptions = [
 
 const form = ref({
     category_id: null, name: '', barcode: '', type: 'barang',
-    price: 0, cost_price: 0, stock: 0, min_stock: 0, unit: 'pcs', is_active: true,
+    price: 0, wholesale_price: 0, wholesale_min_qty: 0, cost_price: 0, stock: 0, min_stock: 0, unit: 'pcs', is_active: true,
 });
 
 const adjustForm = ref({ qty: 0, notes: '' });
@@ -73,7 +73,7 @@ function openCreate() {
     dialogMode.value = 'create';
     form.value = {
         category_id: null, name: '', barcode: '', type: 'barang',
-        price: 0, cost_price: 0, stock: 0, min_stock: 0, unit: 'pcs', is_active: true,
+        price: 0, wholesale_price: 0, wholesale_min_qty: 0, cost_price: 0, stock: 0, min_stock: 0, unit: 'pcs', is_active: true,
     };
     editingId.value = null;
     dialogVisible.value = true;
@@ -256,6 +256,14 @@ onMounted(async () => {
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Harga Jual (Rp)</label>
                     <InputNumber v-model="form.price" mode="currency" currency="IDR" locale="id-ID" :min="0" />
+                </div>
+                <div v-if="form.type === 'barang'" class="flex flex-col gap-2">
+                    <label class="font-semibold">Harga Grosir (Rp)</label>
+                    <InputNumber v-model="form.wholesale_price" mode="currency" currency="IDR" locale="id-ID" :min="0" placeholder="0 = nonaktif" />
+                </div>
+                <div v-if="form.type === 'barang'" class="flex flex-col gap-2">
+                    <label class="font-semibold">Min. Qty Grosir</label>
+                    <InputNumber v-model="form.wholesale_min_qty" :min="0" placeholder="0 = nonaktif" />
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">HPP (Rp)</label>

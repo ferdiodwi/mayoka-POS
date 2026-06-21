@@ -44,23 +44,45 @@ export function useCart() {
         );
         if (existing) {
             existing.qty += qty;
+            applyWholesaleLogic(existing);
             return;
         }
 
-        cartItems.value.push({
+        const itemToPush = {
             id: Date.now() + Math.random(),
             itemType: 'product',
             productId: product.id,
             description: product.name,
             qty,
             unitPrice: parseFloat(product.price),
+            retailPrice: parseFloat(product.price),
+            wholesalePrice: parseFloat(product.wholesale_price || 0),
+            wholesaleMinQty: parseInt(product.wholesale_min_qty || 0, 10),
             costPrice: parseFloat(product.cost_price),
             discount: 0,
             stock: product.stock,
             unit: product.unit,
             barcode: product.barcode,
             addons: [],
-        });
+        };
+        
+        applyWholesaleLogic(itemToPush);
+        cartItems.value.push(itemToPush);
+    }
+
+    /**
+     * Helper to apply wholesale price if conditions are met
+     */
+    function applyWholesaleLogic(item) {
+        if (item.itemType === 'product' && item.wholesaleMinQty > 0 && item.wholesalePrice > 0) {
+            if (item.qty >= item.wholesaleMinQty) {
+                item.unitPrice = item.wholesalePrice;
+                item.isWholesaleActive = true;
+            } else {
+                item.unitPrice = item.retailPrice;
+                item.isWholesaleActive = false;
+            }
+        }
     }
 
     /**
@@ -102,6 +124,7 @@ export function useCart() {
             return;
         }
         cartItems.value[index].qty = qty;
+        applyWholesaleLogic(cartItems.value[index]);
     }
 
     /**

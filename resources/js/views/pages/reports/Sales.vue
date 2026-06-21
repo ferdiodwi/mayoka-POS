@@ -95,6 +95,15 @@ onMounted(fetchReport);
             <Column header="Rata-rata/Trx" sortable sortField="avg_per_tx">
                 <template #body="{ data }">{{ formatRp(data.avg_per_tx) }}</template>
             </Column>
+            <Column header="Per Metode Bayar">
+                <template #body="{ data }">
+                    <div v-if="data.by_method" class="flex flex-wrap gap-1">
+                        <Tag v-if="data.by_method.cash" :value="`Cash ${formatRp(data.by_method.cash.total)}`" severity="success" class="text-xs" />
+                        <Tag v-if="data.by_method.qris" :value="`QRIS ${formatRp(data.by_method.qris.total)}`" severity="info" class="text-xs" />
+                        <Tag v-if="data.by_method.transfer" :value="`Transfer ${formatRp(data.by_method.transfer.total)}`" severity="warn" class="text-xs" />
+                    </div>
+                </template>
+            </Column>
         </DataTable>
     </div>
 </template>

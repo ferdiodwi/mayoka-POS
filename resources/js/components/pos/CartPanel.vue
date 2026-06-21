@@ -59,6 +59,10 @@ function confirmClear() {
                                 <Tag :value="item.itemType === 'print' ? 'Cetak' : 'Barang'" size="small"
                                     :severity="item.itemType === 'print' ? 'warn' : 'info'" />
                                 <span class="font-semibold text-sm">{{ item.description }}</span>
+                                <Tag v-if="item.isWholesaleActive" value="Grosir" size="small" severity="success" class="text-[10px] leading-none" />
+                            </div>
+                            <div v-if="item.itemType === 'product' && item.wholesaleMinQty > 0 && !item.isWholesaleActive" class="mt-1 text-[10px] text-orange-500 font-medium">
+                                <i class="pi pi-info-circle mr-1"></i>Beli {{ item.wholesaleMinQty }} dpt harga {{ formatRp(item.wholesalePrice) }}
                             </div>
                             <div class="flex items-center gap-2 mt-2">
                                 <InputNumber v-model="item.qty" :min="1" showButtons

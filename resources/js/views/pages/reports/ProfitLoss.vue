@@ -100,9 +100,29 @@ onMounted(fetchReport);
                     <div class="px-4 py-3 border-b border-surface-200 dark:border-surface-700">
                         <div class="flex justify-between items-center">
                             <span class="font-semibold text-blue-600 dark:text-blue-400">
-                                <i class="pi pi-arrow-up mr-2"></i>Pendapatan Penjualan
+                                <i class="pi pi-arrow-up mr-2"></i>Pendapatan Penjualan (Kotor)
                             </span>
-                            <span class="font-bold text-lg">{{ formatRp(data.revenue) }}</span>
+                            <span class="font-bold text-lg">{{ formatRp(data.gross_revenue) }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Returns -->
+                    <div v-if="data.returned_revenue > 0" class="px-4 py-2 border-b border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900">
+                        <div class="flex justify-between items-center">
+                            <span class="text-muted-color pl-4">
+                                <i class="pi pi-replay mr-1"></i>Retur Penjualan
+                            </span>
+                            <span class="text-red-500">- {{ formatRp(data.returned_revenue) }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Net Revenue -->
+                    <div class="px-4 py-2 border-b border-surface-200 dark:border-surface-700">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-blue-600 dark:text-blue-400">
+                                = Pendapatan Bersih
+                            </span>
+                            <span class="font-bold text-blue-600 dark:text-blue-400">{{ formatRp(data.revenue) }}</span>
                         </div>
                     </div>
 
