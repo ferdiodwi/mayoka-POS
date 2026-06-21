@@ -22,6 +22,8 @@ class TransactionController extends Controller
             'items' => 'required|array|min:1',
             'items.*.itemType' => 'required|in:print,product',
             'items.*.qty' => 'required|integer|min:1',
+            'items.*.unitName' => 'nullable|string|max:20',
+            'items.*.baseMultiplier' => 'nullable|integer|min:1',
             'items.*.unitPrice' => 'required|numeric|min:0',
             'items.*.discount' => 'nullable|numeric|min:0',
             'items.*.addons' => 'nullable|array',
@@ -99,20 +101,23 @@ class TransactionController extends Controller
                     // Set FK references
                     if ($item['itemType'] === 'product') {
                         $txItemData['product_id'] = $item['productId'] ?? null;
+                        $txItemData['unit_name'] = $item['unitName'] ?? 'PCS';
+                        $txItemData['base_multiplier'] = $item['baseMultiplier'] ?? 1;
 
                         // Reduce stock for barang type
                         if (!empty($item['productId'])) {
                             $product = Product::find($item['productId']);
                             if ($product && $product->type === 'barang') {
-                                if ($product->stock < $item['qty']) {
-                                    throw new \Exception("Stok {$product->name} tidak mencukupi (sisa: {$product->stock}).");
+                                $stockReduction = $item['qty'] * $txItemData['base_multiplier'];
+                                if ($product->stock < $stockReduction) {
+                                    throw new \Exception("Stok {$product->name} tidak mencukupi (butuh: {$stockReduction}, sisa: {$product->stock}).");
                                 }
-                                $product->decrement('stock', $item['qty']);
+                                $product->decrement('stock', $stockReduction);
 
                                 StockMovement::create([
                                     'product_id' => $product->id,
                                     'type' => 'out',
-                                    'qty' => -$item['qty'],
+                                    'qty' => -$stockReduction,
                                     'reference' => $transaction->invoice_number,
                                     'notes' => 'Penjualan',
                                     'user_id' => $user->id,

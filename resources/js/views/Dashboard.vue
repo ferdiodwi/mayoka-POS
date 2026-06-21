@@ -17,6 +17,27 @@ function formatRp(v) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v);
 }
 
+function formatHierarchicalStock(totalBaseQty, units) {
+    if (!units || units.length === 0) return totalBaseQty;
+    const sortedUnits = [...units].sort((a, b) => b.base_multiplier - a.base_multiplier);
+    let remaining = totalBaseQty;
+    let parts = [];
+    for (const u of sortedUnits) {
+        if (!u.unit_name || u.base_multiplier <= 0) continue;
+        const qty = Math.floor(Math.abs(remaining) / u.base_multiplier);
+        if (qty > 0) {
+            parts.push(`${qty} ${u.unit_name}`);
+            remaining = Math.abs(remaining) % u.base_multiplier;
+        }
+    }
+    const prefix = totalBaseQty < 0 ? '-' : '';
+    if (parts.length === 0) {
+        const base = sortedUnits.find(u => u.level === 1);
+        return `${prefix}0 ${base ? base.unit_name : ''}`;
+    }
+    return prefix + parts.join(' ');
+}
+
 function formatTime(dt) {
     return new Date(dt).toLocaleString('id-ID', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
@@ -217,7 +238,7 @@ onUnmounted(() => {
                     <Column field="name" header="Produk" />
                     <Column header="Stok" style="width: 6rem">
                         <template #body="{ data: row }">
-                            <Tag :value="`${row.stock} ${row.unit}`" severity="danger" />
+                            <Tag :value="formatHierarchicalStock(row.stock, row.units)" severity="danger" />
                         </template>
                     </Column>
                     <Column header="Min" style="width: 5rem">

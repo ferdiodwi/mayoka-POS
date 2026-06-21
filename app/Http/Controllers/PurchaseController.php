@@ -77,6 +77,8 @@ class PurchaseController extends Controller
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
+            'items.*.unit_name' => 'nullable|string|max:20',
+            'items.*.base_multiplier' => 'nullable|integer|min:1',
             'items.*.qty' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
@@ -95,6 +97,8 @@ class PurchaseController extends Controller
                 $totalAmount += $subtotal;
                 $items[] = [
                     'product_id' => $item['product_id'],
+                    'unit_name' => $item['unit_name'] ?? 'PCS',
+                    'base_multiplier' => $item['base_multiplier'] ?? 1,
                     'qty' => $item['qty'],
                     'unit_price' => $item['unit_price'],
                     'subtotal' => $subtotal,
@@ -117,16 +121,18 @@ class PurchaseController extends Controller
                 // Update product stock
                 $product = Product::find($item['product_id']);
                 if ($product && $product->type === 'barang') {
-                    $product->increment('stock', $item['qty']);
+                    $stockAddition = $item['qty'] * $item['base_multiplier'];
+                    $product->increment('stock', $stockAddition);
 
-                    // Update cost_price to latest purchase price
-                    $product->update(['cost_price' => $item['unit_price']]);
+                    // Update cost_price to latest purchase price (per base unit)
+                    $costPerBaseUnit = $item['unit_price'] / $item['base_multiplier'];
+                    $product->update(['cost_price' => $costPerBaseUnit]);
 
                     // Record stock movement
                     StockMovement::create([
                         'product_id' => $product->id,
                         'type' => 'in',
-                        'qty' => $item['qty'],
+                        'qty' => $stockAddition,
                         'reference' => $purchaseNumber,
                         'notes' => 'Pembelian dari ' . ($request->supplier_name ?: 'supplier'),
                         'user_id' => auth()->id(),
@@ -134,7 +140,7 @@ class PurchaseController extends Controller
                 }
             }
 
-            return $purchase->load('items.product:id,name,unit');
+            return $purchase->load('items.product:id,name');
         });
 
         event(new \App\Events\DashboardUpdated());
@@ -157,7 +163,7 @@ class PurchaseController extends Controller
     public function show(Purchase $purchase): JsonResponse
     {
         return response()->json([
-            'purchase' => $purchase->load(['user:id,name', 'items.product:id,name,unit']),
+            'purchase' => $purchase->load(['user:id,name', 'items.product:id,name']),
         ]);
     }
 

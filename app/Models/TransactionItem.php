@@ -12,6 +12,7 @@ class TransactionItem extends Model
         'transaction_id', 'item_type', 'product_id', 'print_price_id',
         'addon_service_id', 'parent_item_id', 'description',
         'qty', 'unit_price', 'cost_price', 'discount', 'subtotal',
+        'unit_name', 'base_multiplier',
     ];
 
     protected function casts(): array

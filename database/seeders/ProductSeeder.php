@@ -67,19 +67,50 @@ class ProductSeeder extends Seeder
         ];
 
         foreach ($products as $item) {
-            Product::create([
+            $product = Product::create([
                 'category_id' => $categories[$item['category']],
                 'name' => $item['name'],
                 'barcode' => $item['barcode'],
                 'type' => $item['type'],
-                'price' => $item['price'],
-                'wholesale_price' => $item['wholesale_price'] ?? 0,
-                'wholesale_min_qty' => $item['wholesale_min_qty'] ?? 0,
                 'cost_price' => $item['cost_price'],
                 'stock' => $item['stock'],
                 'min_stock' => $item['min_stock'],
-                'unit' => $item['unit'],
             ]);
+
+            $product->units()->create([
+                'level' => 1,
+                'unit_name' => strtoupper($item['unit']),
+                'qty_per_previous' => 1,
+                'base_multiplier' => 1,
+                'price_h1' => $item['price'],
+                'price_h2' => $item['wholesale_price'] ?? $item['price'],
+                'price_h3' => $item['wholesale_price'] ?? $item['price'],
+            ]);
+
+            if (strtoupper($item['unit']) === 'PCS' && $item['type'] === 'barang') {
+                $h1 = $item['price'];
+                $h2 = isset($item['wholesale_price']) && $item['wholesale_price'] > 0 ? $item['wholesale_price'] : $item['price'];
+
+                $product->units()->create([
+                    'level' => 2,
+                    'unit_name' => 'PCK',
+                    'qty_per_previous' => 12,
+                    'base_multiplier' => 12,
+                    'price_h1' => $h1 * 12 * 0.95,
+                    'price_h2' => $h2 * 12 * 0.95,
+                    'price_h3' => $h2 * 12 * 0.90,
+                ]);
+
+                $product->units()->create([
+                    'level' => 3,
+                    'unit_name' => 'DOS',
+                    'qty_per_previous' => 10,
+                    'base_multiplier' => 120,
+                    'price_h1' => $h1 * 120 * 0.90,
+                    'price_h2' => $h2 * 120 * 0.90,
+                    'price_h3' => $h2 * 120 * 0.85,
+                ]);
+            }
         }
     }
 }

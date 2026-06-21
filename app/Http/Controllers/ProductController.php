@@ -13,7 +13,7 @@ class ProductController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Product::with('category:id,name');
+        $query = Product::with(['category:id,name', 'units']);
 
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
@@ -52,7 +52,7 @@ class ProductController extends Controller
         }
 
         $products = Product::active()
-            ->with('category:id,name')
+            ->with(['category:id,name', 'units'])
             ->where(function ($query) use ($q) {
                 $query->where('name', 'like', "%{$q}%")
                       ->orWhere('barcode', $q);
@@ -70,13 +70,17 @@ class ProductController extends Controller
             'name' => 'required|string|max:150',
             'barcode' => 'nullable|string|max:50|unique:products,barcode',
             'type' => 'required|in:barang,jasa',
-            'price' => 'required|numeric|min:0',
-            'wholesale_price' => 'nullable|numeric|min:0',
-            'wholesale_min_qty' => 'nullable|integer|min:0',
             'cost_price' => 'required|numeric|min:0',
             'stock' => 'nullable|integer|min:0',
             'min_stock' => 'nullable|integer|min:0',
-            'unit' => 'required|string|max:20',
+            'units' => 'required|array|min:1',
+            'units.*.level' => 'required|integer',
+            'units.*.unit_name' => 'required|string|max:20',
+            'units.*.qty_per_previous' => 'required|integer|min:1',
+            'units.*.base_multiplier' => 'required|integer|min:1',
+            'units.*.price_h1' => 'required|numeric|min:0',
+            'units.*.price_h2' => 'nullable|numeric|min:0',
+            'units.*.price_h3' => 'nullable|numeric|min:0',
         ]);
 
         // For jasa type, stock is always 0
@@ -86,7 +90,14 @@ class ProductController extends Controller
         }
 
         $product = DB::transaction(function () use ($validated, $request) {
-            $product = Product::create($validated);
+            // Extract product fields only
+            $productData = collect($validated)->except('units')->toArray();
+            $product = Product::create($productData);
+
+            // Create units
+            foreach ($validated['units'] as $unitData) {
+                $product->units()->create($unitData);
+            }
 
             // Record initial stock movement if type is barang and stock > 0
             if ($product->type === 'barang' && $product->stock > 0) {
@@ -105,7 +116,7 @@ class ProductController extends Controller
 
         return response()->json([
             'message' => 'Produk berhasil dibuat.',
-            'product' => $product->load('category:id,name'),
+            'product' => $product->load(['category:id,name', 'units']),
         ], 201);
     }
 
@@ -116,20 +127,34 @@ class ProductController extends Controller
             'name' => 'required|string|max:150',
             'barcode' => ['nullable', 'string', 'max:50', Rule::unique('products', 'barcode')->ignore($product->id)],
             'type' => 'required|in:barang,jasa',
-            'price' => 'required|numeric|min:0',
-            'wholesale_price' => 'nullable|numeric|min:0',
-            'wholesale_min_qty' => 'nullable|integer|min:0',
             'cost_price' => 'required|numeric|min:0',
             'min_stock' => 'nullable|integer|min:0',
-            'unit' => 'required|string|max:20',
             'is_active' => 'boolean',
+            'units' => 'required|array|min:1',
+            'units.*.level' => 'required|integer',
+            'units.*.unit_name' => 'required|string|max:20',
+            'units.*.qty_per_previous' => 'required|integer|min:1',
+            'units.*.base_multiplier' => 'required|integer|min:1',
+            'units.*.price_h1' => 'required|numeric|min:0',
+            'units.*.price_h2' => 'nullable|numeric|min:0',
+            'units.*.price_h3' => 'nullable|numeric|min:0',
         ]);
 
-        $product->update($validated);
+        DB::transaction(function () use ($product, $validated) {
+            $productData = collect($validated)->except('units')->toArray();
+            $product->update($productData);
+
+            // Sync units (delete existing, recreate)
+            // Or better, delete and insert to ensure clean state
+            $product->units()->delete();
+            foreach ($validated['units'] as $unitData) {
+                $product->units()->create($unitData);
+            }
+        });
 
         return response()->json([
             'message' => 'Produk berhasil diperbarui.',
-            'product' => $product->fresh()->load('category:id,name'),
+            'product' => $product->fresh()->load(['category:id,name', 'units']),
         ]);
     }
 

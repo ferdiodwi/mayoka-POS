@@ -30,7 +30,13 @@ const typeOptions = [
 
 const form = ref({
     category_id: null, name: '', barcode: '', type: 'barang',
-    price: 0, wholesale_price: 0, wholesale_min_qty: 0, cost_price: 0, stock: 0, min_stock: 0, unit: 'pcs', is_active: true,
+    cost_price: 0, stock: 0, min_stock: 0, is_active: true,
+    units: [
+        { level: 1, unit_name: 'PCS', qty_per_previous: 1, base_multiplier: 1, price_h1: 0, price_h2: 0, price_h3: 0 },
+        { level: 2, unit_name: '', qty_per_previous: 1, base_multiplier: 1, price_h1: 0, price_h2: 0, price_h3: 0 },
+        { level: 3, unit_name: '', qty_per_previous: 1, base_multiplier: 1, price_h1: 0, price_h2: 0, price_h3: 0 },
+        { level: 4, unit_name: '', qty_per_previous: 1, base_multiplier: 1, price_h1: 0, price_h2: 0, price_h3: 0 }
+    ]
 });
 
 const adjustForm = ref({ qty: 0, notes: '' });
@@ -73,7 +79,13 @@ function openCreate() {
     dialogMode.value = 'create';
     form.value = {
         category_id: null, name: '', barcode: '', type: 'barang',
-        price: 0, wholesale_price: 0, wholesale_min_qty: 0, cost_price: 0, stock: 0, min_stock: 0, unit: 'pcs', is_active: true,
+        cost_price: 0, stock: 0, min_stock: 0, is_active: true,
+        units: [
+            { level: 1, unit_name: 'PCS', qty_per_previous: 1, base_multiplier: 1, price_h1: 0, price_h2: 0, price_h3: 0 },
+            { level: 2, unit_name: '', qty_per_previous: 0, base_multiplier: 1, price_h1: 0, price_h2: 0, price_h3: 0 },
+            { level: 3, unit_name: '', qty_per_previous: 0, base_multiplier: 1, price_h1: 0, price_h2: 0, price_h3: 0 },
+            { level: 4, unit_name: '', qty_per_previous: 0, base_multiplier: 1, price_h1: 0, price_h2: 0, price_h3: 0 }
+        ]
     };
     editingId.value = null;
     dialogVisible.value = true;
@@ -81,7 +93,17 @@ function openCreate() {
 
 function openEdit(item) {
     dialogMode.value = 'edit';
-    form.value = { ...item, category_id: item.category_id };
+    const existingUnits = item.units || [];
+    const unitsData = [];
+    for (let i = 1; i <= 4; i++) {
+        const u = existingUnits.find(x => x.level === i);
+        if (u) {
+            unitsData.push({ ...u });
+        } else {
+            unitsData.push({ level: i, unit_name: '', qty_per_previous: 0, base_multiplier: 1, price_h1: 0, price_h2: 0, price_h3: 0 });
+        }
+    }
+    form.value = { ...item, category_id: item.category_id, units: unitsData };
     editingId.value = item.id;
     dialogVisible.value = true;
 }
@@ -146,6 +168,66 @@ function confirmDeactivate(item) {
 function formatCurrency(val) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
 }
+
+function updateMultipliers() {
+    let currentMultiplier = 1;
+    for (let i = 0; i < 4; i++) {
+        if (i === 0) {
+            form.value.units[i].base_multiplier = 1;
+            form.value.units[i].qty_per_previous = 1;
+        } else {
+            currentMultiplier = currentMultiplier * (form.value.units[i].qty_per_previous || 1);
+            form.value.units[i].base_multiplier = currentMultiplier;
+        }
+    }
+}
+
+function formatHierarchicalStock(totalBaseQty, units) {
+    if (!units || units.length === 0) return totalBaseQty;
+    
+    // Sort units by base_multiplier descending
+    const sortedUnits = [...units].sort((a, b) => b.base_multiplier - a.base_multiplier);
+    
+    let remaining = totalBaseQty;
+    let parts = [];
+    
+    for (const u of sortedUnits) {
+        if (!u.unit_name || u.base_multiplier <= 0) continue;
+        const qty = Math.floor(remaining / u.base_multiplier);
+        if (qty > 0) {
+            parts.push(`${qty} ${u.unit_name}`);
+            remaining = remaining % u.base_multiplier;
+        }
+    }
+    
+    if (parts.length === 0) {
+        const base = sortedUnits.find(u => u.level === 1);
+        return `0 ${base ? base.unit_name : ''}`;
+    }
+    
+    return parts.join(' ');
+}
+
+// Intercept save to calculate multipliers and filter empty units
+const originalSave = save;
+save = async function() {
+    updateMultipliers();
+    // Validate units: At least level 1 must have name and > 0 price
+    const validUnits = form.value.units.filter(u => u.unit_name && u.unit_name.trim() !== '');
+    if (validUnits.length === 0) {
+        toast.add({ severity: 'error', summary: 'Gagal', detail: 'Satuan terkecil harus diisi', life: 3000 });
+        return;
+    }
+    
+    // Temporarily replace form.units with valid ones for submission
+    const allUnits = form.value.units;
+    form.value.units = validUnits;
+    await originalSave();
+    // Form is usually reset or closed after save, but if it fails we might need to restore
+    if (dialogVisible.value) {
+        form.value.units = allUnits;
+    }
+};
 
 function isLowStock(item) {
     return item.type === 'barang' && item.stock <= item.min_stock;
@@ -212,13 +294,18 @@ onUnmounted(() => {
                         :severity="data.type === 'barang' ? 'info' : 'warn'" />
                 </template>
             </Column>
-            <Column header="Harga Jual" sortable sortField="price" style="width: 8rem">
-                <template #body="{ data }">{{ formatCurrency(data.price) }}</template>
+            <Column header="Harga Jual" sortable style="width: 8rem">
+                <template #body="{ data }">
+                    <div v-if="data.units && data.units.length > 0">
+                        {{ formatCurrency(data.units[0].price_h1) }}
+                    </div>
+                    <div v-else>0</div>
+                </template>
             </Column>
             <Column header="Stok" sortable sortField="stock" style="width: 6rem">
                 <template #body="{ data }">
                     <span v-if="data.type === 'barang'" :class="{ 'text-red-500 font-bold': isLowStock(data) }">
-                        {{ data.stock }} {{ data.unit }}
+                        {{ formatHierarchicalStock(data.stock, data.units) }}
                         <i v-if="isLowStock(data)" class="pi pi-exclamation-triangle text-red-500 ml-1"></i>
                     </span>
                     <span v-else class="text-muted-color">—</span>
@@ -246,7 +333,7 @@ onUnmounted(() => {
         <!-- Create/Edit Dialog -->
         <Dialog v-model:visible="dialogVisible"
             :header="dialogMode === 'create' ? 'Tambah Produk' : 'Edit Produk'"
-            modal :style="{ width: '580px' }">
+            modal :style="{ width: '1000px' }" :breakpoints="{ '1024px': '95vw' }">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                 <div class="col-span-1 md:col-span-2 flex flex-col gap-2">
                     <label class="font-semibold">Nama Produk</label>
@@ -266,34 +353,97 @@ onUnmounted(() => {
                     <label class="font-semibold">Barcode</label>
                     <InputText v-model="form.barcode" placeholder="Opsional" />
                 </div>
-                <div class="flex flex-col gap-2">
-                    <label class="font-semibold">Satuan</label>
-                    <InputText v-model="form.unit" placeholder="pcs, rim, lembar" />
+                <div v-if="form.type === 'barang' && dialogMode === 'create'" class="flex flex-col gap-2 md:col-span-1">
+                    <label class="font-semibold">Stok Awal (Satuan Terkecil)</label>
+                    <InputNumber v-model="form.stock" :min="0" />
                 </div>
-                <div class="flex flex-col gap-2">
-                    <label class="font-semibold">Harga Jual (Rp)</label>
-                    <InputNumber v-model="form.price" mode="currency" currency="IDR" locale="id-ID" :min="0" />
+                <div v-if="form.type === 'barang'" class="flex flex-col gap-2 md:col-span-1">
+                    <label class="font-semibold">Minimal Stok (Satuan Terkecil)</label>
+                    <InputNumber v-model="form.min_stock" :min="0" />
                 </div>
-                <div v-if="form.type === 'barang'" class="flex flex-col gap-2">
-                    <label class="font-semibold">Harga Grosir (Rp)</label>
-                    <InputNumber v-model="form.wholesale_price" mode="currency" currency="IDR" locale="id-ID" :min="0" placeholder="0 = nonaktif" />
-                </div>
-                <div v-if="form.type === 'barang'" class="flex flex-col gap-2">
-                    <label class="font-semibold">Min. Qty Grosir</label>
-                    <InputNumber v-model="form.wholesale_min_qty" :min="0" placeholder="0 = nonaktif" />
+                
+                <!-- Units Grid -->
+                <div class="col-span-1 md:col-span-2 mt-4" v-if="form.type === 'barang' || form.type === 'jasa'">
+                    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Pengaturan Satuan & Harga Jual</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm border-collapse">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left p-2">Tingkat</th>
+                                    <th class="text-left p-2">Nama Satuan</th>
+                                    <th class="text-left p-2">Isi per Satuan Bawah</th>
+                                    <th class="text-right p-2">H1 (Ecer)</th>
+                                    <th class="text-right p-2">H2 (Grosir)</th>
+                                    <th class="text-right p-2">H3 (Khusus)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Level 1 -->
+                                <tr class="border-b">
+                                    <td class="p-2 font-semibold text-center">1 (Satu)</td>
+                                    <td class="p-2">
+                                        <InputText v-model="form.units[0].unit_name" class="w-full min-w-[80px]" placeholder="PCS" />
+                                    </td>
+                                    <td class="p-2 text-center text-muted-color font-bold">1</td>
+                                    <td class="p-2"><InputNumber v-model="form.units[0].price_h1" class="w-full min-w-[100px]" mode="currency" currency="IDR" locale="id-ID" :min="0" /></td>
+                                    <td class="p-2"><InputNumber v-model="form.units[0].price_h2" class="w-full min-w-[100px]" mode="currency" currency="IDR" locale="id-ID" :min="0" /></td>
+                                    <td class="p-2"><InputNumber v-model="form.units[0].price_h3" class="w-full min-w-[100px]" mode="currency" currency="IDR" locale="id-ID" :min="0" /></td>
+                                </tr>
+                                <!-- Level 2 -->
+                                <tr class="border-b">
+                                    <td class="p-2 font-semibold text-center">1 (Satu)</td>
+                                    <td class="p-2">
+                                        <InputText v-model="form.units[1].unit_name" class="w-full min-w-[80px]" placeholder="PCK" />
+                                    </td>
+                                    <td class="p-2 flex items-center gap-2">
+                                        <span class="font-bold">=</span>
+                                        <InputNumber v-model="form.units[1].qty_per_previous" class="w-16" :min="0" />
+                                        <span class="text-muted-color">{{ form.units[0].unit_name || 'PCS' }}</span>
+                                    </td>
+                                    <td class="p-2"><InputNumber v-model="form.units[1].price_h1" class="w-full min-w-[100px]" mode="currency" currency="IDR" locale="id-ID" :min="0" /></td>
+                                    <td class="p-2"><InputNumber v-model="form.units[1].price_h2" class="w-full min-w-[100px]" mode="currency" currency="IDR" locale="id-ID" :min="0" /></td>
+                                    <td class="p-2"><InputNumber v-model="form.units[1].price_h3" class="w-full min-w-[100px]" mode="currency" currency="IDR" locale="id-ID" :min="0" /></td>
+                                </tr>
+                                <!-- Level 3 -->
+                                <tr class="border-b">
+                                    <td class="p-2 font-semibold text-center">1 (Satu)</td>
+                                    <td class="p-2">
+                                        <InputText v-model="form.units[2].unit_name" class="w-full min-w-[80px]" placeholder="DOS" />
+                                    </td>
+                                    <td class="p-2 flex items-center gap-2">
+                                        <span class="font-bold">=</span>
+                                        <InputNumber v-model="form.units[2].qty_per_previous" class="w-16" :min="0" />
+                                        <span class="text-muted-color">{{ form.units[1].unit_name || 'PCK' }}</span>
+                                    </td>
+                                    <td class="p-2"><InputNumber v-model="form.units[2].price_h1" class="w-full min-w-[100px]" mode="currency" currency="IDR" locale="id-ID" :min="0" /></td>
+                                    <td class="p-2"><InputNumber v-model="form.units[2].price_h2" class="w-full min-w-[100px]" mode="currency" currency="IDR" locale="id-ID" :min="0" /></td>
+                                    <td class="p-2"><InputNumber v-model="form.units[2].price_h3" class="w-full min-w-[100px]" mode="currency" currency="IDR" locale="id-ID" :min="0" /></td>
+                                </tr>
+                                <!-- Level 4 -->
+                                <tr class="border-b">
+                                    <td class="p-2 font-semibold text-center">1 (Satu)</td>
+                                    <td class="p-2">
+                                        <InputText v-model="form.units[3].unit_name" class="w-full min-w-[80px]" />
+                                    </td>
+                                    <td class="p-2 flex items-center gap-2">
+                                        <span class="font-bold">=</span>
+                                        <InputNumber v-model="form.units[3].qty_per_previous" class="w-16" :min="0" />
+                                        <span class="text-muted-color">{{ form.units[2].unit_name || 'DOS' }}</span>
+                                    </td>
+                                    <td class="p-2"><InputNumber v-model="form.units[3].price_h1" class="w-full min-w-[100px]" mode="currency" currency="IDR" locale="id-ID" :min="0" /></td>
+                                    <td class="p-2"><InputNumber v-model="form.units[3].price_h2" class="w-full min-w-[100px]" mode="currency" currency="IDR" locale="id-ID" :min="0" /></td>
+                                    <td class="p-2"><InputNumber v-model="form.units[3].price_h3" class="w-full min-w-[100px]" mode="currency" currency="IDR" locale="id-ID" :min="0" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <small class="text-muted-color mt-2 block">*Kosongkan nama satuan jika tidak digunakan.</small>
+                    </div>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">HPP (Rp)</label>
                     <InputNumber v-model="form.cost_price" mode="currency" currency="IDR" locale="id-ID" :min="0" />
                 </div>
-                <div v-if="form.type === 'barang' && dialogMode === 'create'" class="flex flex-col gap-2">
-                    <label class="font-semibold">Stok Awal</label>
-                    <InputNumber v-model="form.stock" :min="0" />
-                </div>
-                <div v-if="form.type === 'barang'" class="flex flex-col gap-2">
-                    <label class="font-semibold">Minimal Stok</label>
-                    <InputNumber v-model="form.min_stock" :min="0" />
-                </div>
+
                 <div v-if="dialogMode === 'edit'" class="flex items-center gap-2 col-span-1 md:col-span-2">
                     <ToggleSwitch v-model="form.is_active" />
                     <label>{{ form.is_active ? 'Aktif' : 'Nonaktif' }}</label>
@@ -311,7 +461,7 @@ onUnmounted(() => {
             <div class="flex flex-col gap-4 pt-4" v-if="adjustProduct">
                 <div class="p-3 bg-surface-100 dark:bg-surface-800 rounded-lg">
                     <p class="m-0 font-semibold">{{ adjustProduct.name }}</p>
-                    <p class="m-0 text-sm text-muted-color">Stok saat ini: {{ adjustProduct.stock }} {{ adjustProduct.unit }}</p>
+                    <p class="m-0 text-sm text-muted-color">Stok saat ini: {{ formatHierarchicalStock(adjustProduct.stock, adjustProduct.units) }}</p>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Jumlah (+/-)</label>

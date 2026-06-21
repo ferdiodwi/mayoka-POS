@@ -54,14 +54,15 @@ export function useCart() {
             productId: product.id,
             description: product.name,
             qty,
-            unitPrice: parseFloat(product.price),
-            retailPrice: parseFloat(product.price),
-            wholesalePrice: parseFloat(product.wholesale_price || 0),
-            wholesaleMinQty: parseInt(product.wholesale_min_qty || 0, 10),
+            unitPrice: (product.units && product.units.length > 0) ? parseFloat(product.units[0].price_h1) : 0,
             costPrice: parseFloat(product.cost_price),
             discount: 0,
             stock: product.stock,
-            unit: product.unit,
+            units: product.units || [],
+            unitName: (product.units && product.units.length > 0) ? product.units[0].unit_name : 'PCS',
+            baseMultiplier: 1,
+            priceTier: 'h1', // default H1
+            barcode: product.barcode,
             barcode: product.barcode,
             addons: [],
         };
@@ -74,15 +75,9 @@ export function useCart() {
      * Helper to apply wholesale price if conditions are met
      */
     function applyWholesaleLogic(item) {
-        if (item.itemType === 'product' && item.wholesaleMinQty > 0 && item.wholesalePrice > 0) {
-            if (item.qty >= item.wholesaleMinQty) {
-                item.unitPrice = item.wholesalePrice;
-                item.isWholesaleActive = true;
-            } else {
-                item.unitPrice = item.retailPrice;
-                item.isWholesaleActive = false;
-            }
-        }
+        if (item.itemType !== 'product') return;
+        // Wholesale logic is now replaced by manual H1/H2/H3 selection in the UI.
+        // We will remove auto wholesale logic to avoid conflicting with the manual 3-tier price.
     }
 
     /**

@@ -121,10 +121,14 @@ function addItem() {
         return;
     }
 
+    const baseUnit = product.units && product.units.length > 0 ? product.units[0] : null;
+
     form.value.items.push({
         product_id: product.id,
         product_name: product.name,
-        product_unit: product.unit,
+        units: product.units || [],
+        unit_name: baseUnit ? baseUnit.unit_name : 'PCS',
+        base_multiplier: 1,
         qty: newItem.value.qty,
         unit_price: newItem.value.unit_price || product.cost_price || 0,
         subtotal: newItem.value.qty * (newItem.value.unit_price || product.cost_price || 0),
@@ -135,6 +139,13 @@ function addItem() {
 
 function removeFormItem(index) {
     form.value.items.splice(index, 1);
+}
+
+function handleUnitChange(item) {
+    const selectedUnit = item.units.find(u => u.unit_name === item.unit_name);
+    if (selectedUnit) {
+        item.base_multiplier = selectedUnit.base_multiplier;
+    }
 }
 
 function recalcItem(item) {
@@ -155,6 +166,8 @@ async function save() {
             notes: form.value.notes || null,
             items: form.value.items.map(i => ({
                 product_id: i.product_id,
+                unit_name: i.unit_name,
+                base_multiplier: i.base_multiplier,
                 qty: i.qty,
                 unit_price: i.unit_price,
             })),
@@ -346,10 +359,16 @@ onMounted(async () => {
                 <DataTable :value="form.items" dataKey="product_id" class="p-datatable-sm"
                     emptyMessage="Belum ada item.">
                     <Column field="product_name" header="Produk" />
+                    <Column header="Satuan" style="width: 7rem">
+                        <template #body="{ data }">
+                            <Select v-if="data.units && data.units.length > 0" v-model="data.unit_name" :options="data.units.filter(u => u.unit_name)" optionLabel="unit_name" optionValue="unit_name" class="w-full text-sm" size="small" @change="handleUnitChange(data)" />
+                            <span v-else>PCS</span>
+                        </template>
+                    </Column>
                     <Column header="Qty" style="width: 6rem">
                         <template #body="{ data, index }">
                             <InputNumber v-model="data.qty" :min="1" showButtons size="small"
-                                class="w-24" @update:modelValue="recalcItem(data)" />
+                                class="w-20" @update:modelValue="recalcItem(data)" />
                         </template>
                     </Column>
                     <Column header="Harga Beli" style="width: 8rem">
@@ -398,13 +417,11 @@ onMounted(async () => {
                 </div>
 
                 <DataTable :value="selectedPurchase.items" dataKey="id" class="p-datatable-sm">
-                    <Column header="Produk">
-                        <template #body="{ data }">{{ data.product?.name }}</template>
+                    <Column field="product.name" header="Produk" />
+                    <Column header="Qty" style="width: 8rem">
+                        <template #body="{ data }">{{ data.qty }} {{ data.unit_name }}</template>
                     </Column>
-                    <Column field="qty" header="Qty" style="width: 5rem">
-                        <template #body="{ data }">{{ data.qty }} {{ data.product?.unit }}</template>
-                    </Column>
-                    <Column header="Harga Beli" style="width: 7rem">
+                    <Column header="Harga" style="width: 8rem">
                         <template #body="{ data }">{{ formatRp(data.unit_price) }}</template>
                     </Column>
                     <Column header="Subtotal" style="width: 7rem">

@@ -11,17 +11,20 @@ class Product extends Model
 {
     protected $fillable = [
         'category_id', 'name', 'barcode', 'type',
-        'price', 'wholesale_price', 'wholesale_min_qty', 'cost_price', 'stock', 'min_stock', 'unit', 'is_active',
+        'cost_price', 'stock', 'min_stock', 'is_active',
     ];
 
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:2',
-            'wholesale_price' => 'decimal:2',
             'cost_price' => 'decimal:2',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function units(): HasMany
+    {
+        return $this->hasMany(ProductUnit::class)->orderBy('level');
     }
 
     public function category(): BelongsTo

@@ -16,6 +16,23 @@ function itemSubtotal(item) {
     return base + addons;
 }
 
+function handleUnitChange(item) {
+    if (item.itemType !== 'product') return;
+    const selectedUnit = item.units.find(u => u.unit_name === item.unitName);
+    if (selectedUnit) {
+        item.baseMultiplier = selectedUnit.base_multiplier;
+        item.unitPrice = parseFloat(selectedUnit[`price_${item.priceTier}`]);
+    }
+}
+
+function handleTierChange(item) {
+    if (item.itemType !== 'product') return;
+    const selectedUnit = item.units.find(u => u.unit_name === item.unitName);
+    if (selectedUnit) {
+        item.unitPrice = parseFloat(selectedUnit[`price_${item.priceTier}`]);
+    }
+}
+
 function confirmClear() {
     confirm.require({
         message: 'Kosongkan seluruh keranjang?',
@@ -59,10 +76,12 @@ function confirmClear() {
                                 <Tag :value="item.itemType === 'print' ? 'Cetak' : 'Barang'" size="small"
                                     :severity="item.itemType === 'print' ? 'warn' : 'info'" />
                                 <span class="font-semibold text-sm">{{ item.description }}</span>
-                                <Tag v-if="item.isWholesaleActive" value="Grosir" size="small" severity="success" class="text-[10px] leading-none" />
                             </div>
-                            <div v-if="item.itemType === 'product' && item.wholesaleMinQty > 0 && !item.isWholesaleActive" class="mt-1 text-[10px] text-orange-500 font-medium">
-                                <i class="pi pi-info-circle mr-1"></i>Beli {{ item.wholesaleMinQty }} dpt harga {{ formatRp(item.wholesalePrice) }}
+                            
+                            <!-- Unit and Tier Selector -->
+                            <div v-if="item.itemType === 'product' && item.units.length > 0" class="flex gap-2 mt-2">
+                                <Select v-model="item.unitName" :options="item.units.filter(u => u.unit_name)" optionLabel="unit_name" optionValue="unit_name" class="w-24 text-sm" size="small" @change="handleUnitChange(item)" />
+                                <Select v-model="item.priceTier" :options="[{label:'H1 (Ecer)', value:'h1'}, {label:'H2 (Grosir)', value:'h2'}, {label:'H3 (Khusus)', value:'h3'}]" optionLabel="label" optionValue="value" class="w-32 text-sm" size="small" @change="handleTierChange(item)" />
                             </div>
                             <div class="flex items-center gap-2 mt-2">
                                 <InputNumber v-model="item.qty" :min="1" showButtons

@@ -70,7 +70,8 @@ class ReportController extends Controller
         $lowStock = Product::where('type', 'barang')
             ->where('is_active', true)
             ->whereColumn('stock', '<=', 'min_stock')
-            ->select('id', 'name', 'stock', 'min_stock', 'unit')
+            ->select('id', 'name', 'stock', 'min_stock')
+            ->with('units')
             ->orderBy('stock')
             ->get();
 
@@ -314,7 +315,7 @@ class ReportController extends Controller
         $to = $request->get('date_to', now()->toDateString());
         $categoryId = $request->get('category_id');
 
-        $query = Product::where('type', 'barang')->where('is_active', true)->with('category:id,name');
+        $query = Product::where('type', 'barang')->where('is_active', true)->with('category:id,name', 'units');
 
         if ($categoryId) {
             $query->where('category_id', $categoryId);
@@ -335,7 +336,7 @@ class ReportController extends Controller
                 'category' => $p->category->name,
                 'stock_current' => $p->stock,
                 'min_stock' => $p->min_stock,
-                'unit' => $p->unit,
+                'units' => $p->units,
                 'stock_in' => $stockIn,
                 'stock_out' => $stockOut,
                 'adjustment' => $adjustment,

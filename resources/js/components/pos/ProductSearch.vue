@@ -80,6 +80,27 @@ function formatRp(v) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v);
 }
 
+function formatHierarchicalStock(totalBaseQty, units) {
+    if (!units || units.length === 0) return totalBaseQty;
+    const sortedUnits = [...units].sort((a, b) => b.base_multiplier - a.base_multiplier);
+    let remaining = totalBaseQty;
+    let parts = [];
+    for (const u of sortedUnits) {
+        if (!u.unit_name || u.base_multiplier <= 0) continue;
+        const qty = Math.floor(Math.abs(remaining) / u.base_multiplier);
+        if (qty > 0) {
+            parts.push(`${qty} ${u.unit_name}`);
+            remaining = Math.abs(remaining) % u.base_multiplier;
+        }
+    }
+    const prefix = totalBaseQty < 0 ? '-' : '';
+    if (parts.length === 0) {
+        const base = sortedUnits.find(u => u.level === 1);
+        return `${prefix}0 ${base ? base.unit_name : ''}`;
+    }
+    return prefix + parts.join(' ');
+}
+
 defineExpose({ focusInput });
 </script>
 
@@ -115,10 +136,10 @@ defineExpose({ focusInput });
                     </p>
                 </div>
                 <div class="text-right">
-                    <p class="m-0 font-bold text-primary">{{ formatRp(product.price) }}</p>
+                    <p class="m-0 font-bold text-primary">{{ formatRp(product.units && product.units.length > 0 ? product.units[0].price_h1 : 0) }}</p>
                     <p v-if="product.type === 'barang'" class="m-0 text-sm"
                         :class="product.stock <= 0 ? 'text-red-500' : 'text-muted-color'">
-                        {{ product.stock <= 0 ? 'Habis' : `Stok: ${product.stock} ${product.unit}` }}
+                        {{ product.stock <= 0 ? 'Habis' : `Stok: ${formatHierarchicalStock(product.stock, product.units)}` }}
                     </p>
                 </div>
             </div>

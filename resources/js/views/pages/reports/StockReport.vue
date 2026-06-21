@@ -18,6 +18,27 @@ function toApiDate(d) {
     return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
 }
 
+function formatHierarchicalStock(totalBaseQty, units) {
+    if (!units || units.length === 0) return totalBaseQty;
+    const sortedUnits = [...units].sort((a, b) => b.base_multiplier - a.base_multiplier);
+    let remaining = totalBaseQty;
+    let parts = [];
+    for (const u of sortedUnits) {
+        if (!u.unit_name || u.base_multiplier <= 0) continue;
+        const qty = Math.floor(Math.abs(remaining) / u.base_multiplier);
+        if (qty > 0) {
+            parts.push(`${qty} ${u.unit_name}`);
+            remaining = Math.abs(remaining) % u.base_multiplier;
+        }
+    }
+    const prefix = totalBaseQty < 0 ? '-' : '';
+    if (parts.length === 0) {
+        const base = sortedUnits.find(u => u.level === 1);
+        return `${prefix}0 ${base ? base.unit_name : ''}`;
+    }
+    return prefix + parts.join(' ');
+}
+
 async function fetchCategories() {
     const data = await apiGet('/api/categories');
     categories.value = data.categories;
@@ -71,7 +92,7 @@ onMounted(async () => {
             <Column header="Stok Saat Ini" sortable sortField="stock_current" style="width: 7rem">
                 <template #body="{ data }">
                     <span :class="{ 'text-red-500 font-bold': data.is_low }">
-                        {{ data.stock_current }} {{ data.unit }}
+                        {{ formatHierarchicalStock(data.stock_current, data.units) }}
                     </span>
                     <i v-if="data.is_low" class="pi pi-exclamation-triangle text-red-500 ml-1"></i>
                 </template>
@@ -79,20 +100,20 @@ onMounted(async () => {
             <Column field="min_stock" header="Min Stok" style="width: 5rem" />
             <Column header="Masuk" style="width: 5rem">
                 <template #body="{ data }">
-                    <span v-if="data.stock_in > 0" class="text-green-600 dark:text-green-400">+{{ data.stock_in }}</span>
+                    <span v-if="data.stock_in > 0" class="text-green-600 dark:text-green-400">+{{ formatHierarchicalStock(data.stock_in, data.units) }}</span>
                     <span v-else class="text-muted-color">0</span>
                 </template>
             </Column>
             <Column header="Keluar" style="width: 5rem">
                 <template #body="{ data }">
-                    <span v-if="data.stock_out > 0" class="text-red-500">-{{ data.stock_out }}</span>
+                    <span v-if="data.stock_out > 0" class="text-red-500">-{{ formatHierarchicalStock(data.stock_out, data.units) }}</span>
                     <span v-else class="text-muted-color">0</span>
                 </template>
             </Column>
             <Column header="Adj." style="width: 5rem">
                 <template #body="{ data }">
                     <span v-if="data.adjustment !== 0" :class="data.adjustment > 0 ? 'text-blue-500' : 'text-orange-500'">
-                        {{ data.adjustment > 0 ? '+' : '' }}{{ data.adjustment }}
+                        {{ data.adjustment > 0 ? '+' : '' }}{{ formatHierarchicalStock(data.adjustment, data.units) }}
                     </span>
                     <span v-else class="text-muted-color">0</span>
                 </template>
