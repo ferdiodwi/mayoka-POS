@@ -98,11 +98,13 @@ Route::middleware('auth:web')->group(function () {
         Route::get('/reports/shifts', [ReportController::class, 'shiftReport']);
         Route::get('/reports/stock', [ReportController::class, 'stockReport']);
         Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss']);
+        Route::get('/reports/cash-flow', [ReportController::class, 'cashFlow']);
 
         // Purchases (Pembelian Barang)
         Route::get('/purchases', [PurchaseController::class, 'index']);
         Route::post('/purchases', [PurchaseController::class, 'store']);
         Route::get('/purchases/{purchase}', [PurchaseController::class, 'show']);
+        Route::patch('/purchases/{purchase}/mark-paid', [PurchaseController::class, 'markAsPaid']);
         Route::delete('/purchases/{purchase}', [PurchaseController::class, 'destroy']);
 
         // Expenses (Pengeluaran Operasional)

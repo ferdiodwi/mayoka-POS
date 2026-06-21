@@ -89,6 +89,12 @@ const router = createRouter({
                     component: () => import('@/views/pages/reports/ProfitLoss.vue'),
                     meta: { role: 'owner' }
                 },
+                {
+                    path: '/reports/cash-flow',
+                    name: 'reportCashFlow',
+                    component: () => import('@/views/pages/reports/CashFlow.vue'),
+                    meta: { role: 'owner' }
+                },
                 // Keuangan (Owner)
                 {
                     path: '/purchases',

@@ -132,6 +132,21 @@ class PurchaseController extends Controller
     }
 
     /**
+     * Mark a purchase as paid.
+     */
+    public function markAsPaid(Purchase $purchase): JsonResponse
+    {
+        if ($purchase->payment_status === 'paid') {
+            return response()->json(['message' => 'Pembelian sudah lunas.'], 400);
+        }
+
+        $purchase->update(['payment_status' => 'paid']);
+        event(new \App\Events\DashboardUpdated());
+
+        return response()->json(['message' => 'Status pembelian berhasil diubah menjadi Lunas.']);
+    }
+
+    /**
      * Delete a purchase (only recent, no stock reversal for simplicity).
      */
     public function destroy(Purchase $purchase): JsonResponse

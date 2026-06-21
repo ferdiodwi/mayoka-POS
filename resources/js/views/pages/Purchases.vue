@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
-import { apiGet, apiPost, apiDelete } from '@/composables/useApi';
+import { apiGet, apiPost, apiDelete, apiPatch } from '@/composables/useApi';
 
 const toast = useToast();
 const confirm = useConfirm();
@@ -17,6 +17,11 @@ const selectedPurchase = ref(null);
 
 const currentPage = ref(1);
 const totalRecords = ref(0);
+
+// Filters
+const filterDateFrom = ref(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+const filterDateTo = ref(new Date());
+const filterSupplier = ref('');
 
 const form = ref({
     supplier_name: '',
@@ -46,12 +51,29 @@ const formTotal = computed(() => form.value.items.reduce((s, i) => s + i.subtota
 async function fetchPurchases() {
     loading.value = true;
     try {
-        const data = await apiGet(`/api/purchases?page=${currentPage.value}`);
+        let url = `/api/purchases?page=${currentPage.value}`;
+        if (filterDateFrom.value) url += `&date_from=${toApiDate(filterDateFrom.value)}`;
+        if (filterDateTo.value) url += `&date_to=${toApiDate(filterDateTo.value)}`;
+        if (filterSupplier.value) url += `&supplier=${encodeURIComponent(filterSupplier.value)}`;
+        
+        const data = await apiGet(url);
         purchases.value = data.data;
         totalRecords.value = data.total;
     } finally {
         loading.value = false;
     }
+}
+
+function applyFilter() {
+    currentPage.value = 1;
+    fetchPurchases();
+}
+
+function clearFilter() {
+    filterDateFrom.value = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    filterDateTo.value = new Date();
+    filterSupplier.value = '';
+    applyFilter();
 }
 
 async function fetchProducts() {
@@ -169,6 +191,26 @@ function confirmDelete(purchase) {
     });
 }
 
+function confirmMarkPaid(purchase) {
+    confirm.require({
+        message: `Tandai pembelian ${purchase.purchase_number} sebagai Lunas?`,
+        header: 'Konfirmasi Pelunasan',
+        icon: 'pi pi-check-circle',
+        rejectLabel: 'Batal',
+        acceptLabel: 'Ya, Lunas',
+        acceptClass: 'p-button-success',
+        accept: async () => {
+            try {
+                await apiPatch(`/api/purchases/${purchase.id}/mark-paid`);
+                toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Pembelian telah dilunasi.', life: 3000 });
+                await fetchPurchases();
+            } catch (err) {
+                toast.add({ severity: 'error', summary: 'Gagal', detail: err.message, life: 4000 });
+            }
+        },
+    });
+}
+
 onMounted(async () => {
     await Promise.all([fetchPurchases(), fetchProducts()]);
 });
@@ -176,9 +218,32 @@ onMounted(async () => {
 
 <template>
     <div class="card">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
             <h2 class="text-2xl font-semibold m-0">Pembelian Barang</h2>
             <Button label="Buat Pembelian" icon="pi pi-plus" @click="openCreate" />
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-wrap items-end gap-4 mb-6 p-4 bg-surface-50 dark:bg-surface-900 rounded-xl border border-surface-200 dark:border-surface-700">
+            <div class="flex flex-col gap-1 w-full sm:w-auto">
+                <label class="text-sm font-semibold text-muted-color">Dari Tanggal</label>
+                <DatePicker v-model="filterDateFrom" dateFormat="dd/mm/yy" showIcon />
+            </div>
+            <div class="flex flex-col gap-1 w-full sm:w-auto">
+                <label class="text-sm font-semibold text-muted-color">Sampai Tanggal</label>
+                <DatePicker v-model="filterDateTo" dateFormat="dd/mm/yy" showIcon />
+            </div>
+            <div class="flex flex-col gap-1 w-full sm:w-auto flex-1 min-w-[200px]">
+                <label class="text-sm font-semibold text-muted-color">Pemasok / Supplier</label>
+                <IconField>
+                    <InputIcon class="pi pi-search" />
+                    <InputText v-model="filterSupplier" placeholder="Cari nama supplier..." class="w-full" @keyup.enter="applyFilter" />
+                </IconField>
+            </div>
+            <div class="flex gap-2 w-full sm:w-auto">
+                <Button label="Cari" icon="pi pi-search" @click="applyFilter" />
+                <Button label="Reset" icon="pi pi-filter-slash" severity="secondary" outlined @click="clearFilter" />
+            </div>
         </div>
 
         <DataTable :value="purchases" :loading="loading" stripedRows lazy paginator
@@ -205,11 +270,12 @@ onMounted(async () => {
             <Column header="Dicatat Oleh" style="width: 7rem">
                 <template #body="{ data }">{{ data.user?.name }}</template>
             </Column>
-            <Column header="Aksi" style="width: 7rem">
+            <Column header="Aksi" style="width: 9rem">
                 <template #body="{ data }">
                     <div class="flex gap-1">
-                        <Button icon="pi pi-eye" severity="info" text rounded size="small" @click="viewDetail(data)" />
-                        <Button icon="pi pi-trash" severity="danger" text rounded size="small" @click="confirmDelete(data)" />
+                        <Button icon="pi pi-eye" severity="info" text rounded size="small" @click="viewDetail(data)" v-tooltip="'Detail'" />
+                        <Button v-if="data.payment_status === 'unpaid'" icon="pi pi-check-circle" severity="success" text rounded size="small" @click="confirmMarkPaid(data)" v-tooltip="'Tandai Lunas'" />
+                        <Button icon="pi pi-trash" severity="danger" text rounded size="small" @click="confirmDelete(data)" v-tooltip="'Hapus'" />
                     </div>
                 </template>
             </Column>

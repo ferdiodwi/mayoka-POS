@@ -404,4 +404,127 @@ class ReportController extends Controller
             'category_labels' => Expense::categoryLabels(),
         ]);
     }
+
+    /**
+     * Cash Flow Report (Laporan Arus Kas).
+     */
+    public function cashFlow(Request $request): JsonResponse
+    {
+        $from = $request->get('date_from', now()->startOfMonth()->toDateString());
+        $to = $request->get('date_to', now()->toDateString());
+
+        // === KAS MASUK ===
+
+        // 1. Penjualan Tunai
+        $cashSales = (float) Transaction::whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
+            ->where('payment_method', 'cash')
+            ->sum('total');
+
+        // 2. Penjualan QRIS / Non-Tunai
+        $nonCashSales = (float) Transaction::whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
+            ->where('payment_method', '!=', 'cash')
+            ->sum('total');
+
+        // 3. Modal Awal Shift (kas yang dimasukkan ke laci)
+        $shiftCapital = (float) Shift::whereBetween(DB::raw('DATE(started_at)'), [$from, $to])
+            ->sum('cash_start');
+
+        $totalCashIn = $cashSales + $nonCashSales + $shiftCapital;
+
+        // === KAS KELUAR ===
+
+        // 1. Pembelian Barang (kulakan stok)
+        $purchasesPaid = (float) Purchase::whereBetween('purchase_date', [$from, $to])
+            ->where('payment_status', 'paid')
+            ->sum('total_amount');
+
+        // 2. Pengeluaran Operasional
+        $expenses = (float) Expense::whereBetween('expense_date', [$from, $to])
+            ->sum('amount');
+
+        // 3. Refund / Retur ke pelanggan
+        $refunds = (float) ReturnTransaction::whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
+            ->sum('refund_amount');
+
+        $totalCashOut = $purchasesPaid + $expenses + $refunds;
+
+        // === ARUS KAS BERSIH ===
+        $netCashFlow = $totalCashIn - $totalCashOut;
+
+        // Pengeluaran per kategori
+        $expensesByCategory = Expense::whereBetween('expense_date', [$from, $to])
+            ->select('category', DB::raw('SUM(amount) as total'))
+            ->groupBy('category')
+            ->pluck('total', 'category')
+            ->map(fn ($v) => (float) $v);
+
+        // Penjualan per metode bayar
+        $salesByMethod = Transaction::whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
+            ->select('payment_method', DB::raw('SUM(total) as total'), DB::raw('COUNT(*) as count'))
+            ->groupBy('payment_method')
+            ->get()
+            ->keyBy('payment_method')
+            ->map(fn ($v) => ['total' => (float) $v->total, 'count' => $v->count]);
+
+        // Arus kas harian (untuk grafik)
+        $dailyCashFlow = DB::select("
+            SELECT dates.date,
+                COALESCE(cash_in.total, 0) as cash_in,
+                COALESCE(cash_out.total, 0) as cash_out
+            FROM (
+                SELECT DATE(created_at) as date FROM transactions
+                WHERE DATE(created_at) BETWEEN ? AND ?
+                UNION
+                SELECT purchase_date as date FROM purchases
+                WHERE purchase_date BETWEEN ? AND ?
+                UNION
+                SELECT expense_date as date FROM expenses
+                WHERE expense_date BETWEEN ? AND ?
+                GROUP BY date
+            ) dates
+            LEFT JOIN (
+                SELECT DATE(created_at) as date, SUM(total) as total
+                FROM transactions
+                WHERE DATE(created_at) BETWEEN ? AND ?
+                GROUP BY date
+            ) cash_in ON dates.date = cash_in.date
+            LEFT JOIN (
+                SELECT date, SUM(total) as total FROM (
+                    SELECT purchase_date as date, SUM(total_amount) as total
+                    FROM purchases WHERE purchase_date BETWEEN ? AND ? AND payment_status = 'paid'
+                    GROUP BY purchase_date
+                    UNION ALL
+                    SELECT expense_date as date, SUM(amount) as total
+                    FROM expenses WHERE expense_date BETWEEN ? AND ?
+                    GROUP BY expense_date
+                    UNION ALL
+                    SELECT DATE(created_at) as date, SUM(refund_amount) as total
+                    FROM returns WHERE DATE(created_at) BETWEEN ? AND ?
+                    GROUP BY date
+                ) combined GROUP BY date
+            ) cash_out ON dates.date = cash_out.date
+            ORDER BY dates.date
+        ", [$from, $to, $from, $to, $from, $to, $from, $to, $from, $to, $from, $to, $from, $to]);
+
+        return response()->json([
+            'period' => ['from' => $from, 'to' => $to],
+            'cash_in' => [
+                'cash_sales' => $cashSales,
+                'non_cash_sales' => $nonCashSales,
+                'shift_capital' => $shiftCapital,
+                'total' => $totalCashIn,
+            ],
+            'cash_out' => [
+                'purchases' => $purchasesPaid,
+                'expenses' => $expenses,
+                'refunds' => $refunds,
+                'total' => $totalCashOut,
+            ],
+            'net_cash_flow' => $netCashFlow,
+            'expenses_by_category' => $expensesByCategory,
+            'sales_by_method' => $salesByMethod,
+            'daily_cash_flow' => $dailyCashFlow,
+            'category_labels' => Expense::categoryLabels(),
+        ]);
+    }
 }
