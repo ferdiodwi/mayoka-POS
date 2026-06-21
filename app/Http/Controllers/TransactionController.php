@@ -145,6 +145,17 @@ class TransactionController extends Controller
                 return $transaction;
             });
 
+            // Dispatch events for realtime updates
+            event(new \App\Events\DashboardUpdated());
+            foreach ($request->items as $item) {
+                if ($item['itemType'] === 'product' && isset($item['productId'])) {
+                    $product = Product::find($item['productId']);
+                    if ($product && $product->type === 'barang') {
+                        event(new \App\Events\ProductStockUpdated($product->id, $product->stock));
+                    }
+                }
+            }
+
             return response()->json([
                 'message' => 'Transaksi berhasil!',
                 'transaction' => $transaction->load('items'),

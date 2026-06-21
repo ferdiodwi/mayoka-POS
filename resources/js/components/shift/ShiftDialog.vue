@@ -27,7 +27,7 @@ const dialogTitle = computed(() =>
 
 const cashDifference = computed(() => {
     if (!activeShift.value) return 0;
-    const expected = parseFloat(activeShift.value.cash_start) || 0;
+    const expected = parseFloat(activeShift.value.live_expected_cash ?? activeShift.value.cash_start) || 0;
     return cashEnd.value - expected;
 });
 
@@ -115,7 +115,7 @@ watch(() => props.visible, (val) => {
                 </div>
                 <div class="p-4 bg-surface-100 dark:bg-surface-800 rounded-lg">
                     <p class="text-sm text-muted-color m-0">Uang Seharusnya</p>
-                    <p class="text-xl font-bold m-0 mt-1">{{ formatCurrency(activeShift?.cash_start || 0) }}</p>
+                    <p class="text-xl font-bold m-0 mt-1">{{ formatCurrency(activeShift?.live_expected_cash ?? activeShift?.cash_start ?? 0) }}</p>
                 </div>
             </div>
 

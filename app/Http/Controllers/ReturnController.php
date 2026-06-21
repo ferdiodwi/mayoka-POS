@@ -96,6 +96,16 @@ class ReturnController extends Controller
 
             DB::commit();
 
+            event(new \App\Events\DashboardUpdated());
+            foreach ($returnItemsData as $ritem) {
+                if ($ritem['product_id']) {
+                    $product = \App\Models\Product::find($ritem['product_id']);
+                    if ($product && $product->type === 'barang') {
+                        event(new \App\Events\ProductStockUpdated($product->id, $product->stock));
+                    }
+                }
+            }
+
             return response()->json([
                 'message' => 'Retur berhasil diproses.',
                 'refund_amount' => $totalRefund

@@ -17,6 +17,18 @@ class ShiftController extends Controller
             ->where('user_id', $request->user()->id)
             ->first();
 
+        if ($shift) {
+            $cashSales = \App\Models\Transaction::where('shift_id', $shift->id)
+                ->where('payment_method', 'cash')
+                ->sum('total');
+            $cashRefunds = \App\Models\ReturnTransaction::where('shift_id', $shift->id)
+                ->sum('refund_amount');
+            $cashExpenses = \App\Models\Expense::where('shift_id', $shift->id)
+                ->sum('amount');
+
+            $shift->live_expected_cash = $shift->cash_start + $cashSales - $cashRefunds - $cashExpenses;
+        }
+
         return response()->json([
             'shift' => $shift,
         ]);
@@ -79,15 +91,20 @@ class ShiftController extends Controller
             ], 422);
         }
 
-        // Calculate expected cash: cash_start + cash sales - cash change given
+        // Calculate expected cash: cash_start + cash sales (net) - refunds - cash expenses
+        // Note: cashSales (sum of 'total') is exactly the net cash entering the drawer.
+        // We do NOT subtract cash_change, because the total is the exact revenue kept in the drawer.
         $cashSales = \App\Models\Transaction::where('shift_id', $shift->id)
             ->where('payment_method', 'cash')
             ->sum('total');
-        $cashChangeGiven = \App\Models\Transaction::where('shift_id', $shift->id)
-            ->where('payment_method', 'cash')
-            ->sum('cash_change');
 
-        $cashExpected = $shift->cash_start + $cashSales - $cashChangeGiven;
+        $cashRefunds = \App\Models\ReturnTransaction::where('shift_id', $shift->id)
+            ->sum('refund_amount');
+
+        $cashExpenses = \App\Models\Expense::where('shift_id', $shift->id)
+            ->sum('amount');
+
+        $cashExpected = $shift->cash_start + $cashSales - $cashRefunds - $cashExpenses;
         $cashDifference = $request->cash_end - $cashExpected;
 
         $shift->update([

@@ -39,7 +39,10 @@ async function handleLogout() {
     }
 }
 
-function openShiftDialog(mode) {
+async function openShiftDialog(mode) {
+    if (mode === 'close') {
+        await checkActiveShift(); // Refresh data to get realtime live_expected_cash
+    }
     shiftDialogMode.value = mode;
     shiftDialogVisible.value = true;
 }

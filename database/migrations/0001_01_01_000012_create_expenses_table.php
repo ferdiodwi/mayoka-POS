@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('expenses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('shift_id')->nullable()->constrained('shifts')->nullOnDelete();
             $table->date('expense_date');
             $table->enum('category', ['listrik', 'sewa', 'gaji', 'operasional', 'bahan_baku', 'lainnya'])->default('operasional');
             $table->decimal('amount', 14, 2);

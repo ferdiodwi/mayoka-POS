@@ -107,6 +107,14 @@ class PurchaseController extends Controller
             return $purchase->load('items.product:id,name,unit');
         });
 
+        event(new \App\Events\DashboardUpdated());
+        foreach ($request->items as $item) {
+            $product = Product::find($item['product_id']);
+            if ($product && $product->type === 'barang') {
+                event(new \App\Events\ProductStockUpdated($product->id, $product->stock));
+            }
+        }
+
         return response()->json([
             'message' => 'Pembelian berhasil disimpan.',
             'purchase' => $purchase,

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { usePosData } from '@/composables/usePosData';
 
 const emit = defineEmits(['add']);
@@ -26,6 +26,24 @@ watch(query, (val) => {
             searching.value = false;
         }
     }, 300);
+});
+
+onMounted(() => {
+    if (window.Echo) {
+        window.Echo.channel('pos-channel')
+            .listen('ProductStockUpdated', (e) => {
+                const prod = results.value.find(p => p.id === e.productId);
+                if (prod) {
+                    prod.stock = e.newStock;
+                }
+            });
+    }
+});
+
+onUnmounted(() => {
+    if (window.Echo) {
+        window.Echo.leaveChannel('pos-channel');
+    }
 });
 
 function focusInput() {

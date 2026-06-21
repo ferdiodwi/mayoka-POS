@@ -66,10 +66,16 @@ class ExpenseController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        // Check for active shift
+        $activeShift = \App\Models\Shift::active()->where('user_id', auth()->id())->first();
+
         $expense = Expense::create([
             'user_id' => auth()->id(),
+            'shift_id' => $activeShift ? $activeShift->id : null,
             ...$request->only(['expense_date', 'category', 'amount', 'description', 'notes']),
         ]);
+
+        event(new \App\Events\DashboardUpdated());
 
         return response()->json([
             'message' => 'Pengeluaran berhasil disimpan.',

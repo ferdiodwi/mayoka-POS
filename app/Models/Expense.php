@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Expense extends Model
 {
     protected $fillable = [
-        'user_id', 'expense_date', 'category', 'amount', 'description', 'notes',
+        'user_id', 'shift_id', 'expense_date', 'category', 'amount', 'description', 'notes',
     ];
 
     protected function casts(): array
@@ -22,6 +22,11 @@ class Expense extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function shift(): BelongsTo
+    {
+        return $this->belongsTo(Shift::class);
     }
 
     public static function categoryLabels(): array

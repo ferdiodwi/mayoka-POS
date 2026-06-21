@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { apiGet } from '@/composables/useApi';
 
 const loading = ref(true);
@@ -70,17 +70,32 @@ function setChartData() {
     };
 }
 
-async function loadDashboard() {
-    loading.value = true;
+async function loadDashboard(showLoading = true) {
+    if (showLoading) loading.value = true;
     try {
         data.value = await apiGet(`/api/reports/dashboard?chart_filter=${chartFilter.value}`);
         setChartData();
     } finally {
-        loading.value = false;
+        if (showLoading) loading.value = false;
     }
 }
 
-onMounted(loadDashboard);
+onMounted(() => {
+    loadDashboard();
+    
+    if (window.Echo) {
+        window.Echo.channel('dashboard-channel')
+            .listen('DashboardUpdated', () => {
+                loadDashboard(false); // reload quietly without full loading spinner
+            });
+    }
+});
+
+onUnmounted(() => {
+    if (window.Echo) {
+        window.Echo.leaveChannel('dashboard-channel');
+    }
+});
 </script>
 
 <template>

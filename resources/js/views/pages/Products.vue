@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/composables/useApi';
@@ -152,7 +152,24 @@ function isLowStock(item) {
 }
 
 onMounted(async () => {
-    await Promise.all([fetchProducts(), fetchCategories()]);
+    fetchCategories();
+    fetchProducts();
+
+    if (window.Echo) {
+        window.Echo.channel('pos-channel')
+            .listen('ProductStockUpdated', (e) => {
+                const prod = products.value.find(p => p.id === e.productId);
+                if (prod) {
+                    prod.stock = e.newStock;
+                }
+            });
+    }
+});
+
+onUnmounted(() => {
+    if (window.Echo) {
+        window.Echo.leaveChannel('pos-channel');
+    }
 });
 </script>
 
