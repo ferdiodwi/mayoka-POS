@@ -42,5 +42,22 @@ export default defineConfig({
             ignored: ['**/storage/framework/views/**'],
         },
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        if (id.includes('primevue') || id.includes('primeicons') || id.includes('@primeuix') || id.includes('chart.js')) {
+                            return 'vendor-prime';
+                        }
+                        if (id.includes('vue') || id.includes('vue-router')) {
+                            return 'vendor-vue';
+                        }
+                        return 'vendor';
+                    }
+                }
+            }
+        }
+    }
 });
 

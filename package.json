@@ -21,6 +21,7 @@
         "vite": "^8.0.0"
     },
     "dependencies": {
+        "@fontsource/lato": "^5.2.7",
         "@primeuix/themes": "^2.0.3",
         "chart.js": "^3.3.2",
         "primeicons": "^7.0.0",
