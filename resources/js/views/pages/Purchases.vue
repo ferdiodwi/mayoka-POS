@@ -55,8 +55,8 @@ async function fetchPurchases() {
 }
 
 async function fetchProducts() {
-    const data = await apiGet('/api/products?per_page=999');
-    products.value = (data.data || data).filter(p => p.type === 'barang');
+    const data = await apiGet('/api/products?per_page=all');
+    products.value = (Array.isArray(data) ? data : data.data || []).filter(p => p.type === 'barang');
 }
 
 function onPageChange(event) {
