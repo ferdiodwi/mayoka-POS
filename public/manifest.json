@@ -1,0 +1,16 @@
+{
+  "name": "Mayoka POS",
+  "short_name": "Mayoka",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "description": "Mayoka Point of Sale for Fotokopi & ATK",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

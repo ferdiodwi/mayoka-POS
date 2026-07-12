@@ -11,6 +11,7 @@ use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CustomerController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,8 +35,12 @@ Route::middleware('auth:web')->group(function () {
     Route::post('/shifts/open', [ShiftController::class, 'open']);
     Route::put('/shifts/{shift}/close', [ShiftController::class, 'close']);
 
-    // Product search (kasir + owner)
+    // Product search & catalog (kasir + owner)
+    Route::get('/products/catalog', [ProductController::class, 'catalog']);
     Route::get('/products/search', [ProductController::class, 'search']);
+
+    // Customer search (kasir + owner)
+    Route::get('/customers/search', [CustomerController::class, 'search']);
 
     // Print price calculate (kasir + owner)
     Route::get('/print-prices/calculate', [PrintPriceController::class, 'calculate']);
@@ -59,6 +64,12 @@ Route::middleware('auth:web')->group(function () {
         Route::post('/users', [UserController::class, 'store']);
         Route::put('/users/{user}', [UserController::class, 'update']);
         Route::delete('/users/{user}', [UserController::class, 'destroy']);
+
+        // Customer management
+        Route::get('/customers', [CustomerController::class, 'index']);
+        Route::post('/customers', [CustomerController::class, 'store']);
+        Route::put('/customers/{customer}', [CustomerController::class, 'update']);
+        Route::delete('/customers/{customer}', [CustomerController::class, 'destroy']);
 
         // Shift history
         Route::get('/shifts', [ShiftController::class, 'index']);

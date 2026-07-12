@@ -47,6 +47,12 @@ const router = createRouter({
                     meta: { role: 'owner' }
                 },
                 {
+                    path: '/customers',
+                    name: 'customers',
+                    component: () => import('@/views/pages/Customers.vue'),
+                    meta: { role: 'owner' }
+                },
+                {
                     path: '/print-prices',
                     name: 'printPrices',
                     component: () => import('@/views/pages/PrintPrices.vue'),

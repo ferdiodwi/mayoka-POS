@@ -5,46 +5,78 @@ import { useCart } from '@/composables/useCart';
 import { usePosData } from '@/composables/usePosData';
 import { useHoldTransactions } from '@/composables/useHoldTransactions';
 import { useShift } from '@/composables/useShift';
-import PrintForm from '@/components/pos/PrintForm.vue';
-import ProductSearch from '@/components/pos/ProductSearch.vue';
-import CartPanel from '@/components/pos/CartPanel.vue';
+import { apiGet } from '@/composables/useApi';
+import InlineEntry from '@/components/pos/InlineEntry.vue';
+import ItemTable from '@/components/pos/ItemTable.vue';
+import PaymentPanel from '@/components/pos/PaymentPanel.vue';
 import HoldListDialog from '@/components/pos/HoldListDialog.vue';
-import PaymentDialog from '@/components/pos/PaymentDialog.vue';
 
 const toast = useToast();
-const { cartItems, addPrintItem, addProductItem, addAddonToItem, clearCart, isEmpty, transactionDiscount } = useCart();
+const { cartItems, clearCart, isEmpty, removeItem, transactionDiscount, updatePriceLevelForCart } = useCart();
 const { loadPosData } = usePosData();
 const { holdCurrentCart, resumeTransaction, holdCount } = useHoldTransactions();
 const { activeShift } = useShift();
 
-const activeTab = ref(0);
+const inlineEntryRef = ref(null);
+const paymentPanelRef = ref(null);
 const holdDialogVisible = ref(false);
-const paymentDialogVisible = ref(false);
-const productSearchRef = ref(null);
+const selectedRowIndex = ref(-1);
 
-watch(activeTab, (val) => {
-    if (val === 1) {
-        setTimeout(() => productSearchRef.value?.focusInput(), 100);
+// Customer / Member state
+const selectedCustomer = ref({ id: null, name: 'UMUM', type: 'umum', price_level: 'h1' });
+const priceLevel = ref('h1');
+const customerQuery = ref('');
+const customerResults = ref([]);
+const customerDropdownVisible = ref(false);
+
+// --- Customer search ---
+async function searchCustomers(query) {
+    if (!query || query.length < 1) {
+        customerResults.value = [];
+        customerDropdownVisible.value = false;
+        return;
     }
+    try {
+        const res = await apiGet(`/api/customers/search?q=${encodeURIComponent(query)}`);
+        customerResults.value = res.customers || [];
+        customerDropdownVisible.value = customerResults.value.length > 0;
+    } catch { /* ignore */ }
+}
+
+function selectCustomer(customer) {
+    selectedCustomer.value = customer;
+    priceLevel.value = customer.price_level || 'h1';
+    customerQuery.value = customer.name;
+    customerDropdownVisible.value = false;
+}
+
+function resetCustomer() {
+    selectedCustomer.value = { id: null, name: 'UMUM', type: 'umum', price_level: 'h1' };
+    priceLevel.value = 'h1';
+    customerQuery.value = '';
+    customerResults.value = [];
+    customerDropdownVisible.value = false;
+}
+
+watch(priceLevel, (newLevel) => {
+    updatePriceLevelForCart(newLevel);
 });
 
 // --- Event handlers ---
-function handleAddPrint(data) {
-    addPrintItem(data);
-    toast.add({ severity: 'success', summary: 'Ditambahkan', detail: `${data.paperSize} ${data.qty} lembar`, life: 1500 });
+function handleItemAdded() {
+    selectedRowIndex.value = cartItems.value.length - 1;
 }
 
-function handleAddProduct(product, qty) {
-    if (product.type === 'barang' && product.stock <= 0) {
-        toast.add({ severity: 'warn', summary: 'Stok Habis', detail: `${product.name} tidak tersedia.`, life: 3000 });
-        return;
-    }
-    addProductItem(product, qty);
-    toast.add({ severity: 'success', summary: 'Ditambahkan', detail: product.name, life: 1500 });
+function handleGoToPayment() {
+    if (isEmpty.value) return;
+    paymentPanelRef.value?.focusBayar();
 }
 
-function handleAddAddon(itemIndex, addon) {
-    // No longer used directly here, Addon added via PrintForm
+function handlePaymentSuccess() {
+    selectedRowIndex.value = -1;
+    resetCustomer();
+    // Focus back to search
+    setTimeout(() => inlineEntryRef.value?.focusSearch(), 200);
 }
 
 function handleHold() {
@@ -53,6 +85,7 @@ function handleHold() {
         holdCurrentCart(cartItems.value, transactionDiscount.value);
         clearCart();
         toast.add({ severity: 'info', summary: 'Ditahan', detail: 'Transaksi berhasil ditahan.', life: 2000 });
+        inlineEntryRef.value?.focusSearch();
     } catch (err) {
         toast.add({ severity: 'error', summary: 'Gagal', detail: err.message, life: 4000 });
     }
@@ -62,84 +95,59 @@ function handleResume(index) {
     if (!isEmpty.value) {
         try {
             holdCurrentCart(cartItems.value, transactionDiscount.value);
-            toast.add({ severity: 'info', summary: 'Otomatis Ditahan', detail: 'Keranjang aktif otomatis ditahan.', life: 3000 });
         } catch (err) {
             toast.add({ severity: 'error', summary: 'Gagal', detail: err.message, life: 4000 });
             return;
         }
     }
-
     const held = resumeTransaction(index);
     if (!held) return;
-
     clearCart();
-    held.items.forEach((item) => {
-        cartItems.value.push(item);
-    });
+    held.items.forEach((item) => cartItems.value.push(item));
     transactionDiscount.value = held.transactionDiscount || 0;
-
     toast.add({ severity: 'success', summary: 'Dilanjutkan', detail: `${held.label} di-resume.`, life: 2000 });
 }
 
-function handlePay() {
-    if (!activeShift.value) {
-        toast.add({ severity: 'warn', summary: 'Shift Belum Dibuka', detail: 'Buka shift terlebih dahulu.', life: 3000 });
-        return;
-    }
-    if (isEmpty.value) return;
-    paymentDialogVisible.value = true;
-}
-
-function handlePaymentSuccess() {
-    paymentDialogVisible.value = false;
-    // Focus back to search after successful checkout
-    activeTab.value = 1;
-    setTimeout(() => productSearchRef.value?.focusInput(), 200);
-}
-
-// --- Keyboard Shortcuts (Alt + key) ---
+// --- Keyboard Shortcuts ---
 function handleKeyboard(e) {
-    if (!e.altKey) {
-        if (e.key === 'Escape') {
-            holdDialogVisible.value = false;
-            paymentDialogVisible.value = false;
+    // F5 = New transaction
+    if (e.key === 'F5') {
+        e.preventDefault();
+        clearCart();
+        resetCustomer();
+        selectedRowIndex.value = -1;
+        inlineEntryRef.value?.focusSearch();
+    }
+    // F7 = Delete selected item
+    if (e.key === 'F7') {
+        e.preventDefault();
+        if (selectedRowIndex.value >= 0 && selectedRowIndex.value < cartItems.value.length) {
+            removeItem(selectedRowIndex.value);
+            selectedRowIndex.value = Math.min(selectedRowIndex.value, cartItems.value.length - 1);
         }
-        return;
-    }
-
-    const key = e.key.toLowerCase();
-
-    // Alt+S = Search produk
-    if (key === 's') {
-        e.preventDefault();
-        activeTab.value = 1;
-        setTimeout(() => productSearchRef.value?.focusInput(), 100);
-    }
-    // Alt+C = tab Cetak
-    if (key === 'c') {
-        e.preventDefault();
-        activeTab.value = 0;
-    }
-    // Alt+B = Bayar
-    if (key === 'b') {
-        e.preventDefault();
-        handlePay();
     }
     // Alt+H = Hold
-    if (key === 'h') {
+    if (e.altKey && e.key.toLowerCase() === 'h') {
         e.preventDefault();
         handleHold();
     }
-    // Alt+R = Resume hold
-    if (key === 'r') {
+    // Alt+R = Resume
+    if (e.altKey && e.key.toLowerCase() === 'r') {
         e.preventDefault();
         if (holdCount.value > 0) holdDialogVisible.value = true;
+    }
+    // Escape
+    if (e.key === 'Escape') {
+        holdDialogVisible.value = false;
+        customerDropdownVisible.value = false;
     }
 }
 
 onMounted(async () => {
     await loadPosData();
     document.addEventListener('keydown', handleKeyboard);
+    // Auto focus search
+    setTimeout(() => inlineEntryRef.value?.focusSearch(), 300);
 });
 
 onUnmounted(() => {
@@ -148,54 +156,86 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[calc(100vh-120px)] lg:h-[calc(100vh-120px)]">
-        <!-- Left Panel: Input -->
-        <div class="col-span-1 lg:col-span-7 flex flex-col gap-3">
-            <!-- Tabs: Cetak | Produk | Addon -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 h-[calc(100vh-120px)]">
+        <!-- Left Panel: Entry + Table -->
+        <div class="col-span-1 lg:col-span-9 flex flex-col gap-2 overflow-hidden">
+            <!-- Header: Customer + Price Level -->
             <div class="card mb-0 p-3">
-                <div class="flex items-center justify-between mb-3">
-                    <TabMenu :model="[
-                        { label: 'Jasa Cetak & Addon (Alt+C)', icon: 'pi pi-print' },
-                        { label: 'Produk ATK (Alt+S)', icon: 'pi pi-box' },
-                    ]" v-model:activeIndex="activeTab" />
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 relative flex-1">
+                        <label class="text-sm font-semibold text-muted-color whitespace-nowrap">Customer:</label>
+                        <div class="relative flex-1 max-w-xs">
+                            <InputText v-model="customerQuery"
+                                placeholder="UMUM" class="w-full"
+                                @input="searchCustomers(customerQuery)"
+                                @focus="searchCustomers(customerQuery)" />
+                            <!-- Customer dropdown -->
+                            <div v-if="customerDropdownVisible"
+                                class="absolute top-full left-0 right-0 z-50 mt-1 bg-surface-0 dark:bg-surface-900 border border-surface-300 dark:border-surface-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                <div v-for="c in customerResults" :key="c.id"
+                                    class="px-3 py-2 cursor-pointer hover:bg-primary/10 text-sm"
+                                    @click="selectCustomer(c)">
+                                    <span class="font-semibold">{{ c.name }}</span>
+                                    <span class="text-muted-color ml-2">({{ c.code }})</span>
+                                    <Tag v-if="c.type === 'member'" value="Member" severity="info" class="ml-2" size="small" />
+                                </div>
+                            </div>
+                        </div>
+                        <Button v-if="selectedCustomer.name !== 'UMUM'" icon="pi pi-times" severity="secondary"
+                            text size="small" @click="resetCustomer" />
+                    </div>
+
                     <div class="flex items-center gap-2">
-                        <Button v-if="holdCount > 0"
-                            :label="`Resume (${holdCount})`"
+                        <label class="text-sm font-semibold text-muted-color">Harga:</label>
+                        <SelectButton v-model="priceLevel" :options="[
+                            { label: 'H1', value: 'h1' },
+                            { label: 'H2', value: 'h2', disabled: selectedCustomer.type !== 'member' },
+                            { label: 'H3', value: 'h3', disabled: selectedCustomer.type !== 'member' },
+                        ]" optionLabel="label" optionValue="value" optionDisabled="disabled" />
+                    </div>
+
+                    <div class="flex items-center gap-2 ml-auto">
+                        <Button v-if="holdCount > 0" :label="`Resume (${holdCount})`"
                             icon="pi pi-play" size="small" severity="warn" outlined
                             @click="holdDialogVisible = true" />
+                        <Button icon="pi pi-pause" size="small" severity="secondary" outlined
+                            :disabled="isEmpty" @click="handleHold" v-tooltip="'Hold (Alt+H)'" />
                     </div>
-                </div>
-
-                <!-- Tab Content -->
-                <div v-show="activeTab === 0">
-                    <PrintForm @add="handleAddPrint" />
-                </div>
-                <div v-show="activeTab === 1">
-                    <ProductSearch ref="productSearchRef" @add="handleAddProduct" />
                 </div>
             </div>
 
-            <!-- Shortcuts info -->
-            <div class="text-xs text-muted-color flex gap-4 px-2">
-                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">Alt+S</kbd> Cari Produk</span>
-                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">Alt+C</kbd> Jasa Cetak</span>
-                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">Alt+B</kbd> Bayar</span>
-                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">Alt+H</kbd> Hold</span>
-                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">Alt+R</kbd> Resume</span>
+            <!-- Inline Entry -->
+            <div class="card mb-0 p-3">
+                <InlineEntry ref="inlineEntryRef" :priceLevel="priceLevel"
+                    @item-added="handleItemAdded" @go-to-payment="handleGoToPayment" />
+            </div>
+
+            <!-- Item Table -->
+            <div class="card mb-0 p-0 flex-1 overflow-hidden">
+                <ItemTable :selectedIndex="selectedRowIndex" @select-row="selectedRowIndex = $event" />
+            </div>
+
+            <!-- Shortcuts bar -->
+            <div class="flex gap-4 text-xs text-muted-color px-2 py-1">
+                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded">F5</kbd> New</span>
+                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded">F7</kbd> Delete Item</span>
+                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded">Alt+H</kbd> Hold</span>
+                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded">Alt+R</kbd> Resume</span>
+                <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded">Enter</kbd> Navigasi</span>
             </div>
         </div>
 
-        <!-- Right Panel: Cart -->
-        <div class="col-span-1 lg:col-span-5">
+        <!-- Right Panel: Payment -->
+        <div class="col-span-1 lg:col-span-3">
             <div class="card h-full p-4">
-                <CartPanel @pay="handlePay" @hold="handleHold" />
+                <PaymentPanel ref="paymentPanelRef"
+                    :customerId="selectedCustomer.id"
+                    :priceLevel="priceLevel"
+                    @success="handlePaymentSuccess" />
             </div>
         </div>
     </div>
 
-    <!-- Hold List Dialog -->
+    <!-- Hold Dialog -->
     <HoldListDialog v-model:visible="holdDialogVisible" @resume="handleResume" />
-
-    <!-- Payment Dialog -->
-    <PaymentDialog v-model:visible="paymentDialogVisible" @success="handlePaymentSuccess" />
 </template>

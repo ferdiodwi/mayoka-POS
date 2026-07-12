@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { usePosData } from '@/composables/usePosData';
+import { formatRp } from '@/utils/format';
 
-const emit = defineEmits(['add']);
+const emit = defineEmits(['add', 'checkout']);
 const { calculatePrintPrice, addonServices } = usePosData();
 
 const paperSize = ref('A4');
@@ -10,49 +11,92 @@ const colorType = ref('bw');
 const sideType = ref('single');
 const qty = ref(1);
 const selectedAddons = ref([]);
+const qtyInputRef = ref(null);
 
 const paperOptions = [{ label: 'A4', value: 'A4' }, { label: 'F4', value: 'F4' }, { label: 'A3', value: 'A3' }];
 const colorOptions = [{ label: 'Hitam Putih', value: 'bw' }, { label: 'Warna', value: 'color' }];
 const sideOptions = [{ label: '1 Sisi', value: 'single' }, { label: 'Bolak-balik', value: 'duplex' }];
 
-const priceCalc = computed(() => {
-    return calculatePrintPrice(paperSize.value, colorType.value, sideType.value, qty.value);
-});
-
-const displayPrice = computed(() => {
-    return customPriceEnabled.value ? customPrice.value : (priceCalc.value?.effectivePrice || 0);
-});
-
-const displaySubtotal = computed(() => {
-    return displayPrice.value * qty.value;
-});
-
-function formatRp(v) {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v);
-}
+const priceCalc = computed(() => calculatePrintPrice(paperSize.value, colorType.value, sideType.value, qty.value));
+const displayPrice = computed(() => customPriceEnabled.value ? customPrice.value : (priceCalc.value?.effectivePrice || 0));
+const displaySubtotal = computed(() => displayPrice.value * qty.value);
 
 const customPriceEnabled = ref(false);
 const customPrice = ref(0);
 
-watch(priceCalc, (newVal) => {
-    if (newVal && !customPriceEnabled.value) {
-        customPrice.value = newVal.effectivePrice;
-    }
-}, { immediate: true });
+watch(priceCalc, (v) => { if (v && !customPriceEnabled.value) customPrice.value = v.effectivePrice; }, { immediate: true });
+watch(customPriceEnabled, (v) => { if (v && priceCalc.value) customPrice.value = Math.max(0, priceCalc.value.effectivePrice - 100); });
 
-watch(customPriceEnabled, (val) => {
-    if (val && priceCalc.value) {
-        customPrice.value = Math.max(0, priceCalc.value.effectivePrice - 100); // Default pengurangan/harga usulan
+// --- Keyboard helpers ---
+function cyclePaper(dir) {
+    const idx = paperOptions.findIndex(o => o.value === paperSize.value);
+    paperSize.value = paperOptions[(idx + dir + paperOptions.length) % paperOptions.length].value;
+}
+function toggleColor() { colorType.value = colorType.value === 'bw' ? 'color' : 'bw'; }
+function toggleSide() { sideType.value = sideType.value === 'single' ? 'duplex' : 'single'; }
+
+function isQtyFocused() {
+    const el = qtyInputRef.value?.$el;
+    const input = el?.tagName === 'INPUT' ? el : el?.querySelector('input');
+    return document.activeElement === input;
+}
+
+function focusQty() {
+    const el = qtyInputRef.value?.$el;
+    if (!el) return;
+    const input = el.tagName === 'INPUT' ? el : el.querySelector('input');
+    if (input) { input.focus(); input.select(); }
+}
+
+// --- Main keyboard handler ---
+function handleKeydown(e) {
+    if (!isQtyFocused()) return;
+
+    // ← → = cycle paper size
+    if (e.key === 'ArrowLeft' && !e.ctrlKey) {
+        e.preventDefault();
+        cyclePaper(-1);
+        return;
     }
-});
+    if (e.key === 'ArrowRight' && !e.ctrlKey) {
+        e.preventDefault();
+        cyclePaper(1);
+        return;
+    }
+    // Ctrl+↑ = toggle color
+    if (e.key === 'ArrowUp' && e.ctrlKey) {
+        e.preventDefault();
+        toggleColor();
+        return;
+    }
+    // Ctrl+↓ = toggle side
+    if (e.key === 'ArrowDown' && e.ctrlKey) {
+        e.preventDefault();
+        toggleSide();
+        return;
+    }
+    // Space = toggle custom price
+    if (e.key === ' ') {
+        e.preventDefault();
+        customPriceEnabled.value = !customPriceEnabled.value;
+        return;
+    }
+    // Enter = add or checkout
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        if (qty.value >= 1 && priceCalc.value) {
+            handleAdd();
+        } else {
+            emit('checkout');
+        }
+        return;
+    }
+}
 
 function handleAdd() {
     if (!priceCalc.value || qty.value < 1) return;
-
     emit('add', {
-        paperSize: paperSize.value,
-        colorType: colorType.value,
-        sideType: sideType.value,
+        paperSize: paperSize.value, colorType: colorType.value, sideType: sideType.value,
         qty: qty.value,
         unitPrice: customPriceEnabled.value ? customPrice.value : priceCalc.value.effectivePrice,
         costPerSheet: customPriceEnabled.value ? 0 : priceCalc.value.costPerSheet,
@@ -60,34 +104,36 @@ function handleAdd() {
         isCustom: customPriceEnabled.value,
         addons: selectedAddons.value
     });
-
     qty.value = 1;
     customPriceEnabled.value = false;
     selectedAddons.value = [];
+    nextTick(() => focusQty());
 }
+
+defineExpose({ focusQty });
 </script>
 
 <template>
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-4" @keydown="handleKeydown">
         <div class="grid grid-cols-3 gap-3">
             <div class="flex flex-col gap-1">
-                <label class="text-sm font-semibold text-muted-color">Ukuran Kertas</label>
+                <label class="text-sm font-semibold text-muted-color">Ukuran <kbd class="text-xs bg-surface-200 dark:bg-surface-700 px-1 rounded">← →</kbd></label>
                 <SelectButton v-model="paperSize" :options="paperOptions" optionLabel="label" optionValue="value" />
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-sm font-semibold text-muted-color">Jenis Tinta</label>
+                <label class="text-sm font-semibold text-muted-color">Tinta <kbd class="text-xs bg-surface-200 dark:bg-surface-700 px-1 rounded">Ctrl+↑</kbd></label>
                 <SelectButton v-model="colorType" :options="colorOptions" optionLabel="label" optionValue="value" />
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-sm font-semibold text-muted-color">Sisi Cetak</label>
+                <label class="text-sm font-semibold text-muted-color">Sisi <kbd class="text-xs bg-surface-200 dark:bg-surface-700 px-1 rounded">Ctrl+↓</kbd></label>
                 <SelectButton v-model="sideType" :options="sideOptions" optionLabel="label" optionValue="value" />
             </div>
         </div>
 
         <div class="grid grid-cols-1 gap-4">
             <div class="flex flex-col gap-1 w-1/2">
-                <label class="text-sm font-semibold text-muted-color">Jumlah Lembar</label>
-                <InputNumber v-model="qty" :min="1" showButtons buttonLayout="horizontal"
+                <label class="text-sm font-semibold text-muted-color">Jumlah Lembar <kbd class="text-xs bg-surface-200 dark:bg-surface-700 px-1 rounded">↑ ↓</kbd></label>
+                <InputNumber ref="qtyInputRef" v-model="qty" :min="0" showButtons buttonLayout="horizontal"
                     incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"
                     class="w-full" inputClass="text-center text-xl font-bold" />
             </div>
@@ -105,7 +151,7 @@ function handleAdd() {
                 </div>
             </div>
 
-            <Button label="Tambah ke Keranjang" icon="pi pi-cart-plus" class="h-12 w-full mt-2"
+            <Button label="Tambah ke Keranjang (Enter)" icon="pi pi-cart-plus" class="h-12 w-full mt-2"
                 :disabled="!priceCalc || qty < 1" @click="handleAdd" />
         </div>
 
@@ -114,13 +160,13 @@ function handleAdd() {
             <div class="flex items-center gap-2">
                 <ToggleSwitch v-model="customPriceEnabled" />
                 <label class="text-sm font-semibold cursor-pointer select-none" @click="customPriceEnabled = !customPriceEnabled">
-                    Kertas Bawa Sendiri / Harga Custom
+                    Kertas Sendiri / Custom <kbd class="text-xs bg-surface-200 dark:bg-surface-700 px-1 rounded">Space</kbd>
                 </label>
             </div>
-            
             <div v-if="customPriceEnabled" class="flex-1">
                 <InputNumber v-model="customPrice" mode="currency" currency="IDR" locale="id-ID" :min="0"
-                    class="w-full" inputClass="p-2 text-sm" placeholder="Harga per lembar" />
+                    class="w-full" inputClass="p-2 text-sm" placeholder="Harga per lembar"
+                    @keydown.enter="handleAdd" />
             </div>
         </div>
 
@@ -150,6 +196,16 @@ function handleAdd() {
         </div>
         <div v-else class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-sm text-red-500">
             <i class="pi pi-info-circle mr-1"></i> Kombinasi harga belum tersedia.
+        </div>
+
+        <!-- Keyboard hints -->
+        <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-color px-1">
+            <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded">← →</kbd> Ukuran</span>
+            <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded">Ctrl+↑</kbd> Tinta</span>
+            <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded">Ctrl+↓</kbd> Sisi</span>
+            <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded">↑ ↓</kbd> Jumlah</span>
+            <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded">Space</kbd> Custom</span>
+            <span><kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded">Enter</kbd> Tambah</span>
         </div>
     </div>
 </template>

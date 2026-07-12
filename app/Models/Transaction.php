@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Transaction extends Model
 {
     protected $fillable = [
-        'invoice_number', 'user_id', 'shift_id',
+        'invoice_number', 'user_id', 'shift_id', 'customer_id', 'price_level',
         'subtotal', 'discount', 'total',
         'payment_method', 'cash_paid', 'cash_change', 'notes',
     ];
@@ -38,6 +38,11 @@ class Transaction extends Model
     public function items(): HasMany
     {
         return $this->hasMany(TransactionItem::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     /**

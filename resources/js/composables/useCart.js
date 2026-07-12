@@ -36,39 +36,42 @@ export function useCart() {
 
     /**
      * Add a product (ATK) item to cart.
+     * Supports both old (product, qty) and new inline entry (product, qty, unit, priceLevel, price, discount) signatures.
      */
-    function addProductItem(product, qty = 1) {
-        // Check if same product already in cart
+    function addProductItem(product, qty = 1, unit = null, priceLevel = 'h1', price = null, discount = 0) {
+        // Determine unit info
+        const unitName = unit ? unit.unit_name : ((product.units && product.units.length > 0) ? product.units[0].unit_name : 'PCS');
+        const unitLevel = unit ? unit.level : 1;
+        const baseMultiplier = unit ? unit.base_multiplier : 1;
+        const unitPrice = price !== null ? price : ((product.units && product.units.length > 0) ? parseFloat(product.units[0].price_h1) : 0);
+
+        // Check if same product + same unit already in cart
         const existing = cartItems.value.find(
-            (i) => i.itemType === 'product' && i.productId === product.id
+            (i) => i.itemType === 'product' && i.productId === product.id && i.unitLevel === unitLevel
         );
         if (existing) {
             existing.qty += qty;
-            applyWholesaleLogic(existing);
             return;
         }
 
-        const itemToPush = {
+        cartItems.value.push({
             id: Date.now() + Math.random(),
             itemType: 'product',
             productId: product.id,
             description: product.name,
             qty,
-            unitPrice: (product.units && product.units.length > 0) ? parseFloat(product.units[0].price_h1) : 0,
-            costPrice: parseFloat(product.cost_price),
-            discount: 0,
+            unitPrice,
+            costPrice: parseFloat(product.cost_price || 0),
+            discount: discount || 0,
             stock: product.stock,
             units: product.units || [],
-            unitName: (product.units && product.units.length > 0) ? product.units[0].unit_name : 'PCS',
-            baseMultiplier: 1,
-            priceTier: 'h1', // default H1
-            barcode: product.barcode,
+            unitName,
+            unitLevel,
+            baseMultiplier,
+            priceTier: priceLevel,
             barcode: product.barcode,
             addons: [],
-        };
-        
-        applyWholesaleLogic(itemToPush);
-        cartItems.value.push(itemToPush);
+        });
     }
 
     /**
@@ -78,6 +81,23 @@ export function useCart() {
         if (item.itemType !== 'product') return;
         // Wholesale logic is now replaced by manual H1/H2/H3 selection in the UI.
         // We will remove auto wholesale logic to avoid conflicting with the manual 3-tier price.
+    }
+
+    /**
+     * Update price level for all products in the cart
+     */
+    function updatePriceLevelForCart(newPriceLevel) {
+        cartItems.value.forEach(item => {
+            if (item.itemType === 'product' && item.units && item.units.length > 0) {
+                const unit = item.units.find(u => u.level === item.unitLevel);
+                if (unit) {
+                    item.priceTier = newPriceLevel;
+                    if (newPriceLevel === 'h1') item.unitPrice = parseFloat(unit.price_h1 || 0);
+                    else if (newPriceLevel === 'h2') item.unitPrice = parseFloat(unit.price_h2 || 0);
+                    else if (newPriceLevel === 'h3') item.unitPrice = parseFloat(unit.price_h3 || 0);
+                }
+            }
+        });
     }
 
     /**
@@ -190,5 +210,6 @@ export function useCart() {
         grandTotal,
         cartCount,
         isEmpty,
+        updatePriceLevelForCart,
     };
 }

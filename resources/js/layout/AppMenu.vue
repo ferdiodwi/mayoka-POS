@@ -18,6 +18,7 @@ const ownerMenu = [
         items: [
             { label: 'Kategori', icon: 'pi pi-fw pi-tag', to: '/categories' },
             { label: 'Produk', icon: 'pi pi-fw pi-box', to: '/products' },
+            { label: 'Pelanggan', icon: 'pi pi-fw pi-users', to: '/customers' },
             { label: 'Harga Cetak', icon: 'pi pi-fw pi-print', to: '/print-prices' },
             { label: 'Jasa Tambahan', icon: 'pi pi-fw pi-plus-circle', to: '/addon-services' },
         ]

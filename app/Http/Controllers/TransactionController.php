@@ -10,6 +10,10 @@ use App\Models\TransactionItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Mike42\Escpos\Printer;
+use Mike42\Escpos\PrintConnectors\FilePrintConnector;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use Mike42\Escpos\EscposImage;
 
 class TransactionController extends Controller
 {
@@ -74,6 +78,8 @@ class TransactionController extends Controller
                     'invoice_number' => Transaction::generateInvoiceNumber(),
                     'user_id' => $user->id,
                     'shift_id' => $shift->id,
+                    'customer_id' => $request->customer_id ?? null,
+                    'price_level' => $request->price_level ?? 'h1',
                     'subtotal' => $subtotal,
                     'discount' => $transactionDiscount,
                     'total' => $total,
@@ -161,9 +167,21 @@ class TransactionController extends Controller
                 }
             }
 
+            $receiptData = $this->buildReceiptData($transaction);
+
+            // Try to print via raw ESC/POS
+            $printError = null;
+            try {
+                $this->printRawReceipt($receiptData);
+            } catch (\Exception $e) {
+                $printError = $e->getMessage();
+            }
+
             return response()->json([
                 'message' => 'Transaksi berhasil!',
                 'transaction' => $transaction->load('items'),
+                'receipt' => $receiptData,
+                'print_error' => $printError,
             ], 201);
 
         } catch (\Exception $e) {
@@ -188,7 +206,17 @@ class TransactionController extends Controller
      */
     public function receipt(Transaction $transaction): JsonResponse
     {
-        $transaction->load(['items', 'user:id,name']);
+        return response()->json([
+            'receipt' => $this->buildReceiptData($transaction),
+        ]);
+    }
+
+    /**
+     * Build receipt data structure for printing.
+     */
+    private function buildReceiptData(Transaction $transaction): array
+    {
+        $transaction->load(['items', 'user:id,name', 'customer']);
 
         $mainItems = $transaction->items->where('item_type', '!=', 'addon');
         $receiptItems = [];
@@ -202,7 +230,6 @@ class TransactionController extends Controller
                 'addons' => [],
             ];
 
-            // Find child addons
             $addons = $transaction->items->where('parent_item_id', $item->id);
             foreach ($addons as $addon) {
                 $entry['addons'][] = [
@@ -214,22 +241,132 @@ class TransactionController extends Controller
             $receiptItems[] = $entry;
         }
 
-        return response()->json([
-            'receipt' => [
-                'store_name' => 'MAYOKA FOTOKOPI & ATK',
-                'store_address' => 'Jl. Bondowoso - Jember, Utara Sungai, Dadapan, Kec. Grujugan, Kabupaten Bondowoso, Jawa Timur 68261',
-                'invoice_number' => $transaction->invoice_number,
-                'date' => $transaction->created_at->format('d/m/Y H:i'),
-                'cashier' => $transaction->user->name,
-                'items' => $receiptItems,
-                'subtotal' => $transaction->subtotal,
-                'discount' => $transaction->discount,
-                'total' => $transaction->total,
-                'payment_method' => $transaction->payment_method,
-                'cash_paid' => $transaction->cash_paid,
-                'cash_change' => $transaction->cash_change,
-            ],
-        ]);
+        return [
+            'store_name' => 'MAYOKA ATK',
+            'store_address' => "TOKO ALAT TULIS KANTOR\nJL. JEMBER DESA TAMAN\n082 234 278 798",
+            'invoice_number' => $transaction->invoice_number,
+            'date' => $transaction->created_at->format('Y/m/d H:i:s'),
+            'cashier' => $transaction->user->name,
+            'customer_name' => $transaction->customer ? $transaction->customer->name : null,
+            'customer_type' => $transaction->customer ? $transaction->customer->type : null,
+            'items' => $receiptItems,
+            'subtotal' => $transaction->subtotal,
+            'discount' => $transaction->discount,
+            'total' => $transaction->total,
+            'payment_method' => $transaction->payment_method,
+            'cash_paid' => $transaction->cash_paid,
+            'cash_change' => $transaction->cash_change,
+        ];
+    }
+
+    /**
+     * Print receipt using ESC/POS directly to /dev/usb/lp0
+     */
+    private function printRawReceipt(array $r): void
+    {
+        $printerOs = env('PRINTER_OS', 'linux');
+        $printerPath = env('PRINTER_PATH', '/dev/usb/lp0');
+
+        if (strtolower($printerOs) === 'windows') {
+            $connector = new WindowsPrintConnector($printerPath);
+        } else {
+            // Linux/Mac default
+            $connector = new FilePrintConnector($printerPath);
+        }
+        
+        $printer = new Printer($connector);
+
+        try {
+            // Header
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH | Printer::MODE_DOUBLE_HEIGHT);
+            $printer->text($r['store_name'] . "\n");
+
+            $printer->selectPrintMode();
+            $printer->text($r['store_address'] . "\n");
+            $printer->feed();
+
+            $printer->setJustification(Printer::JUSTIFY_LEFT);
+            $printer->text("Tanggal: " . $r['date'] . "\n");
+            $printer->text("No     : " . $r['invoice_number'] . "\n");
+            $printer->text("Kasir  : " . $r['cashier'] . "\n");
+            
+            if (!empty($r['customer_name']) && $r['customer_type'] === 'member') {
+                $printer->text("Member : " . $r['customer_name'] . "\n");
+            }
+            
+            $printer->text("--------------------------------\n");
+
+            // Items
+            foreach ($r['items'] as $item) {
+                // Main item line
+                $printer->setJustification(Printer::JUSTIFY_LEFT);
+                $printer->text($item['description'] . "\n");
+
+                // Qty x Price          Subtotal
+                $priceStr = number_format($item['unit_price'], 0, ',', '.');
+                $subtotalStr = number_format($item['subtotal'], 0, ',', '.');
+                $qtyLine = $item['qty'] . " x " . $priceStr;
+
+                // Calculate spacing to right-align subtotal
+                $spaces = 32 - strlen($qtyLine) - strlen($subtotalStr);
+                $spaces = $spaces > 0 ? $spaces : 1;
+                $printer->text($qtyLine . str_repeat(" ", $spaces) . $subtotalStr . "\n");
+
+                // Addons
+                foreach ($item['addons'] as $addon) {
+                    $addonPrice = number_format($addon['price'], 0, ',', '.');
+                    $addonLine = " + " . $addon['description'];
+                    $spaces = 32 - strlen($addonLine) - strlen($addonPrice);
+                    $spaces = $spaces > 0 ? $spaces : 1;
+                    $printer->text($addonLine . str_repeat(" ", $spaces) . $addonPrice . "\n");
+                }
+            }
+            $printer->text("--------------------------------\n");
+
+            // Totals
+            $subtotalStr = number_format($r['subtotal'], 0, ',', '.');
+            $spaces = 32 - 8 - strlen($subtotalStr); // 'Subtotal' = 8
+            $printer->text("Subtotal" . str_repeat(" ", $spaces) . $subtotalStr . "\n");
+
+            if ($r['discount'] > 0) {
+                $discountStr = "-" . number_format($r['discount'], 0, ',', '.');
+                $spaces = 32 - 6 - strlen($discountStr); // 'Diskon' = 6
+                $printer->text("Diskon" . str_repeat(" ", $spaces) . $discountStr . "\n");
+            }
+
+            // Grand Total (Bold)
+            $printer->setEmphasis(true);
+            $totalStr = number_format($r['total'], 0, ',', '.');
+            $spaces = 32 - 5 - strlen($totalStr); // 'TOTAL' = 5
+            $printer->text("TOTAL" . str_repeat(" ", $spaces) . $totalStr . "\n");
+            $printer->setEmphasis(false);
+            $printer->text("--------------------------------\n");
+
+            // Payment
+            $payMethod = strtoupper($r['payment_method']);
+            $paidStr = number_format($r['cash_paid'], 0, ',', '.');
+            $payLabel = "Bayar ({$payMethod})";
+            $spaces = 32 - strlen($payLabel) - strlen($paidStr);
+            $printer->text($payLabel . str_repeat(" ", $spaces > 0 ? $spaces : 1) . $paidStr . "\n");
+
+            if ($r['payment_method'] === 'cash') {
+                $changeStr = number_format($r['cash_change'], 0, ',', '.');
+                $spaces = 32 - 7 - strlen($changeStr); // 'Kembali' = 7
+                $printer->text("Kembali" . str_repeat(" ", $spaces) . $changeStr . "\n");
+            }
+            $printer->text("--------------------------------\n");
+
+            // Footer
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->text("Terima Kasih Atas Kunjungan Anda");
+            $printer->feed(3);
+
+            // Cut and close
+            $printer->cut();
+        } finally {
+            $printer->close();
+        }
     }
 
     /**

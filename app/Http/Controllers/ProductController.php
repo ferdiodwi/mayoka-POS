@@ -63,6 +63,20 @@ class ProductController extends Controller
         return response()->json(['products' => $products]);
     }
 
+    /**
+     * Full product catalog for POS client-side cache.
+     * Returns all active products with category and units.
+     */
+    public function catalog(): JsonResponse
+    {
+        $products = Product::active()
+            ->with(['category:id,name', 'units'])
+            ->orderBy('name')
+            ->get();
+
+        return response()->json(['products' => $products]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([

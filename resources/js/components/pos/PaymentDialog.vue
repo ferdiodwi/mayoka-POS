@@ -2,8 +2,9 @@
 import { ref, computed, watch, nextTick } from 'vue';
 import { useCart } from '@/composables/useCart';
 import { useShift } from '@/composables/useShift';
-import { apiPost, apiGet } from '@/composables/useApi';
+import { apiPost } from '@/composables/useApi';
 import { useToast } from 'primevue/usetoast';
+import { formatRp } from '@/utils/format';
 
 const props = defineProps({ visible: Boolean });
 const emit = defineEmits(['update:visible', 'success']);
@@ -18,6 +19,7 @@ const notes = ref('');
 const submitting = ref(false);
 const receiptData = ref(null);
 const showReceipt = ref(false);
+const cashPaidInput = ref(null);
 
 const paymentMethods = [
     { label: 'Tunai', value: 'cash', icon: 'pi pi-money-bill' },
@@ -40,7 +42,7 @@ const isPaymentValid = computed(() => {
 const quickAmounts = computed(() => {
     const total = grandTotal.value;
     const amounts = [];
-    // Exact amount
+    // Exact amount (Uang Pas)
     amounts.push(total);
     // Round up to nearest 5000, 10000, 50000, 100000
     [5000, 10000, 20000, 50000, 100000].forEach((r) => {
@@ -51,10 +53,6 @@ const quickAmounts = computed(() => {
     });
     return amounts.slice(0, 5);
 });
-
-function formatRp(v) {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v);
-}
 
 async function handleCheckout() {
     if (!isPaymentValid.value) return;
@@ -94,9 +92,8 @@ async function handleCheckout() {
             life: 4000,
         });
 
-        // Load receipt data
-        const receiptRes = await apiGet(`/api/transactions/${result.transaction.id}/receipt`);
-        receiptData.value = receiptRes.receipt;
+        // Use receipt from checkout response directly (no extra API call)
+        receiptData.value = result.receipt;
         showReceipt.value = true;
 
         // Auto print immediately
@@ -192,14 +189,45 @@ function printReceipt() {
     document.head.removeChild(style);
 }
 
-// Reset on open
+function focusCashInput() {
+    const el = cashPaidInput.value?.$el;
+    if (!el) return;
+    if (el.tagName === 'INPUT') {
+        el.focus();
+        el.select();
+    } else {
+        const input = el.querySelector('input');
+        if (input) {
+            input.focus();
+            input.select();
+        }
+    }
+}
+
+function handleEnterCheckout() {
+    if (isPaymentValid.value && !submitting.value) {
+        handleCheckout();
+    }
+}
+
+function selectQuickAmount(amount) {
+    cashPaid.value = amount;
+    nextTick(() => {
+        focusCashInput();
+    });
+}
+
+// Reset on open — auto-set "Uang Pas" for instant Enter checkout
 watch(() => props.visible, (val) => {
     if (val) {
         paymentMethod.value = 'cash';
-        cashPaid.value = 0;
+        cashPaid.value = grandTotal.value; // Auto "Uang Pas"
         notes.value = '';
         showReceipt.value = false;
         receiptData.value = null;
+        nextTick(() => {
+            focusCashInput();
+        });
     }
 });
 </script>
@@ -228,17 +256,19 @@ watch(() => props.visible, (val) => {
             <!-- Cash Input -->
             <div v-if="paymentMethod === 'cash'" class="flex flex-col gap-3">
                 <div class="flex flex-col gap-2">
-                    <label class="font-semibold">Uang Diterima (Rp)</label>
-                    <InputNumber v-model="cashPaid" mode="currency" currency="IDR" locale="id-ID"
-                        :min="0" class="w-full" inputClass="text-2xl font-bold text-center" autofocus />
+                    <label class="font-semibold">Uang Diterima (Rp) — Enter = Konfirmasi</label>
+                    <InputNumber ref="cashPaidInput" v-model="cashPaid" mode="currency" currency="IDR" locale="id-ID"
+                        :min="0" class="w-full" inputClass="text-2xl font-bold text-center"
+                        @keyup.enter="handleEnterCheckout" />
                 </div>
 
                 <!-- Quick amounts -->
                 <div class="flex flex-wrap gap-2">
                     <Button v-for="amount in quickAmounts" :key="amount"
-                        :label="formatRp(amount)" size="small" outlined
+                        :label="amount === grandTotal ? `Uang Pas ${formatRp(amount)}` : formatRp(amount)"
+                        size="small" outlined
                         :severity="cashPaid === amount ? 'primary' : 'secondary'"
-                        @click="cashPaid = amount" />
+                        @click="selectQuickAmount(amount)" />
                 </div>
 
                 <!-- Change display -->
@@ -263,13 +293,13 @@ watch(() => props.visible, (val) => {
             <!-- Notes -->
             <div class="flex flex-col gap-2">
                 <label class="font-semibold">Catatan (Opsional)</label>
-                <InputText v-model="notes" placeholder="Catatan transaksi..." />
+                <InputText v-model="notes" placeholder="Catatan transaksi..." @keyup.enter="handleEnterCheckout" />
             </div>
         </div>
 
         <template #footer>
             <Button label="Batal" severity="secondary" text @click="emit('update:visible', false)" :disabled="submitting" />
-            <Button label="Konfirmasi Pembayaran" icon="pi pi-check" severity="success"
+            <Button label="Konfirmasi (Enter)" icon="pi pi-check" severity="success"
                 :loading="submitting" :disabled="!isPaymentValid" @click="handleCheckout" />
         </template>
     </Dialog>

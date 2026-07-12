@@ -3,6 +3,8 @@ import { apiGet } from '@/composables/useApi';
 
 const printPrices = ref([]);
 const addonServices = ref([]);
+const products = ref([]);
+const productsByBarcode = new Map();
 const loaded = ref(false);
 
 export function usePosData() {
@@ -10,15 +12,50 @@ export function usePosData() {
     async function loadPosData() {
         if (loaded.value) return;
         try {
-            const [ppRes, addonRes] = await Promise.all([
+            const [ppRes, addonRes, prodRes] = await Promise.all([
                 apiGet('/api/print-prices'),
                 apiGet('/api/addon-services'),
+                apiGet('/api/products/catalog'),
             ]);
             printPrices.value = ppRes.print_prices;
             addonServices.value = addonRes.addon_services.filter(a => a.is_active);
+            products.value = prodRes.products;
+            buildProductIndex();
             loaded.value = true;
         } catch (e) {
             console.error('Failed to load POS data:', e);
+        }
+    }
+
+    function buildProductIndex() {
+        productsByBarcode.clear();
+        products.value.forEach(p => {
+            if (p.barcode) {
+                productsByBarcode.set(p.barcode, p);
+            }
+        });
+    }
+
+    /**
+     * Refresh products cache (e.g., after stock changes).
+     */
+    async function refreshProducts() {
+        try {
+            const prodRes = await apiGet('/api/products/catalog');
+            products.value = prodRes.products;
+            buildProductIndex();
+        } catch (e) {
+            console.error('Failed to refresh products:', e);
+        }
+    }
+
+    /**
+     * Update a single product's stock in the local cache.
+     */
+    function updateProductStock(productId, newStock) {
+        const product = products.value.find(p => p.id === productId);
+        if (product) {
+            product.stock = newStock;
         }
     }
 
@@ -54,20 +91,40 @@ export function usePosData() {
     }
 
     /**
-     * Search products via API.
+     * Search products from local cache — instant, no API call.
      */
-    async function searchProducts(query) {
+    function searchProducts(query) {
         if (!query || query.length < 1) return [];
-        const data = await apiGet(`/api/products/search?q=${encodeURIComponent(query)}`);
-        return data.products;
+
+        // Exact barcode match — instant
+        const barcodeMatch = productsByBarcode.get(query);
+        if (barcodeMatch) return [barcodeMatch];
+
+        // Name/barcode partial search
+        const q = query.toLowerCase();
+        return products.value.filter(p =>
+            p.name.toLowerCase().includes(q) ||
+            (p.barcode && p.barcode.includes(query))
+        ).slice(0, 20);
+    }
+
+    /**
+     * Get product by exact barcode (instant).
+     */
+    function getProductByBarcode(barcode) {
+        return productsByBarcode.get(barcode) || null;
     }
 
     return {
         printPrices,
         addonServices,
+        products,
         loaded,
         loadPosData,
+        refreshProducts,
+        updateProductStock,
         calculatePrintPrice,
         searchProducts,
+        getProductByBarcode,
     };
 }

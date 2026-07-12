@@ -1,37 +1,31 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { usePosData } from '@/composables/usePosData';
+import { formatRp } from '@/utils/format';
 
-const emit = defineEmits(['add']);
-const { searchProducts } = usePosData();
+const emit = defineEmits(['add', 'checkout']);
+const { searchProducts, updateProductStock } = usePosData();
 
 const query = ref('');
 const results = ref([]);
-const searching = ref(false);
 const searchInputRef = ref(null);
 
-let debounceTimer = null;
-
+// Instant local search — no debounce needed
 watch(query, (val) => {
-    clearTimeout(debounceTimer);
     if (!val || val.length < 1) {
         results.value = [];
         return;
     }
-    debounceTimer = setTimeout(async () => {
-        searching.value = true;
-        try {
-            results.value = await searchProducts(val);
-        } finally {
-            searching.value = false;
-        }
-    }, 300);
+    results.value = searchProducts(val);
 });
 
 onMounted(() => {
     if (window.Echo) {
         window.Echo.channel('pos-channel')
             .listen('ProductStockUpdated', (e) => {
+                // Update local cache
+                updateProductStock(e.productId, e.newStock);
+                // Also update visible results
                 const prod = results.value.find(p => p.id === e.productId);
                 if (prod) {
                     prod.stock = e.newStock;
@@ -50,7 +44,6 @@ function focusInput() {
     const el = searchInputRef.value?.$el;
     if (!el) return;
     
-    // PrimeVue InputText $el is usually the <input> directly, but fallback just in case
     if (el.tagName === 'INPUT') {
         el.focus();
     } else {
@@ -62,11 +55,17 @@ function selectProduct(product) {
     emit('add', product, 1);
     query.value = '';
     results.value = [];
-    // Re-focus search input
-    setTimeout(() => focusInput(), 100);
+    // Re-focus search input for next scan
+    setTimeout(() => focusInput(), 50);
 }
 
 function handleEnter() {
+    // Empty search + cart has items → go to checkout
+    if (!query.value || query.value.length === 0) {
+        emit('checkout');
+        return;
+    }
+
     if (results.value.length === 1) {
         selectProduct(results.value[0]);
     } else if (results.value.length > 1) {
@@ -74,10 +73,6 @@ function handleEnter() {
         const exact = results.value.find(p => p.barcode === query.value);
         if (exact) selectProduct(exact);
     }
-}
-
-function formatRp(v) {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v);
 }
 
 function formatHierarchicalStock(totalBaseQty, units) {
@@ -110,16 +105,12 @@ defineExpose({ focusInput });
             <IconField>
                 <InputIcon class="pi pi-search" />
                 <InputText ref="searchInputRef" v-model="query"
-                    placeholder="Cari nama produk atau scan barcode..."
+                    placeholder="Cari nama produk atau scan barcode... (Enter = bayar)"
                     class="w-full" @keyup.enter="handleEnter" />
             </IconField>
         </div>
 
-        <div v-if="searching" class="text-center p-4 text-muted-color">
-            <i class="pi pi-spin pi-spinner mr-2"></i> Mencari...
-        </div>
-
-        <div v-else-if="results.length > 0" class="flex flex-col gap-1 max-h-80 overflow-y-auto">
+        <div v-if="results.length > 0" class="flex flex-col gap-1 max-h-80 overflow-y-auto">
             <div v-for="product in results" :key="product.id"
                 class="flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors
                     hover:bg-primary/10 border border-surface-200 dark:border-surface-700"
@@ -145,13 +136,14 @@ defineExpose({ focusInput });
             </div>
         </div>
 
-        <div v-else-if="query.length > 0 && !searching" class="text-center p-4 text-muted-color">
+        <div v-else-if="query.length > 0" class="text-center p-4 text-muted-color">
             <i class="pi pi-search mr-1"></i> Produk tidak ditemukan.
         </div>
 
         <div v-else class="text-center p-8 text-muted-color">
             <i class="pi pi-barcode text-4xl mb-3 block"></i>
-            <p class="m-0">Ketik nama produk atau scan barcode untuk mencari.</p>
+            <p class="m-0">Scan barcode atau ketik nama produk.</p>
+            <p class="m-0 text-sm mt-1">Tekan <kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">Enter</kbd> saat kosong untuk bayar.</p>
         </div>
     </div>
 </template>

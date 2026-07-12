@@ -1,14 +1,11 @@
 <script setup>
 import { useCart } from '@/composables/useCart';
 import { useConfirm } from 'primevue/useconfirm';
+import { formatRp } from '@/utils/format';
 
 const emit = defineEmits(['pay', 'hold']);
 const confirm = useConfirm();
 const { cartItems, updateItemQty, removeItem, removeAddonFromItem, subtotal, grandTotal, isEmpty, clearCart } = useCart();
-
-function formatRp(v) {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v);
-}
 
 function itemSubtotal(item) {
     const base = item.qty * item.unitPrice - item.discount;

@@ -85,12 +85,30 @@ class ReportController extends Controller
         $chartData = [];
         $daysToFetch = $chartFilter === 'month' ? 30 : 7;
         
+        $startDate = now()->subDays($daysToFetch - 1)->toDateString();
+        $endDate = now()->toDateString();
+
+        $grossRevData = Transaction::select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(total) as revenue'))
+            ->whereBetween(DB::raw('DATE(created_at)'), [$startDate, $endDate])
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->pluck('revenue', 'date')
+            ->toArray();
+
+        $returnsData = ReturnTransaction::select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(refund_amount) as returns'))
+            ->whereBetween(DB::raw('DATE(created_at)'), [$startDate, $endDate])
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->pluck('returns', 'date')
+            ->toArray();
+
         for ($i = $daysToFetch - 1; $i >= 0; $i--) {
-            $date = now()->subDays($i)->toDateString();
-            $grossRev = (float) Transaction::whereDate('created_at', $date)->sum('total');
-            $dayReturns = (float) ReturnTransaction::whereDate('created_at', $date)->sum('refund_amount');
+            $dateObj = now()->subDays($i);
+            $dateStr = $dateObj->toDateString();
+            
+            $grossRev = (float) ($grossRevData[$dateStr] ?? 0);
+            $dayReturns = (float) ($returnsData[$dateStr] ?? 0);
+            
             $chartData[] = [
-                'date' => now()->subDays($i)->format('d/m'),
+                'date' => $dateObj->format('d/m'),
                 'revenue' => $grossRev - $dayReturns,
             ];
         }
@@ -127,35 +145,54 @@ class ReportController extends Controller
             ->orderBy('date')
             ->get();
 
-        // Calculate HPP per day (minus returned HPP)
-        $dailyReport = $dailyData->map(function ($day) {
-            $cost = TransactionItem::whereHas('transaction', fn ($q) =>
-                    $q->whereDate('created_at', $day->date))
-                ->selectRaw('SUM(qty * cost_price) as total_cost')
-                ->value('total_cost') ?? 0;
+        // Calculate HPP per day (minus returned HPP) - Batched to prevent N+1
+        $dailyCosts = TransactionItem::whereHas('transaction', fn ($q) =>
+                $q->whereBetween(DB::raw('DATE(created_at)'), [$from, $to]))
+            ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
+            ->select(DB::raw('DATE(transactions.created_at) as date'), DB::raw('SUM(transaction_items.qty * transaction_items.cost_price) as total_cost'))
+            ->groupBy('date')
+            ->pluck('total_cost', 'date')
+            ->toArray();
 
-            $dayReturns = (float) ReturnTransaction::whereDate('created_at', $day->date)
-                ->sum('refund_amount');
+        $dailyReturns = ReturnTransaction::whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(refund_amount) as total_refund'))
+            ->groupBy('date')
+            ->pluck('total_refund', 'date')
+            ->toArray();
 
-            $dayReturnedCost = (float) (ReturnItem::whereHas('returnTransaction', fn ($q) =>
-                    $q->whereDate('created_at', $day->date))
-                ->join('transaction_items', 'return_items.transaction_item_id', '=', 'transaction_items.id')
-                ->selectRaw('SUM(return_items.qty * transaction_items.cost_price) as total_cost')
-                ->value('total_cost') ?? 0);
+        $dailyReturnedCosts = ReturnItem::whereHas('returnTransaction', fn ($q) =>
+                $q->whereBetween(DB::raw('DATE(created_at)'), [$from, $to]))
+            ->join('return_transactions', 'return_items.return_transaction_id', '=', 'return_transactions.id')
+            ->join('transaction_items', 'return_items.transaction_item_id', '=', 'transaction_items.id')
+            ->select(DB::raw('DATE(return_transactions.created_at) as date'), DB::raw('SUM(return_items.qty * transaction_items.cost_price) as total_cost'))
+            ->groupBy('date')
+            ->pluck('total_cost', 'date')
+            ->toArray();
+
+        $paymentMethods = Transaction::whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
+            ->select(DB::raw('DATE(created_at) as date'), 'payment_method', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
+            ->groupBy('date', 'payment_method')
+            ->get()
+            ->groupBy('date');
+
+        $dailyReport = $dailyData->map(function ($day) use ($dailyCosts, $dailyReturns, $dailyReturnedCosts, $paymentMethods) {
+            $dateStr = $day->date;
+
+            $cost = (float) ($dailyCosts[$dateStr] ?? 0);
+            $dayReturns = (float) ($dailyReturns[$dateStr] ?? 0);
+            $dayReturnedCost = (float) ($dailyReturnedCosts[$dateStr] ?? 0);
 
             $netRevenue = (float) $day->revenue - $dayReturns;
             $netCost = (float) $cost - $dayReturnedCost;
 
-            // Breakdown per payment method
-            $methodBreakdown = Transaction::whereDate('created_at', $day->date)
-                ->select('payment_method', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
-                ->groupBy('payment_method')
-                ->get()
-                ->keyBy('payment_method')
-                ->map(fn ($v) => ['count' => $v->count, 'total' => (float) $v->total]);
+            $methods = $paymentMethods->get($dateStr, collect());
+            $methodBreakdown = $methods->keyBy('payment_method')->map(fn ($v) => [
+                'count' => $v->count,
+                'total' => (float) $v->total
+            ]);
 
             return [
-                'date' => $day->date,
+                'date' => $dateStr,
                 'tx_count' => $day->tx_count,
                 'revenue' => $netRevenue,
                 'cost' => $netCost,
@@ -274,34 +311,48 @@ class ReportController extends Controller
         $shifts = Shift::with('user:id,name')
             ->whereBetween(DB::raw('DATE(started_at)'), [$from, $to])
             ->orderByDesc('started_at')
+            ->get();
+
+        $shiftIds = $shifts->pluck('id')->toArray();
+
+        $txStats = Transaction::whereIn('shift_id', $shiftIds)
+            ->select('shift_id', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
+            ->groupBy('shift_id')
             ->get()
-            ->map(function ($s) {
-                $txCount = Transaction::where('shift_id', $s->id)->count();
-                $txTotal = Transaction::where('shift_id', $s->id)->sum('total');
+            ->keyBy('shift_id');
 
-                // Breakdown per payment method for this shift
-                $methodBreakdown = Transaction::where('shift_id', $s->id)
-                    ->select('payment_method', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
-                    ->groupBy('payment_method')
-                    ->get()
-                    ->keyBy('payment_method')
-                    ->map(fn ($v) => ['count' => $v->count, 'total' => (float) $v->total]);
+        $paymentMethods = Transaction::whereIn('shift_id', $shiftIds)
+            ->select('shift_id', 'payment_method', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
+            ->groupBy('shift_id', 'payment_method')
+            ->get()
+            ->groupBy('shift_id');
 
-                return [
-                    'id' => $s->id,
-                    'cashier' => $s->user->name,
-                    'started_at' => $s->started_at?->format('d/m/Y H:i'),
-                    'ended_at' => $s->ended_at?->format('d/m/Y H:i'),
-                    'cash_start' => (float) $s->cash_start,
-                    'cash_end' => (float) ($s->cash_end ?? 0),
-                    'cash_expected' => (float) ($s->cash_expected ?? 0),
-                    'cash_difference' => (float) ($s->cash_difference ?? 0),
-                    'status' => $s->status,
-                    'tx_count' => $txCount,
-                    'tx_total' => (float) $txTotal,
-                    'by_method' => $methodBreakdown,
-                ];
-            });
+        $shifts = $shifts->map(function ($s) use ($txStats, $paymentMethods) {
+            $stats = $txStats->get($s->id);
+            $txCount = $stats ? $stats->count : 0;
+            $txTotal = $stats ? $stats->total : 0;
+
+            $methods = $paymentMethods->get($s->id, collect());
+            $methodBreakdown = $methods->keyBy('payment_method')->map(fn ($v) => [
+                'count' => $v->count,
+                'total' => (float) $v->total
+            ]);
+
+            return [
+                'id' => $s->id,
+                'cashier' => $s->user->name,
+                'started_at' => $s->started_at?->format('d/m/Y H:i'),
+                'ended_at' => $s->ended_at?->format('d/m/Y H:i'),
+                'cash_start' => (float) $s->cash_start,
+                'cash_end' => (float) ($s->cash_end ?? 0),
+                'cash_expected' => (float) ($s->cash_expected ?? 0),
+                'cash_difference' => (float) ($s->cash_difference ?? 0),
+                'status' => $s->status,
+                'tx_count' => $txCount,
+                'tx_total' => (float) $txTotal,
+                'by_method' => $methodBreakdown,
+            ];
+        });
 
         return response()->json(['shifts' => $shifts]);
     }
@@ -321,14 +372,22 @@ class ReportController extends Controller
             $query->where('category_id', $categoryId);
         }
 
-        $products = $query->orderBy('name')->get()->map(function ($p) use ($from, $to) {
-            $movements = StockMovement::where('product_id', $p->id)
-                ->whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
-                ->get();
+        $products = $query->orderBy('name')->get();
+        $productIds = $products->pluck('id')->toArray();
 
-            $stockIn = $movements->where('type', 'in')->sum('qty');
-            $stockOut = abs($movements->where('type', 'out')->sum('qty'));
-            $adjustment = $movements->where('type', 'adjustment')->sum('qty');
+        $movementsData = StockMovement::whereIn('product_id', $productIds)
+            ->whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
+            ->select('product_id', 'type', DB::raw('SUM(qty) as total_qty'))
+            ->groupBy('product_id', 'type')
+            ->get()
+            ->groupBy('product_id');
+
+        $products = $products->map(function ($p) use ($movementsData) {
+            $movements = $movementsData->get($p->id, collect());
+            
+            $stockIn = $movements->where('type', 'in')->sum('total_qty');
+            $stockOut = abs($movements->where('type', 'out')->sum('total_qty'));
+            $adjustment = $movements->where('type', 'adjustment')->sum('total_qty');
 
             return [
                 'id' => $p->id,
@@ -337,9 +396,9 @@ class ReportController extends Controller
                 'stock_current' => $p->stock,
                 'min_stock' => $p->min_stock,
                 'units' => $p->units,
-                'stock_in' => $stockIn,
-                'stock_out' => $stockOut,
-                'adjustment' => $adjustment,
+                'stock_in' => (int) $stockIn,
+                'stock_out' => (int) $stockOut,
+                'adjustment' => (int) $adjustment,
                 'is_low' => $p->stock <= $p->min_stock,
             ];
         });
