@@ -205,6 +205,9 @@ class ProductController extends Controller
             ]);
         });
 
+        event(new \App\Events\DashboardUpdated());
+        event(new \App\Events\ProductStockUpdated($product->id, $product->fresh()->stock));
+
         return response()->json([
             'message' => 'Stok berhasil disesuaikan.',
             'product' => $product->fresh(),

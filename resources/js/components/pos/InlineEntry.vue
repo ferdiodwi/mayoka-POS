@@ -27,6 +27,7 @@ const selectedUnitIndex = ref(0);
 const price = ref(0);
 const qty = ref(1);
 const discount = ref(0);
+const itemNotes = ref('');
 const lookupResults = ref([]);
 const lookupIndex = ref(0);
 const lookupVisible = ref(false);
@@ -91,6 +92,17 @@ watch(() => props.priceLevel, () => {
     updatePrice();
 });
 
+watch(qty, (newQty) => {
+    if (selectedProduct.value && selectedProduct.value.type === 'print' && selectedProduct.value.pp) {
+        const { calculatePrintPrice } = usePosData();
+        const pp = selectedProduct.value.pp;
+        const calc = calculatePrintPrice(pp.paper_size, pp.color_type, pp.side_type, newQty);
+        if (calc) {
+            price.value = calc.effectivePrice;
+        }
+    }
+});
+
 // --- Methods ---
 function updatePrice() {
     const unit = selectedUnit.value;
@@ -115,6 +127,7 @@ function resetEntry() {
     price.value = 0;
     qty.value = 1;
     discount.value = 0;
+    itemNotes.value = '';
     lookupResults.value = [];
     lookupVisible.value = false;
     lookupIndex.value = 0;
@@ -172,17 +185,38 @@ function confirmDisc() {
     }
 
     // Add to cart
-    addProductItem({
-        id: p.id,
-        name: p.name,
-        barcode: p.barcode,
-        type: p.type,
-        stock: p.stock,
-        cost_price: p.cost_price,
-        units: p.units,
-    }, qty.value, u, props.priceLevel, price.value, discount.value);
+    let finalDesc = p.name;
+    if (itemNotes.value) finalDesc += ` (${itemNotes.value})`;
 
-    toast.add({ severity: 'success', summary: 'Ditambahkan', detail: `${p.name} x${qty.value}`, life: 1500 });
+    if (p.type === 'print') {
+        const { addPrintItem } = useCart();
+        addPrintItem({
+            paperSize: p.pp.paper_size,
+            colorType: p.pp.color_type,
+            sideType: p.pp.side_type,
+            qty: qty.value,
+            unitPrice: price.value,
+            costPerSheet: p.cost_price,
+            printPriceId: p.printPriceId,
+            isCustom: false,
+            addons: [],
+            discount: discount.value,
+            notes: itemNotes.value
+        });
+        toast.add({ severity: 'success', summary: 'Ditambahkan', detail: `${finalDesc} x${qty.value}`, life: 1500 });
+    } else {
+        addProductItem({
+            id: p.id,
+            name: finalDesc,
+            barcode: p.barcode,
+            type: p.type,
+            stock: p.stock,
+            cost_price: p.cost_price,
+            units: p.units,
+        }, qty.value, u, props.priceLevel, price.value, discount.value);
+        toast.add({ severity: 'success', summary: 'Ditambahkan', detail: `${finalDesc} x${qty.value}`, life: 1500 });
+    }
+
     emit('item-added');
     
     // Reset and refocus
@@ -205,6 +239,17 @@ function handleSearchKeydown(e) {
         e.preventDefault();
         if (lookupVisible.value && lookupResults.value.length > 0) {
             selectProduct(lookupResults.value[lookupIndex.value]);
+        } else if (searchQuery.value && e.ctrlKey) {
+            // Custom item
+            selectProduct({
+                id: 'custom-' + Date.now(),
+                name: searchQuery.value,
+                type: 'jasa',
+                stock: 0,
+                cost_price: 0,
+                units: [{ level: 1, unit_name: 'PCS', base_multiplier: 1, price_h1: 0 }],
+                barcode: null
+            });
         } else if (!searchQuery.value && entryPhase.value === 'search') {
             // Empty search + Enter = go to payment
             emit('go-to-payment');
@@ -283,11 +328,14 @@ defineExpose({ focusSearch });
                 </select>
             </div>
 
-            <!-- Price (readonly) -->
+            <!-- Price -->
             <div class="w-32 flex flex-col gap-1">
                 <label class="text-xs font-semibold text-muted-color">HARGA</label>
-                <InputText :value="formatRp(price)" readonly
-                    class="w-full h-10 text-right font-bold bg-surface-100 dark:bg-surface-800" />
+                <InputNumber v-model="price" mode="currency" currency="IDR" locale="id-ID" :min="0"
+                    class="w-full h-10" inputClass="w-full h-full text-right font-bold px-2 border border-surface-300 dark:border-surface-600 rounded-md"
+                    :disabled="!selectedProduct" 
+                    :readonly="selectedProduct && (selectedProduct.type === 'barang' || selectedProduct.type === 'print')"
+                    :class="(selectedProduct && (selectedProduct.type === 'barang' || selectedProduct.type === 'print')) ? 'bg-surface-100 dark:bg-surface-800' : ''" />
             </div>
 
             <!-- Qty -->
@@ -308,6 +356,15 @@ defineExpose({ focusSearch });
                     :class="entryPhase === 'disc' ? 'ring-2 ring-primary rounded-md' : ''"
                     :disabled="!selectedProduct"
                     @keydown="handleDiscKeydown" />
+            </div>
+        </div>
+
+        <!-- Jasa/Print Notes Row -->
+        <div v-if="selectedProduct && (selectedProduct.type === 'jasa' || selectedProduct.type === 'print')" class="flex gap-2 items-end">
+            <div class="flex-1 flex flex-col gap-1">
+                <label class="text-xs font-semibold text-muted-color">KETERANGAN / CATATAN (Opsional)</label>
+                <InputText v-model="itemNotes" placeholder="Misal: Spanduk 3x2m, atau Revisi 1" class="w-full h-10"
+                    @keydown.enter="confirmDisc" />
             </div>
         </div>
 

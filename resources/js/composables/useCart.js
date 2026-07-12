@@ -8,10 +8,12 @@ export function useCart() {
     /**
      * Add a print/fotokopi item to cart.
      */
-    function addPrintItem({ paperSize, colorType, sideType, qty, unitPrice, costPerSheet, printPriceId, isCustom, addons }) {
+    function addPrintItem({ paperSize, colorType, sideType, qty, unitPrice, costPerSheet, printPriceId, isCustom, addons, discount = 0, notes = '' }) {
         const colorLabel = colorType === 'bw' ? 'Hitam Putih' : 'Warna';
         const sideLabel = sideType === 'single' ? '1 Sisi' : 'Bolak-balik';
         const customLabel = isCustom ? ' (Kertas Sendiri/Custom)' : '';
+        let desc = `Print ${paperSize} — ${colorLabel} — ${sideLabel}${customLabel}`;
+        if (notes) desc += ` (${notes})`;
 
         const itemAddons = (addons || []).map(addon => ({
             id: Date.now() + Math.random(),
@@ -25,11 +27,11 @@ export function useCart() {
             id: Date.now() + Math.random(),
             itemType: 'print',
             printPriceId,
-            description: `${paperSize} — ${colorLabel} — ${sideLabel}${customLabel}`,
+            description: desc,
             qty,
             unitPrice: parseFloat(unitPrice),
             costPerSheet: parseFloat(costPerSheet),
-            discount: 0,
+            discount: parseFloat(discount),
             addons: itemAddons,
         });
     }
@@ -45,9 +47,17 @@ export function useCart() {
         const baseMultiplier = unit ? unit.base_multiplier : 1;
         const unitPrice = price !== null ? price : ((product.units && product.units.length > 0) ? parseFloat(product.units[0].price_h1) : 0);
 
+        let actualProductId = product.id;
+        if (typeof actualProductId === 'string' && (actualProductId.startsWith('addon-') || actualProductId.startsWith('custom-'))) {
+            actualProductId = null;
+        }
+
         // Check if same product + same unit already in cart
         const existing = cartItems.value.find(
-            (i) => i.itemType === 'product' && i.productId === product.id && i.unitLevel === unitLevel
+            (i) => i.itemType === 'product' && 
+                   ((i.productId !== null && i.productId === actualProductId) || 
+                    (i.productId === null && i.description === product.name)) && 
+                   i.unitLevel === unitLevel
         );
         if (existing) {
             existing.qty += qty;
@@ -57,7 +67,7 @@ export function useCart() {
         cartItems.value.push({
             id: Date.now() + Math.random(),
             itemType: 'product',
-            productId: product.id,
+            productId: actualProductId,
             description: product.name,
             qty,
             unitPrice,

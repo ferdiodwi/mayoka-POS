@@ -116,7 +116,7 @@ function handleKeyboard(e) {
         clearCart();
         resetCustomer();
         selectedRowIndex.value = -1;
-        inlineEntryRef.value?.focusSearch();
+        setTimeout(() => inlineEntryRef.value?.focusSearch(), 100);
     }
     // F7 = Delete selected item
     if (e.key === 'F7') {
@@ -148,10 +148,29 @@ onMounted(async () => {
     document.addEventListener('keydown', handleKeyboard);
     // Auto focus search
     setTimeout(() => inlineEntryRef.value?.focusSearch(), 300);
+
+    if (window.Echo) {
+        window.Echo.channel('pos-channel')
+            .listen('ProductStockUpdated', (e) => {
+                // Update product cache
+                const { updateProductStock } = usePosData();
+                updateProductStock(e.productId, e.newStock);
+
+                // Update cart items
+                cartItems.value.forEach(item => {
+                    if (item.itemType === 'product' && item.productId === e.productId) {
+                        item.stock = e.newStock;
+                    }
+                });
+            });
+    }
 });
 
 onUnmounted(() => {
     document.removeEventListener('keydown', handleKeyboard);
+    if (window.Echo) {
+        window.Echo.leaveChannel('pos-channel');
+    }
 });
 </script>
 

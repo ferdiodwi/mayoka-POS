@@ -102,10 +102,51 @@ export function usePosData() {
 
         // Name/barcode partial search
         const q = query.toLowerCase();
-        return products.value.filter(p =>
+        let results = products.value.filter(p =>
             p.name.toLowerCase().includes(q) ||
             (p.barcode && p.barcode.includes(query))
-        ).slice(0, 20);
+        );
+
+        if (printPrices.value.length > 0) {
+            const printResults = printPrices.value.filter(pp => {
+                const label = `print cetak fotokopi ${pp.paper_size} ${pp.color_type === 'bw' ? 'hitam putih bw' : 'warna color'} ${pp.side_type === 'single' ? '1 sisi single' : 'bolak-balik duplex'}`.toLowerCase();
+                return q.split(' ').every(term => label.includes(term));
+            }).map(pp => {
+                const label = `Print ${pp.paper_size} ${pp.color_type === 'bw' ? 'Hitam Putih' : 'Warna'} ${pp.side_type === 'single' ? '1 Sisi' : 'Bolak-balik'}`;
+                return {
+                    id: `print-${pp.id}`,
+                    printPriceId: pp.id,
+                    name: label,
+                    type: 'print',
+                    stock: 0, // No stock limit
+                    cost_price: pp.cost_per_sheet,
+                    units: [{ level: 1, unit_name: 'LBR', base_multiplier: 1, price_h1: pp.price_per_sheet }],
+                    barcode: null,
+                    pp: pp // Raw data for tier calculation
+                };
+            });
+            results = [...printResults, ...results];
+        }
+
+        if (addonServices.value.length > 0) {
+            const addonResults = addonServices.value.filter(a => {
+                const label = `tambahan jasa addon ${a.name}`.toLowerCase();
+                return q.split(' ').every(term => label.includes(term));
+            }).map(a => {
+                return {
+                    id: `addon-${a.id}`,
+                    name: `Tambahan: ${a.name}`,
+                    type: 'jasa',
+                    stock: 0,
+                    cost_price: 0,
+                    units: [{ level: 1, unit_name: 'PCS', base_multiplier: 1, price_h1: a.price }],
+                    barcode: null
+                };
+            });
+            results = [...addonResults, ...results];
+        }
+
+        return results.slice(0, 20);
     }
 
     /**
