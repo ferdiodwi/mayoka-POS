@@ -9,6 +9,11 @@ const shifts = ref([]);
 const dateFrom = ref(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
 const dateTo = ref(new Date());
 
+const showReceipt = ref(false);
+const receiptData = ref(null);
+const activeShiftId = ref(null);
+const printing = ref(false);
+
 function formatRp(v) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v);
 }
@@ -30,10 +35,26 @@ async function fetchReport() {
 
 async function printReport(shift) {
     try {
-        await apiPost(`/api/shifts/${shift.id}/print`);
+        const res = await apiGet(`/api/shifts/${shift.id}/receipt`);
+        receiptData.value = res.receipt;
+        activeShiftId.value = shift.id;
+        showReceipt.value = true;
+    } catch (err) {
+        toast.add({ severity: 'error', summary: 'Gagal memuat laporan', detail: err.message, life: 5000 });
+    }
+}
+
+async function executePrint() {
+    if (!activeShiftId.value) return;
+    printing.value = true;
+    try {
+        await apiPost(`/api/shifts/${activeShiftId.value}/print`);
         toast.add({ severity: 'success', summary: 'Cetak Berhasil', detail: 'Laporan shift terkirim ke printer.', life: 3000 });
+        showReceipt.value = false;
     } catch (err) {
         toast.add({ severity: 'error', summary: 'Cetak Gagal', detail: err.message || 'Gagal terhubung ke printer', life: 5000 });
+    } finally {
+        printing.value = false;
     }
 }
 
@@ -105,5 +126,53 @@ onMounted(fetchReport);
                 </template>
             </Column>
         </DataTable>
+
+        <!-- Preview Laporan Dialog -->
+        <Dialog :visible="showReceipt" header="Pratinjau Laporan Kasir" modal :style="{ width: '380px' }"
+            @update:visible="showReceipt = $event">
+            <div v-if="receiptData" class="font-mono text-sm bg-surface-50 dark:bg-surface-900 p-4 rounded border border-surface-200 dark:border-surface-700">
+                <div class="text-center mb-3">
+                    <p class="font-bold text-lg m-0">LAPORAN SALDO KASIR</p>
+                    <p class="text-xs text-muted-color m-0">================================</p>
+                </div>
+                
+                <div class="mb-3 space-y-1">
+                    <div class="flex justify-between"><span class="w-24">KASIR</span><span>: {{ receiptData.cashier }}</span></div>
+                    <div class="flex justify-between"><span class="w-24">TANGGAL</span><span>: {{ receiptData.date }}</span></div>
+                    <div class="flex justify-between"><span class="w-24">JAM</span><span>: {{ receiptData.time }}</span></div>
+                </div>
+                
+                <hr class="my-2 border-dashed border-surface-300 dark:border-surface-600" />
+                
+                <div class="mb-3 space-y-1">
+                    <div class="flex justify-between py-1"><span>MODAL AWAL</span><span>{{ formatRp(receiptData.cash_start) }}</span></div>
+                    <div class="flex justify-between py-1"><span>PENJUALAN</span><span>{{ formatRp(receiptData.cash_sales) }} (+)</span></div>
+                    <div v-if="receiptData.cash_expenses > 0" class="flex justify-between py-1"><span>PENGELUARAN</span><span>{{ formatRp(receiptData.cash_expenses) }} (-)</span></div>
+                    <div v-if="receiptData.cash_refunds > 0" class="flex justify-between py-1"><span>RETUR JUAL</span><span>{{ formatRp(receiptData.cash_refunds) }} (-)</span></div>
+                </div>
+                
+                <hr class="my-2 border-dashed border-surface-300 dark:border-surface-600" />
+                
+                <div class="flex justify-between py-1 font-bold text-base mb-2">
+                    <span>TOTAL KAS</span><span>{{ formatRp(receiptData.cash_expected) }}</span>
+                </div>
+                
+                <div v-if="receiptData.status === 'closed'">
+                    <hr class="my-2 border-dashed border-surface-300 dark:border-surface-600" />
+                    <div class="flex justify-between py-1"><span>UANG FISIK</span><span>{{ formatRp(receiptData.cash_end) }}</span></div>
+                    <div class="flex justify-between py-1 font-bold">
+                        <span>SELISIH</span>
+                        <span :class="receiptData.cash_difference < 0 ? 'text-red-500' : 'text-green-500'">
+                            {{ receiptData.cash_difference >= 0 ? '+' : '' }}{{ formatRp(receiptData.cash_difference) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <template #footer>
+                <Button label="Batal" severity="secondary" text @click="showReceipt = false" />
+                <Button label="Cetak ke Printer" icon="pi pi-print" @click="executePrint" :loading="printing" />
+            </template>
+        </Dialog>
     </div>
 </template>

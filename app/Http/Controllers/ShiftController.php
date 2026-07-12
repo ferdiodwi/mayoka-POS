@@ -151,6 +151,48 @@ class ShiftController extends Controller
     }
 
     /**
+     * Get shift report data formatted for preview.
+     */
+    public function receipt(Request $request, Shift $shift): JsonResponse
+    {
+        $shift->load('user');
+
+        $cashSales = \App\Models\Transaction::where('shift_id', $shift->id)
+            ->where('payment_method', 'cash')
+            ->sum('total');
+
+        $cashRefunds = \App\Models\ReturnTransaction::where('shift_id', $shift->id)
+            ->sum('refund_amount');
+
+        $cashExpenses = \App\Models\Expense::where('shift_id', $shift->id)
+            ->sum('amount');
+
+        $cashStart = $shift->cash_start;
+        $cash1 = $cashStart + $cashSales;
+        $cash2 = $cash1 - $cashExpenses;
+        $cashAkhir = $cash2 - $cashRefunds;
+
+        $dateStr = \Carbon\Carbon::parse($shift->created_at)->locale('id')->translatedFormat('d F Y');
+        $timeStr = $shift->created_at->format('H:i:s');
+
+        return response()->json([
+            'receipt' => [
+                'cashier' => strtoupper($shift->user->name),
+                'date' => $dateStr,
+                'time' => $timeStr,
+                'cash_start' => $cashStart,
+                'cash_sales' => $cashSales,
+                'cash_expenses' => $cashExpenses,
+                'cash_refunds' => $cashRefunds,
+                'cash_expected' => $cashAkhir,
+                'status' => $shift->status,
+                'cash_end' => $shift->cash_end,
+                'cash_difference' => $shift->cash_difference,
+            ]
+        ]);
+    }
+
+    /**
      * Print shift balance report via thermal printer.
      */
     public function printReport(Request $request, Shift $shift): JsonResponse
