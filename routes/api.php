@@ -34,6 +34,7 @@ Route::middleware('auth:web')->group(function () {
     Route::get('/shifts/active', [ShiftController::class, 'active']);
     Route::post('/shifts/open', [ShiftController::class, 'open']);
     Route::put('/shifts/{shift}/close', [ShiftController::class, 'close']);
+    Route::post('/shifts/{shift}/print', [ShiftController::class, 'printReport']);
 
     // Product search & catalog (kasir + owner)
     Route::get('/products/catalog', [ProductController::class, 'catalog']);

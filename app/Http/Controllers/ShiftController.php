@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Shift;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Mike42\Escpos\Printer;
+use Mike42\Escpos\PrintConnectors\FilePrintConnector;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 
 class ShiftController extends Controller
 {
@@ -145,5 +148,88 @@ class ShiftController extends Controller
         $shifts = $query->paginate(20);
 
         return response()->json($shifts);
+    }
+
+    /**
+     * Print shift balance report via thermal printer.
+     */
+    public function printReport(Request $request, Shift $shift): JsonResponse
+    {
+        $shift->load('user');
+
+        // Retrieve the data exactly like close() calculates
+        $cashSales = \App\Models\Transaction::where('shift_id', $shift->id)
+            ->where('payment_method', 'cash')
+            ->sum('total');
+
+        $cashRefunds = \App\Models\ReturnTransaction::where('shift_id', $shift->id)
+            ->sum('refund_amount');
+
+        $cashExpenses = \App\Models\Expense::where('shift_id', $shift->id)
+            ->sum('amount');
+
+        $cashStart = $shift->cash_start;
+        $cash1 = $cashStart + $cashSales;
+        $cash2 = $cash1 - $cashExpenses;
+        $cashAkhir = $cash2 - $cashRefunds; // live expected cash
+
+        // Format dates in Indonesian
+        $dateStr = \Carbon\Carbon::parse($shift->created_at)->locale('id')->translatedFormat('d F Y'); // e.g., 22 Juni 2026
+        $timeStr = $shift->created_at->format('H:i:s');
+
+        try {
+            $printerOs = env('PRINTER_OS', 'linux');
+            $printerPath = env('PRINTER_PATH', '/dev/usb/lp0');
+
+            if (strtolower($printerOs) === 'windows') {
+                $connector = new WindowsPrintConnector($printerPath);
+            } else {
+                $connector = new FilePrintConnector($printerPath);
+            }
+            $printer = new Printer($connector);
+
+            try {
+                $printer->setJustification(Printer::JUSTIFY_CENTER);
+                $printer->text("LAPORAN SALDO KASIR\n");
+                $printer->text("================================\n");
+
+                $printer->setJustification(Printer::JUSTIFY_LEFT);
+                $printer->text(sprintf("%-11s: %s\n", "KASIR", strtoupper($shift->user->name)));
+                $printer->text(sprintf("%-11s: %s\n", "TANGGAL", $dateStr));
+                $printer->text(sprintf("%-11s: %s\n", "JAM", $timeStr));
+                $printer->text("--------------------------------\n");
+
+                $formatNumber = fn($num) => number_format($num, 0, ',', '.');
+
+                $printer->text(sprintf("%-11s: %s\n", "MODAL AWAL", $formatNumber($cashStart)));
+                $printer->text(sprintf("%-11s: %s (+)\n", "PENJUALAN", $formatNumber($cashSales)));
+                if ($cashExpenses > 0) {
+                    $printer->text(sprintf("%-11s: %s (-)\n", "PENGELUARAN", $formatNumber($cashExpenses)));
+                }
+                if ($cashRefunds > 0) {
+                    $printer->text(sprintf("%-11s: %s (-)\n", "RETUR JUAL", $formatNumber($cashRefunds)));
+                }
+                $printer->text("================================\n");
+
+                $printer->text(sprintf("%-11s: %s\n", "TOTAL KAS", $formatNumber($cashAkhir)));
+                
+                if ($shift->status === 'closed') {
+                    $printer->text("--------------------------------\n");
+                    $printer->text(sprintf("%-11s: %s\n", "UANG FISIK", $formatNumber($shift->cash_end)));
+                    
+                    $diffStr = ($shift->cash_difference > 0 ? '+' : '') . $formatNumber($shift->cash_difference);
+                    $printer->text(sprintf("%-11s: %s\n", "SELISIH", $diffStr));
+                }
+
+                $printer->feed(4);
+                $printer->cut();
+            } finally {
+                $printer->close();
+            }
+
+            return response()->json(['message' => 'Laporan saldo kasir berhasil dicetak.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal print: ' . $e->getMessage()], 500);
+        }
     }
 }

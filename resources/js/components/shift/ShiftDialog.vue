@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
 import { useShift } from '@/composables/useShift';
+import { apiPost } from '@/composables/useApi';
 import { useToast } from 'primevue/usetoast';
 
 const props = defineProps({
@@ -68,6 +69,15 @@ async function handleCloseShift() {
     try {
         const result = await closeShift(activeShift.value.id, cashEnd.value, notes.value || null);
         toast.add({ severity: 'success', summary: 'Shift Ditutup', detail: `Selisih kas: ${formatCurrency(result.shift.cash_difference)}`, life: 4000 });
+        
+        // Auto print shift report
+        try {
+            await apiPost(`/api/shifts/${result.shift.id}/print`);
+            toast.add({ severity: 'success', summary: 'Cetak Berhasil', detail: 'Laporan shift sedang dicetak.', life: 3000 });
+        } catch (printErr) {
+            toast.add({ severity: 'warn', summary: 'Cetak Laporan Gagal', detail: 'Shift berhasil ditutup, tetapi gagal mencetak ke printer.', life: 5000 });
+        }
+
         emit('update:visible', false);
         emit('shifted', 'close');
     } catch (err) {

@@ -1,7 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { apiGet } from '@/composables/useApi';
+import { apiGet, apiPost } from '@/composables/useApi';
+import { useToast } from 'primevue/usetoast';
 
+const toast = useToast();
 const loading = ref(false);
 const shifts = ref([]);
 const dateFrom = ref(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
@@ -23,6 +25,15 @@ async function fetchReport() {
         shifts.value = data.shifts;
     } finally {
         loading.value = false;
+    }
+}
+
+async function printReport(shift) {
+    try {
+        await apiPost(`/api/shifts/${shift.id}/print`);
+        toast.add({ severity: 'success', summary: 'Cetak Berhasil', detail: 'Laporan shift terkirim ke printer.', life: 3000 });
+    } catch (err) {
+        toast.add({ severity: 'error', summary: 'Cetak Gagal', detail: err.message || 'Gagal terhubung ke printer', life: 5000 });
     }
 }
 
@@ -86,6 +97,11 @@ onMounted(fetchReport);
                 <template #body="{ data }">
                     <Tag :value="data.status === 'open' ? 'Buka' : 'Tutup'"
                         :severity="data.status === 'open' ? 'success' : 'secondary'" />
+                </template>
+            </Column>
+            <Column header="Aksi" style="width: 5rem">
+                <template #body="{ data }">
+                    <Button icon="pi pi-print" severity="secondary" text rounded v-tooltip.top="'Cetak Laporan'" @click="printReport(data)" />
                 </template>
             </Column>
         </DataTable>
