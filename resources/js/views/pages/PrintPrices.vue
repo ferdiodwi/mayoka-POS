@@ -24,7 +24,12 @@ const tierForm = ref({ min_qty: 0, price_per_sheet: 0 });
 const editingTierId = ref(null);
 const tierParentId = ref(null);
 
-const paperSizes = [{ label: 'A4', value: 'A4' }, { label: 'F4', value: 'F4' }, { label: 'A3', value: 'A3' }];
+const paperSizes = [
+    { label: 'A4', value: 'A4' }, 
+    { label: 'F4', value: 'F4' }, 
+    { label: 'A3', value: 'A3' },
+    { label: 'Kertas Sendiri', value: 'Kertas Sendiri' }
+];
 const colorTypes = [{ label: 'Hitam Putih', value: 'bw' }, { label: 'Warna', value: 'color' }];
 const sideTypes = [{ label: '1 Sisi', value: 'single' }, { label: 'Bolak-balik', value: 'duplex' }];
 

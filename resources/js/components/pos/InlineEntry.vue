@@ -11,7 +11,7 @@ const props = defineProps({
 
 const emit = defineEmits(['item-added']);
 const toast = useToast();
-const { searchProducts, updateProductStock } = usePosData();
+const { searchProducts, updateProductStock, uniquePaperSizes, calculatePrintPrice } = usePosData();
 const { addProductItem } = useCart();
 
 // --- Refs ---
@@ -19,6 +19,10 @@ const searchRef = ref(null);
 const unitRef = ref(null);
 const qtyRef = ref(null);
 const discRef = ref(null);
+const paperRef = ref(null);
+const colorRef = ref(null);
+const sideRef = ref(null);
+const priceRef = ref(null);
 
 // --- State ---
 const searchQuery = ref('');
@@ -32,6 +36,11 @@ const lookupResults = ref([]);
 const lookupIndex = ref(0);
 const lookupVisible = ref(false);
 const entryPhase = ref('search'); // 'search' | 'unit' | 'qty' | 'disc'
+const isPriceManual = ref(false);
+
+const printPaperSize = ref('');
+const printColorType = ref('bw');
+const printSideType = ref('single');
 
 // --- Computed ---
 const unitOptions = computed(() => {
@@ -92,13 +101,18 @@ watch(() => props.priceLevel, () => {
     updatePrice();
 });
 
-watch(qty, (newQty) => {
-    if (selectedProduct.value && selectedProduct.value.type === 'print' && selectedProduct.value.pp) {
-        const { calculatePrintPrice } = usePosData();
-        const pp = selectedProduct.value.pp;
-        const calc = calculatePrintPrice(pp.paper_size, pp.color_type, pp.side_type, newQty);
+watch([qty, printPaperSize, printColorType, printSideType], () => {
+    if (selectedProduct.value && selectedProduct.value.type === 'print') {
+        if (isPriceManual.value && qty.value === 1) return; // Allow manual override unless qty changes? No, if manual, just return? Actually, if manual, recalculating would overwrite. So return.
+        if (isPriceManual.value) return; 
+        
+        const calc = calculatePrintPrice(printPaperSize.value, printColorType.value, printSideType.value, qty.value);
         if (calc) {
             price.value = calc.effectivePrice;
+            selectedProduct.value.pp = calc;
+        } else {
+            price.value = 0;
+            selectedProduct.value.pp = null;
         }
     }
 });
@@ -132,24 +146,73 @@ function resetEntry() {
     lookupVisible.value = false;
     lookupIndex.value = 0;
     entryPhase.value = 'search';
+    isPriceManual.value = false;
+}
+
+function activatePrintMode() {
+    selectProduct({
+        id: 'print-generic',
+        name: 'Jasa Cetak / Print (Pilih Opsi)',
+        type: 'print',
+        stock: 0,
+        cost_price: 0,
+        units: [{ level: 1, unit_name: 'LBR', base_multiplier: 1, price_h1: 0 }],
+        barcode: null,
+        is_generic: true
+    });
+}
+
+function togglePrintMode() {
+    if (selectedProduct.value && selectedProduct.value.type === 'print') {
+        resetEntry();
+        nextTick(() => {
+            const el = searchRef.value?.$el || searchRef.value;
+            const input = el?.tagName === 'INPUT' ? el : el?.querySelector('input');
+            if (input) { input.focus(); input.select(); }
+        });
+    } else {
+        activatePrintMode();
+    }
 }
 
 function selectProduct(product) {
     selectedProduct.value = product;
     searchQuery.value = product.name;
     lookupVisible.value = false;
+    isPriceManual.value = false;
+    
+    if (product.type === 'print') {
+        printPaperSize.value = uniquePaperSizes.value.length > 0 ? uniquePaperSizes.value[0] : 'A4';
+        printColorType.value = 'bw';
+        printSideType.value = 'single';
+        
+        // Trigger calculation explicitly since watch might not run immediately before price update
+        const calc = calculatePrintPrice(printPaperSize.value, printColorType.value, printSideType.value, qty.value);
+        if (calc) {
+            price.value = calc.effectivePrice;
+            product.pp = calc;
+        }
+    }
     
     // Set default unit (level 1, smallest)
     selectedUnitIndex.value = 0;
     updatePrice();
     
-    // Move to unit selection
-    entryPhase.value = 'unit';
-    nextTick(() => {
-        const el = unitRef.value?.$el || unitRef.value;
-        const input = el?.tagName === 'SELECT' ? el : el?.querySelector('select') || el?.querySelector('[role="combobox"]') || el?.querySelector('input');
-        if (input) input.focus();
-    });
+    // Move to next step based on type
+    if (product.type === 'print') {
+        entryPhase.value = 'print_paper';
+        nextTick(() => {
+            const el = paperRef.value?.$el || paperRef.value;
+            if (el) el.focus();
+        });
+    } else {
+        entryPhase.value = 'unit';
+        nextTick(() => {
+            const el = unitRef.value?.$el || unitRef.value;
+            const input = el?.tagName === 'SELECT' ? el : el?.querySelector('select') || el?.querySelector('[role="combobox"]') || el?.querySelector('input');
+            if (input) input.focus();
+        });
+    }
 }
 
 function confirmUnit() {
@@ -190,20 +253,26 @@ function confirmDisc() {
 
     if (p.type === 'print') {
         const { addPrintItem } = useCart();
+        
+        // Ensure manual price also gets a fallback cost_price if not matched
+        const costPerSheet = p.pp ? p.pp.costPerSheet : 0;
+        const printPriceId = p.pp ? p.pp.printPriceId : null;
+        
         addPrintItem({
-            paperSize: p.pp.paper_size,
-            colorType: p.pp.color_type,
-            sideType: p.pp.side_type,
+            paperSize: printPaperSize.value,
+            colorType: printColorType.value,
+            sideType: printSideType.value,
             qty: qty.value,
             unitPrice: price.value,
-            costPerSheet: p.cost_price,
-            printPriceId: p.printPriceId,
+            costPerSheet: costPerSheet,
+            printPriceId: printPriceId,
             isCustom: false,
             addons: [],
             discount: discount.value,
             notes: itemNotes.value
         });
-        toast.add({ severity: 'success', summary: 'Ditambahkan', detail: `${finalDesc} x${qty.value}`, life: 1500 });
+        const labelStr = `Print ${printPaperSize.value} ${printColorType.value === 'bw' ? 'Hitam Putih' : 'Warna'}`;
+        toast.add({ severity: 'success', summary: 'Ditambahkan', detail: `${labelStr} x${qty.value}`, life: 1500 });
     } else {
         addProductItem({
             id: p.id,
@@ -255,7 +324,12 @@ function handleSearchKeydown(e) {
             emit('go-to-payment');
         }
     } else if (e.key === 'Escape') {
-        lookupVisible.value = false;
+        if (selectedProduct.value && selectedProduct.value.type === 'print') {
+            resetEntry();
+            nextTick(() => searchRef.value?.$el?.focus());
+        } else {
+            lookupVisible.value = false;
+        }
     }
 }
 
@@ -269,6 +343,61 @@ function handleUnitKeydown(e) {
     } else if (e.key === 'Enter') {
         e.preventDefault();
         confirmUnit();
+    }
+}
+
+function handlePaperKeydown(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        entryPhase.value = 'print_color';
+        nextTick(() => {
+            const el = colorRef.value?.$el || colorRef.value;
+            if (el) el.focus();
+        });
+    } else if (e.key === 'Escape') {
+        resetEntry();
+        nextTick(() => searchRef.value?.$el?.focus());
+    }
+}
+
+function handleColorKeydown(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        entryPhase.value = 'print_side';
+        nextTick(() => {
+            const el = sideRef.value?.$el || sideRef.value;
+            if (el) el.focus();
+        });
+    } else if (e.key === 'Escape') {
+        resetEntry();
+        nextTick(() => searchRef.value?.$el?.focus());
+    }
+}
+
+function handleSideKeydown(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        entryPhase.value = 'price';
+        nextTick(() => {
+            const el = priceRef.value?.$el || priceRef.value;
+            const input = el?.tagName === 'INPUT' ? el : el?.querySelector('input');
+            if (input) { input.focus(); input.select(); }
+        });
+    } else if (e.key === 'Escape') {
+        resetEntry();
+        nextTick(() => searchRef.value?.$el?.focus());
+    }
+}
+
+function handlePriceKeydown(e) {
+    if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        entryPhase.value = 'qty';
+        nextTick(() => {
+            const el = qtyRef.value?.$el || qtyRef.value;
+            const input = el?.tagName === 'INPUT' ? el : el?.querySelector('input');
+            if (input) { input.focus(); input.select(); }
+        });
     }
 }
 
@@ -303,23 +432,30 @@ defineExpose({ focusSearch });
             <!-- Search / Barcode -->
             <div class="flex-1 flex flex-col gap-1">
                 <label class="text-xs font-semibold text-muted-color">KODE / NAMA</label>
-                <InputText ref="searchRef" v-model="searchQuery"
-                    placeholder="Scan barcode atau ketik nama..."
-                    class="w-full font-mono h-10"
-                    :class="entryPhase === 'search' ? 'ring-2 ring-primary' : ''"
-                    @keydown="handleSearchKeydown"
-                    @focus="entryPhase = 'search'" />
+                <div class="flex gap-2">
+                    <Button icon="pi pi-print" severity="secondary" @click="togglePrintMode" class="h-10 w-10 p-0 shrink-0" 
+                        :outlined="!selectedProduct || selectedProduct.type !== 'print'" 
+                        :class="{'ring-2 ring-primary bg-primary/10': selectedProduct && selectedProduct.type === 'print'}"
+                        title="Toggle Mode Print" />
+                    <InputText ref="searchRef" v-model="searchQuery"
+                        placeholder="Scan barcode atau ketik nama..."
+                        class="w-full font-mono h-10"
+                        :class="entryPhase === 'search' ? 'ring-2 ring-primary' : ''"
+                        @keydown="handleSearchKeydown"
+                        @focus="entryPhase = 'search'"
+                        :readonly="selectedProduct && selectedProduct.type === 'print'" />
+                </div>
             </div>
 
-            <!-- Unit dropdown -->
-            <div class="w-28 flex flex-col gap-1">
+            <!-- Unit dropdown (Hide if Print) -->
+            <div v-if="!selectedProduct || selectedProduct.type !== 'print'" class="w-28 flex flex-col gap-1">
                 <label class="text-xs font-semibold text-muted-color">SATUAN</label>
                 <select ref="unitRef"
                     :value="selectedUnitIndex"
                     @change="selectedUnitIndex = Number($event.target.value)"
                     @keydown="handleUnitKeydown"
                     :disabled="!selectedProduct"
-                    class="w-full h-10 px-2 rounded-md border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-900 text-sm font-semibold"
+                    class="w-full h-10 px-2 rounded-md border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-900 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none"
                     :class="entryPhase === 'unit' ? 'ring-2 ring-primary' : ''">
                     <option v-for="opt in unitOptions" :key="opt.value" :value="opt.value">
                         {{ opt.label }}
@@ -328,14 +464,42 @@ defineExpose({ focusSearch });
                 </select>
             </div>
 
+            <!-- Print Options Inline -->
+            <template v-if="selectedProduct && selectedProduct.type === 'print'">
+                <div class="w-32 flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-muted-color">UKURAN</label>
+                    <select ref="paperRef" v-model="printPaperSize" @change="isPriceManual = false" @keydown="handlePaperKeydown" class="w-full h-10 px-2 rounded-md border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-900 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none" :class="entryPhase === 'print_paper' ? 'ring-2 ring-primary' : ''">
+                        <option v-for="sz in uniquePaperSizes" :key="sz" :value="sz">{{ sz }}</option>
+                    </select>
+                </div>
+                <div class="w-28 flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-muted-color">TINTA</label>
+                    <select ref="colorRef" v-model="printColorType" @change="isPriceManual = false" @keydown="handleColorKeydown" class="w-full h-10 px-2 rounded-md border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-900 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none" :class="entryPhase === 'print_color' ? 'ring-2 ring-primary' : ''">
+                        <option value="bw">Hitam Putih</option>
+                        <option value="color">Warna</option>
+                    </select>
+                </div>
+                <div class="w-28 flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-muted-color">SISI</label>
+                    <select ref="sideRef" v-model="printSideType" @change="isPriceManual = false" @keydown="handleSideKeydown" class="w-full h-10 px-2 rounded-md border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-900 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none" :class="entryPhase === 'print_side' ? 'ring-2 ring-primary' : ''">
+                        <option value="single">1 Sisi</option>
+                        <option value="duplex">Bolak-balik</option>
+                    </select>
+                </div>
+            </template>
+
             <!-- Price -->
             <div class="w-32 flex flex-col gap-1">
                 <label class="text-xs font-semibold text-muted-color">HARGA</label>
-                <InputNumber v-model="price" mode="currency" currency="IDR" locale="id-ID" :min="0"
+                <InputNumber ref="priceRef" :modelValue="price" @update:modelValue="val => { price = val; isPriceManual = true; }" mode="currency" currency="IDR" locale="id-ID" :min="0"
                     class="w-full h-10" inputClass="w-full h-full text-right font-bold px-2 border border-surface-300 dark:border-surface-600 rounded-md"
                     :disabled="!selectedProduct" 
-                    :readonly="selectedProduct && (selectedProduct.type === 'barang' || selectedProduct.type === 'print')"
-                    :class="(selectedProduct && (selectedProduct.type === 'barang' || selectedProduct.type === 'print')) ? 'bg-surface-100 dark:bg-surface-800' : ''" />
+                    :readonly="selectedProduct && (selectedProduct.type === 'barang')"
+                    :class="[
+                        (selectedProduct && (selectedProduct.type === 'barang')) ? 'bg-surface-100 dark:bg-surface-800' : '',
+                        entryPhase === 'price' ? 'ring-2 ring-primary rounded-md' : ''
+                    ]"
+                    @keydown="handlePriceKeydown" />
             </div>
 
             <!-- Qty -->
@@ -358,6 +522,8 @@ defineExpose({ focusSearch });
                     @keydown="handleDiscKeydown" />
             </div>
         </div>
+
+
 
         <!-- Jasa/Print Notes Row -->
         <div v-if="selectedProduct && (selectedProduct.type === 'jasa' || selectedProduct.type === 'print')" class="flex gap-2 items-end">

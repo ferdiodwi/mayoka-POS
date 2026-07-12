@@ -22,7 +22,7 @@ class PrintPriceController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'paper_size' => 'required|in:A4,F4,A3',
+            'paper_size' => 'required|in:A4,F4,A3,Kertas Sendiri',
             'color_type' => 'required|in:bw,color',
             'side_type' => 'required|in:single,duplex',
             'price_per_sheet' => 'required|numeric|min:0',
@@ -76,7 +76,7 @@ class PrintPriceController extends Controller
     public function calculate(Request $request): JsonResponse
     {
         $request->validate([
-            'paper_size' => 'required|in:A4,F4,A3',
+            'paper_size' => 'required|in:A4,F4,A3,Kertas Sendiri',
             'color_type' => 'required|in:bw,color',
             'side_type' => 'required|in:single,duplex',
             'qty' => 'required|integer|min:1',
