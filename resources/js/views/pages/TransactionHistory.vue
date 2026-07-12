@@ -1,11 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { apiGet } from '@/composables/useApi';
+import { apiGet, apiPost } from '@/composables/useApi';
 import ReturnDialog from '@/components/pos/ReturnDialog.vue';
+import { useToast } from 'primevue/usetoast';
 
+const toast = useToast();
 const loading = ref(false);
 const transactions = ref([]);
 const receiptData = ref(null);
+const activeTxId = ref(null);
 const showReceipt = ref(false);
 const currentPage = ref(1);
 const totalRecords = ref(0);
@@ -58,84 +61,23 @@ async function reprintReceipt(txId) {
     try {
         const data = await apiGet(`/api/transactions/${txId}/receipt`);
         receiptData.value = data.receipt;
+        activeTxId.value = txId;
         showReceipt.value = true;
     } catch (err) {
         console.error('Gagal memuat struk:', err);
     }
 }
 
-function printReceipt() {
-    const printContent = document.getElementById('receipt-print-area');
-    if (!printContent) return;
-
-    // Buat container sementara langsung di bawah body
-    const tempDiv = document.createElement('div');
-    tempDiv.id = 'temp-print-container';
-    tempDiv.innerHTML = printContent.innerHTML;
-    document.body.appendChild(tempDiv);
-
-    // Tambahkan style cetak sementara untuk menyembunyikan elemen lain
-    const style = document.createElement('style');
-    style.id = 'temp-print-style';
-    style.innerHTML = `
-        @media print {
-            body > * {
-                display: none !important;
-            }
-            #temp-print-container {
-                display: block !important;
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-            }
-            @page {
-                margin: 0;
-                size: 58mm auto;
-            }
-            * { box-sizing: border-box; margin: 0; padding: 0; font-weight: bold; }
-            body {
-                font-family: Arial, Helvetica, sans-serif;
-                font-size: 10px;
-                width: 100%;
-                max-width: 45mm;
-                margin: 0;
-                padding: 0mm 4mm 15mm 0mm;
-                color: #000;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            p { margin: 0; padding: 0; }
-            .text-center { text-align: center; }
-            .text-xs { font-size: 9px; }
-            .text-sm { font-size: 10px; }
-            .text-lg { font-size: 12px; font-weight: bold; }
-            .font-bold { font-weight: bold; }
-            .font-mono { font-family: Arial, Helvetica, sans-serif; }
-            .text-muted-color { color: #000; }
-            .text-red-500 { color: #000; }
-            .border-dashed { border: none; border-top: 1px dashed #000; margin: 5px 0; }
-            .flex { display: flex; }
-            .justify-between { justify-content: space-between; }
-            .py-1 { padding-top: 3px; padding-bottom: 3px; }
-            .mt-2 { margin-top: 5px; }
-            .mb-3 { margin-bottom: 8px; }
-            .ml-2 { margin-left: 4px; }
-            .item-desc { font-size: 10px; font-weight: bold; word-break: break-word; }
-            .item-calc { display: flex; justify-content: space-between; font-size: 9px; }
-            .total-row { font-size: 11px; font-weight: bold; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 4px 0; margin: 3px 0; }
-            .print-spacer { display: block !important; height: 60mm; }
-            .print-spacer p { margin: 0; padding: 0; line-height: 1.5; font-size: 12px; }
-        }
-    `;
-    document.head.appendChild(style);
-
-    // Panggil print pada main window agar --kiosk-printing terdeteksi
-    window.print();
-
-    // Hapus kembali elemen sementara setelah selesai cetak
-    document.body.removeChild(tempDiv);
-    document.head.removeChild(style);
+async function printReceipt() {
+    if (!activeTxId.value) return;
+    
+    try {
+        await apiPost(`/api/transactions/${activeTxId.value}/print`);
+        toast.add({ severity: 'success', summary: 'Cetak Berhasil', detail: 'Perintah cetak terkirim ke printer.', life: 3000 });
+        showReceipt.value = false;
+    } catch (err) {
+        toast.add({ severity: 'error', summary: 'Cetak Gagal', detail: err.message || 'Gagal terhubung ke printer', life: 5000 });
+    }
 }
 
 onMounted(fetchTransactions);
@@ -261,17 +203,6 @@ onMounted(fetchTransactions);
 
             <hr class="border-dashed" />
             <p class="text-center text-xs mt-2 m-0">Terima Kasih Atas Kunjungan Anda</p>
-            <p class="text-center text-xs mt-2 m-0">🙏🏻</p>
-            <div class="print-spacer">
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-            </div>
         </div>
 
         <template #footer>

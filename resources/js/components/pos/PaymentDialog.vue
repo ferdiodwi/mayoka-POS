@@ -358,16 +358,6 @@ watch(() => props.visible, (val) => {
 
             <hr class="border-dashed" />
             <p class="text-center text-xs mt-2 m-0">Terima Kasih Atas Kunjungan Anda</p>
-            <p class="text-center text-xs mt-2 m-0">🙏🏻</p>
-            <div class="print-spacer">
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
             </div>
         </div>
 

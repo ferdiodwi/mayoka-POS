@@ -212,6 +212,21 @@ class TransactionController extends Controller
     }
 
     /**
+     * Print receipt directly using ESC/POS.
+     */
+    public function print(Transaction $transaction): JsonResponse
+    {
+        $receiptData = $this->buildReceiptData($transaction);
+        
+        try {
+            $this->printRawReceipt($receiptData);
+            return response()->json(['message' => 'Struk berhasil dicetak.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal print: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Build receipt data structure for printing.
      */
     private function buildReceiptData(Transaction $transaction): array
