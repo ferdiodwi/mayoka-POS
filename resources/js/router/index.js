@@ -14,7 +14,7 @@ const router = createRouter({
                     path: '/',
                     name: 'dashboard',
                     component: () => import('@/views/Dashboard.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'reports.read' }
                 },
                 {
                     path: '/pos',
@@ -31,88 +31,88 @@ const router = createRouter({
                     path: '/users',
                     name: 'users',
                     component: () => import('@/views/pages/Users.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'users.read' }
                 },
                 // Master Data (Owner)
                 {
                     path: '/categories',
                     name: 'categories',
                     component: () => import('@/views/pages/Categories.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'categories.read' }
                 },
                 {
                     path: '/products',
                     name: 'products',
                     component: () => import('@/views/pages/Products.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'products.read' }
                 },
                 {
                     path: '/customers',
                     name: 'customers',
                     component: () => import('@/views/pages/Customers.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'customers.read' }
                 },
                 {
                     path: '/print-prices',
                     name: 'printPrices',
                     component: () => import('@/views/pages/PrintPrices.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'print_prices.read' }
                 },
                 {
                     path: '/addon-services',
                     name: 'addonServices',
                     component: () => import('@/views/pages/AddonServices.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'addons.read' }
                 },
                 // Laporan (Owner)
                 {
                     path: '/reports/sales',
                     name: 'reportSales',
                     component: () => import('@/views/pages/reports/Sales.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'reports.read' }
                 },
                 {
                     path: '/reports/cashier',
                     name: 'reportCashier',
                     component: () => import('@/views/pages/reports/CashierReport.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'reports.read' }
                 },
                 {
                     path: '/reports/shifts',
                     name: 'reportShifts',
                     component: () => import('@/views/pages/reports/ShiftReport.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'reports.read' }
                 },
                 {
                     path: '/reports/stock',
                     name: 'reportStock',
                     component: () => import('@/views/pages/reports/StockReport.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'reports.read' }
                 },
                 {
                     path: '/reports/profit-loss',
                     name: 'reportProfitLoss',
                     component: () => import('@/views/pages/reports/ProfitLoss.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'reports.read' }
                 },
                 {
                     path: '/reports/cash-flow',
                     name: 'reportCashFlow',
                     component: () => import('@/views/pages/reports/CashFlow.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'reports.read' }
                 },
                 // Keuangan (Owner)
                 {
                     path: '/purchases',
                     name: 'purchases',
                     component: () => import('@/views/pages/Purchases.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'purchases.read' }
                 },
                 {
                     path: '/expenses',
                     name: 'expenses',
                     component: () => import('@/views/pages/Expenses.vue'),
-                    meta: { role: 'owner' }
+                    meta: { permission: 'expenses.read' }
                 },
             ]
         },
@@ -136,7 +136,7 @@ const router = createRouter({
 
 // Navigation guard
 router.beforeEach(async (to, from) => {
-    const { user, fetchUser, isAuthenticated } = useAuth();
+    const { user, fetchUser, isAuthenticated, hasPermission } = useAuth();
 
     if (to.name === 'login') {
         if (isAuthenticated.value) {
@@ -153,7 +153,7 @@ router.beforeEach(async (to, from) => {
         return { name: 'login' };
     }
 
-    if (to.meta.role && user.value?.role !== to.meta.role) {
+    if (to.meta.permission && !hasPermission(to.meta.permission)) {
         return { name: 'accessDenied' };
     }
 

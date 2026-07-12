@@ -3,9 +3,11 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/composables/useApi';
+import { useAuth } from '@/composables/useAuth';
 
 const toast = useToast();
 const confirm = useConfirm();
+const { hasPermission } = useAuth();
 
 const products = ref([]);
 const categories = ref([]);
@@ -259,7 +261,7 @@ onUnmounted(() => {
     <div class="card">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-semibold m-0">Manajemen Produk</h2>
-            <Button label="Tambah Produk" icon="pi pi-plus" @click="openCreate" />
+            <Button v-if="hasPermission('products.create')" label="Tambah Produk" icon="pi pi-plus" @click="openCreate" />
         </div>
 
         <!-- Filters -->
@@ -317,13 +319,13 @@ onUnmounted(() => {
                         :severity="data.is_active ? 'success' : 'danger'" />
                 </template>
             </Column>
-            <Column header="Aksi" style="width: 10rem">
+            <Column header="Aksi" style="width: 10rem" v-if="hasPermission('products.update') || hasPermission('products.delete')">
                 <template #body="{ data }">
                     <div class="flex gap-1">
-                        <Button icon="pi pi-pencil" severity="info" text rounded size="small" @click="openEdit(data)" />
-                        <Button v-if="data.type === 'barang'" icon="pi pi-sort-alt" severity="warn" text rounded
+                        <Button v-if="hasPermission('products.update')" icon="pi pi-pencil" severity="info" text rounded size="small" @click="openEdit(data)" />
+                        <Button v-if="hasPermission('products.update') && data.type === 'barang'" icon="pi pi-sort-alt" severity="warn" text rounded
                             size="small" v-tooltip="'Adjustment Stok'" @click="openAdjust(data)" />
-                        <Button v-if="data.is_active" icon="pi pi-ban" severity="danger" text rounded size="small"
+                        <Button v-if="hasPermission('products.delete') && data.is_active" icon="pi pi-ban" severity="danger" text rounded size="small"
                             @click="confirmDeactivate(data)" />
                     </div>
                 </template>

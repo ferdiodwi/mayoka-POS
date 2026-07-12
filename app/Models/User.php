@@ -16,6 +16,7 @@ class User extends Authenticatable
         'password',
         'role',
         'is_active',
+        'permissions',
     ];
 
     protected $hidden = [
@@ -30,6 +31,7 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'permissions' => 'array',
         ];
     }
 
@@ -55,6 +57,19 @@ class User extends Authenticatable
     public function isKasir(): bool
     {
         return $this->role === 'kasir';
+    }
+
+    /**
+     * Check if user has a specific permission.
+     */
+    public function hasPermission(string $permission): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+
+        $permissions = $this->permissions ?? [];
+        return in_array($permission, $permissions);
     }
 
     /**

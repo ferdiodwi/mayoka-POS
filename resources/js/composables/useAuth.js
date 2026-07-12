@@ -8,6 +8,12 @@ export function useAuth() {
     const isOwner = computed(() => user.value?.role === 'owner');
     const isKasir = computed(() => user.value?.role === 'kasir');
 
+    function hasPermission(permission) {
+        if (isOwner.value) return true;
+        if (!user.value || !user.value.permissions) return false;
+        return user.value.permissions.includes(permission);
+    }
+
     async function login(username, password) {
         loading.value = true;
         try {
@@ -85,5 +91,6 @@ export function useAuth() {
         login,
         logout,
         fetchUser,
+        hasPermission,
     };
 }

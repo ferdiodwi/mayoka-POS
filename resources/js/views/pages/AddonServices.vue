@@ -2,8 +2,10 @@
 import { ref, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/composables/useApi';
+import { useAuth } from '@/composables/useAuth';
 
 const toast = useToast();
+const { hasPermission } = useAuth();
 
 const addons = ref([]);
 const loading = ref(false);
@@ -73,7 +75,7 @@ onMounted(fetchData);
     <div class="card">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-semibold m-0">Jasa Tambahan (Addon)</h2>
-            <Button label="Tambah Jasa" icon="pi pi-plus" @click="openCreate" />
+            <Button v-if="hasPermission('addons.create')" label="Tambah Jasa" icon="pi pi-plus" @click="openCreate" />
         </div>
 
         <DataTable :value="addons" :loading="loading" stripedRows dataKey="id"
@@ -91,11 +93,11 @@ onMounted(fetchData);
                         :severity="data.is_active ? 'success' : 'danger'" />
                 </template>
             </Column>
-            <Column header="Aksi" style="width: 10rem">
+            <Column header="Aksi" style="width: 10rem" v-if="hasPermission('addons.update') || hasPermission('addons.delete')">
                 <template #body="{ data }">
                     <div class="flex gap-2">
-                        <Button icon="pi pi-pencil" severity="info" text rounded @click="openEdit(data)" />
-                        <Button v-if="data.is_active" icon="pi pi-ban" severity="danger" text rounded
+                        <Button v-if="hasPermission('addons.update')" icon="pi pi-pencil" severity="info" text rounded @click="openEdit(data)" />
+                        <Button v-if="hasPermission('addons.delete') && data.is_active" icon="pi pi-ban" severity="danger" text rounded
                             @click="deactivate(data)" />
                     </div>
                 </template>

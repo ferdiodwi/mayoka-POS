@@ -3,20 +3,35 @@ import { ref, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
 
+import { useAuth } from '@/composables/useAuth';
+
 const toast = useToast();
 const confirm = useConfirm();
+const { hasPermission } = useAuth();
 
 const users = ref([]);
 const loading = ref(false);
 const dialogVisible = ref(false);
 const dialogMode = ref('create'); // 'create' or 'edit'
-const form = ref({ name: '', username: '', password: '', role: 'kasir', is_active: true });
+const form = ref({ name: '', username: '', password: '', role: 'kasir', is_active: true, permissions: [] });
 const editingUserId = ref(null);
 const submitting = ref(false);
 
 const roleOptions = [
     { label: 'Kasir', value: 'kasir' },
     { label: 'Owner', value: 'owner' },
+];
+
+const permissionModules = [
+    { label: 'Kategori', value: 'categories', crud: true },
+    { label: 'Produk & Stok', value: 'products', crud: true },
+    { label: 'Pelanggan', value: 'customers', crud: true },
+    { label: 'Harga Cetak', value: 'print_prices', crud: true },
+    { label: 'Jasa Tambahan', value: 'addons', crud: true },
+    { label: 'Pembelian Barang', value: 'purchases', crud: true },
+    { label: 'Pengeluaran', value: 'expenses', crud: true },
+    { label: 'Manajemen User', value: 'users', crud: true },
+    { label: 'Laporan & Dashboard', value: 'reports', crud: false },
 ];
 
 function getCsrfToken() {
@@ -42,7 +57,7 @@ async function fetchUsers() {
 
 function openCreateDialog() {
     dialogMode.value = 'create';
-    form.value = { name: '', username: '', password: '', role: 'kasir', is_active: true };
+    form.value = { name: '', username: '', password: '', role: 'kasir', is_active: true, permissions: [] };
     editingUserId.value = null;
     dialogVisible.value = true;
 }
@@ -55,6 +70,7 @@ function openEditDialog(user) {
         password: '',
         role: user.role,
         is_active: user.is_active,
+        permissions: user.permissions || [],
     };
     editingUserId.value = user.id;
     dialogVisible.value = true;
@@ -141,7 +157,7 @@ onMounted(fetchUsers);
     <div class="card">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-semibold m-0">Manajemen User</h2>
-            <Button label="Tambah User" icon="pi pi-plus" @click="openCreateDialog" />
+            <Button v-if="hasPermission('users.create')" label="Tambah User" icon="pi pi-plus" @click="openCreateDialog" />
         </div>
 
         <DataTable :value="users" :loading="loading" stripedRows paginator :rows="10" dataKey="id"
@@ -163,8 +179,8 @@ onMounted(fetchUsers);
             <Column header="Aksi" style="width: 12rem">
                 <template #body="{ data }">
                     <div class="flex gap-2">
-                        <Button icon="pi pi-pencil" severity="info" text rounded @click="openEditDialog(data)" />
-                        <Button v-if="data.is_active" icon="pi pi-ban" severity="danger" text rounded
+                        <Button v-if="hasPermission('users.update')" icon="pi pi-pencil" severity="info" text rounded @click="openEditDialog(data)" />
+                        <Button v-if="hasPermission('users.delete') && data.is_active" icon="pi pi-ban" severity="danger" text rounded
                             @click="confirmDeactivate(data)" />
                     </div>
                 </template>
@@ -199,6 +215,32 @@ onMounted(fetchUsers);
                     <Select id="form-role" v-model="form.role" :options="roleOptions" optionLabel="label"
                         optionValue="value" placeholder="Pilih role" />
                 </div>
+                
+                <!-- Permissions Checklist for Kasir -->
+                <div v-if="form.role === 'kasir'" class="flex flex-col gap-2 p-3 border border-surface-200 dark:border-surface-700 rounded-lg bg-surface-50 dark:bg-surface-800">
+                    <label class="font-semibold text-sm mb-2">Hak Akses Matriks (CRUD)</label>
+                    <table class="w-full text-left text-sm border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="pb-2 font-semibold">Modul</th>
+                                <th class="pb-2 font-semibold text-center" title="Read (Lihat)">Lihat</th>
+                                <th class="pb-2 font-semibold text-center" title="Create (Tambah)">Tambah</th>
+                                <th class="pb-2 font-semibold text-center" title="Update (Edit)">Edit</th>
+                                <th class="pb-2 font-semibold text-center" title="Delete (Hapus)">Hapus</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="mod in permissionModules" :key="mod.value" class="border-t border-surface-200 dark:border-surface-700">
+                                <td class="py-2">{{ mod.label }}</td>
+                                <td class="py-2 text-center"><Checkbox :inputId="mod.value + '.read'" :value="mod.value + '.read'" v-model="form.permissions" /></td>
+                                <td class="py-2 text-center"><Checkbox v-if="mod.crud" :inputId="mod.value + '.create'" :value="mod.value + '.create'" v-model="form.permissions" /></td>
+                                <td class="py-2 text-center"><Checkbox v-if="mod.crud" :inputId="mod.value + '.update'" :value="mod.value + '.update'" v-model="form.permissions" /></td>
+                                <td class="py-2 text-center"><Checkbox v-if="mod.crud" :inputId="mod.value + '.delete'" :value="mod.value + '.delete'" v-model="form.permissions" /></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div v-if="dialogMode === 'edit'" class="flex items-center gap-2">
                     <ToggleSwitch v-model="form.is_active" />
                     <label class="font-semibold">{{ form.is_active ? 'Aktif' : 'Nonaktif' }}</label>

@@ -3,9 +3,11 @@ import { ref, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/composables/useApi';
+import { useAuth } from '@/composables/useAuth';
 
 const toast = useToast();
 const confirm = useConfirm();
+const { hasPermission } = useAuth();
 
 const expenses = ref([]);
 const summary = ref({ total: 0, by_category: {} });
@@ -155,7 +157,7 @@ onMounted(fetchExpenses);
     <div class="card">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-semibold m-0">Pengeluaran Operasional</h2>
-            <Button label="Tambah Pengeluaran" icon="pi pi-plus" @click="openCreate" />
+            <Button v-if="hasPermission('expenses.create')" label="Tambah Pengeluaran" icon="pi pi-plus" @click="openCreate" />
         </div>
 
         <!-- Filters -->
@@ -209,11 +211,11 @@ onMounted(fetchExpenses);
             <Column header="Dicatat" style="width: 6rem">
                 <template #body="{ data }">{{ data.user?.name }}</template>
             </Column>
-            <Column header="Aksi" style="width: 6rem">
+            <Column header="Aksi" style="width: 6rem" v-if="hasPermission('expenses.update') || hasPermission('expenses.delete')">
                 <template #body="{ data }">
                     <div class="flex gap-1">
-                        <Button icon="pi pi-pencil" severity="info" text rounded size="small" @click="openEdit(data)" />
-                        <Button icon="pi pi-trash" severity="danger" text rounded size="small" @click="confirmDelete(data)" />
+                        <Button v-if="hasPermission('expenses.update')" icon="pi pi-pencil" severity="info" text rounded size="small" @click="openEdit(data)" />
+                        <Button v-if="hasPermission('expenses.delete')" icon="pi pi-trash" severity="danger" text rounded size="small" @click="confirmDelete(data)" />
                     </div>
                 </template>
             </Column>

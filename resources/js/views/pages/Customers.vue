@@ -3,8 +3,10 @@ import { ref, onMounted } from 'vue';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/composables/useApi';
+import { useAuth } from '@/composables/useAuth';
 
 const toast = useToast();
+const { hasPermission } = useAuth();
 const customers = ref([]);
 const loading = ref(true);
 const customerDialog = ref(false);
@@ -108,9 +110,9 @@ async function deleteCustomer() {
         <Toast />
         <Toolbar class="mb-4">
             <template #start>
-                        <Button label="Tambah" icon="pi pi-plus" severity="success" class="mr-2" @click="openNew" />
-                    </template>
-                </Toolbar>
+                <Button v-if="hasPermission('customers.create')" label="Tambah" icon="pi pi-plus" severity="success" class="mr-2" @click="openNew" />
+            </template>
+        </Toolbar>
 
                 <DataTable ref="dt" :value="customers" :loading="loading" dataKey="id"
                     :paginator="true" :rows="10" :filters="filters"
@@ -140,10 +142,10 @@ async function deleteCustomer() {
                         </template>
                     </Column>
                     <Column field="phone" header="Telepon" style="width: 15%"></Column>
-                    <Column header="Aksi" style="width: 15%">
+                    <Column header="Aksi" style="width: 15%" v-if="hasPermission('customers.update') || hasPermission('customers.delete')">
                         <template #body="slotProps">
-                            <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editCustomer(slotProps.data)" />
-                            <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDelete(slotProps.data)" 
+                            <Button v-if="hasPermission('customers.update')" icon="pi pi-pencil" outlined rounded class="mr-2" @click="editCustomer(slotProps.data)" />
+                            <Button v-if="hasPermission('customers.delete')" icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDelete(slotProps.data)" 
                                 :disabled="slotProps.data.code === '10001'" />
                         </template>
                     </Column>

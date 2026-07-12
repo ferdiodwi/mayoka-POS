@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => RoleMiddleware::class,
+            'permission' => \App\Http\Middleware\PermissionMiddleware::class,
         ]);
 
         // API routes need session & cookies for session-based auth

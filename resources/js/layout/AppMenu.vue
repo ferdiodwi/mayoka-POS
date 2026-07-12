@@ -3,64 +3,61 @@ import { computed } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import AppMenuItem from './AppMenuItem.vue';
 
-const { isOwner } = useAuth();
+const { hasPermission } = useAuth();
 
-const ownerMenu = [
+const rawMenu = [
     {
         label: 'Menu Utama',
         items: [
-            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' },
+            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/', permission: 'reports.read' },
             { label: 'Point of Sale', icon: 'pi pi-fw pi-shopping-cart', to: '/pos' },
         ]
     },
     {
         label: 'Master Data',
         items: [
-            { label: 'Kategori', icon: 'pi pi-fw pi-tag', to: '/categories' },
-            { label: 'Produk', icon: 'pi pi-fw pi-box', to: '/products' },
-            { label: 'Pelanggan', icon: 'pi pi-fw pi-users', to: '/customers' },
-            { label: 'Harga Cetak', icon: 'pi pi-fw pi-print', to: '/print-prices' },
-            { label: 'Jasa Tambahan', icon: 'pi pi-fw pi-plus-circle', to: '/addon-services' },
+            { label: 'Kategori', icon: 'pi pi-fw pi-tag', to: '/categories', permission: 'categories.read' },
+            { label: 'Produk', icon: 'pi pi-fw pi-box', to: '/products', permission: 'products.read' },
+            { label: 'Pelanggan', icon: 'pi pi-fw pi-users', to: '/customers', permission: 'customers.read' },
+            { label: 'Harga Cetak', icon: 'pi pi-fw pi-print', to: '/print-prices', permission: 'print_prices.read' },
+            { label: 'Jasa Tambahan', icon: 'pi pi-fw pi-plus-circle', to: '/addon-services', permission: 'addons.read' },
         ]
     },
     {
         label: 'Keuangan',
         items: [
-            { label: 'Pembelian Barang', icon: 'pi pi-fw pi-truck', to: '/purchases' },
-            { label: 'Pengeluaran', icon: 'pi pi-fw pi-credit-card', to: '/expenses' },
-            { label: 'Laba Rugi', icon: 'pi pi-fw pi-chart-line', to: '/reports/profit-loss' },
-            { label: 'Arus Kas (Cash Flow)', icon: 'pi pi-fw pi-wallet', to: '/reports/cash-flow' },
+            { label: 'Pembelian Barang', icon: 'pi pi-fw pi-truck', to: '/purchases', permission: 'purchases.read' },
+            { label: 'Pengeluaran', icon: 'pi pi-fw pi-credit-card', to: '/expenses', permission: 'expenses.read' },
+            { label: 'Laba Rugi', icon: 'pi pi-fw pi-chart-line', to: '/reports/profit-loss', permission: 'reports.read' },
+            { label: 'Arus Kas (Cash Flow)', icon: 'pi pi-fw pi-wallet', to: '/reports/cash-flow', permission: 'reports.read' },
         ]
     },
     {
         label: 'Laporan',
         items: [
             { label: 'Riwayat Transaksi', icon: 'pi pi-fw pi-history', to: '/transactions' },
-            { label: 'Laporan Penjualan', icon: 'pi pi-fw pi-chart-bar', to: '/reports/sales' },
-            { label: 'Laporan Kasir', icon: 'pi pi-fw pi-users', to: '/reports/cashier' },
-            { label: 'Laporan Shift', icon: 'pi pi-fw pi-clock', to: '/reports/shifts' },
-            { label: 'Rekap Stok', icon: 'pi pi-fw pi-warehouse', to: '/reports/stock' },
+            { label: 'Laporan Penjualan', icon: 'pi pi-fw pi-chart-bar', to: '/reports/sales', permission: 'reports.read' },
+            { label: 'Laporan Kasir', icon: 'pi pi-fw pi-users', to: '/reports/cashier', permission: 'reports.read' },
+            { label: 'Laporan Shift', icon: 'pi pi-fw pi-clock', to: '/reports/shifts', permission: 'reports.read' },
+            { label: 'Rekap Stok', icon: 'pi pi-fw pi-warehouse', to: '/reports/stock', permission: 'reports.read' },
         ]
     },
     {
         label: 'Manajemen',
         items: [
-            { label: 'Manajemen User', icon: 'pi pi-fw pi-user-edit', to: '/users' },
+            { label: 'Manajemen User', icon: 'pi pi-fw pi-user-edit', to: '/users', permission: 'users.read' },
         ]
     },
 ];
 
-const kasirMenu = [
-    {
-        label: 'Kasir',
-        items: [
-            { label: 'Point of Sale', icon: 'pi pi-fw pi-shopping-cart', to: '/pos' },
-            { label: 'Riwayat Transaksi', icon: 'pi pi-fw pi-history', to: '/transactions' },
-        ]
-    }
-];
-
-const model = computed(() => isOwner.value ? ownerMenu : kasirMenu);
+const model = computed(() => {
+    return rawMenu.map(group => {
+        return {
+            ...group,
+            items: group.items.filter(item => !item.permission || hasPermission(item.permission))
+        };
+    }).filter(group => group.items.length > 0);
+});
 </script>
 
 <template>

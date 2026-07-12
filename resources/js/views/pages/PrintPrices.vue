@@ -2,8 +2,10 @@
 import { ref, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/composables/useApi';
+import { useAuth } from '@/composables/useAuth';
 
 const toast = useToast();
+const { hasPermission } = useAuth();
 
 const printPrices = ref([]);
 const loading = ref(false);
@@ -135,7 +137,7 @@ onMounted(fetchData);
     <div class="card">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-semibold m-0">Harga Cetak</h2>
-            <Button label="Tambah Kombinasi" icon="pi pi-plus" @click="openCreatePrice" />
+            <Button v-if="hasPermission('print_prices.create')" label="Tambah Kombinasi" icon="pi pi-plus" @click="openCreatePrice" />
         </div>
 
         <DataTable :value="printPrices" :loading="loading" v-model:expandedRows="expandedRows"
@@ -164,11 +166,11 @@ onMounted(fetchData);
                     <Tag :value="`${data.tiers?.length || 0} tier`" severity="info" />
                 </template>
             </Column>
-            <Column header="Aksi" style="width: 8rem">
+            <Column header="Aksi" style="width: 8rem" v-if="hasPermission('print_prices.update') || hasPermission('print_prices.delete')">
                 <template #body="{ data }">
                     <div class="flex gap-1">
-                        <Button icon="pi pi-pencil" severity="info" text rounded size="small" @click="openEditPrice(data)" />
-                        <Button icon="pi pi-trash" severity="danger" text rounded size="small" @click="deletePrice(data)" />
+                        <Button v-if="hasPermission('print_prices.update')" icon="pi pi-pencil" severity="info" text rounded size="small" @click="openEditPrice(data)" />
+                        <Button v-if="hasPermission('print_prices.delete')" icon="pi pi-trash" severity="danger" text rounded size="small" @click="deletePrice(data)" />
                     </div>
                 </template>
             </Column>
@@ -178,7 +180,7 @@ onMounted(fetchData);
                 <div class="p-4">
                     <div class="flex items-center justify-between mb-3">
                         <h4 class="m-0 text-lg">Tier Harga Grosir — {{ data.paper_size }} {{ colorLabel(data.color_type) }}</h4>
-                        <Button label="Tambah Tier" icon="pi pi-plus" size="small" outlined @click="openCreateTier(data.id)" />
+                        <Button v-if="hasPermission('print_prices.create')" label="Tambah Tier" icon="pi pi-plus" size="small" outlined @click="openCreateTier(data.id)" />
                     </div>
                     <DataTable :value="data.tiers" dataKey="id" emptyMessage="Belum ada tier grosir." class="p-datatable-sm">
                         <Column header="Min. Qty (lembar)">
@@ -187,11 +189,11 @@ onMounted(fetchData);
                         <Column header="Harga/Lembar">
                             <template #body="{ data: tier }">{{ formatRp(tier.price_per_sheet) }}</template>
                         </Column>
-                        <Column header="Aksi" style="width: 8rem">
+                        <Column header="Aksi" style="width: 8rem" v-if="hasPermission('print_prices.update') || hasPermission('print_prices.delete')">
                             <template #body="{ data: tier }">
                                 <div class="flex gap-1">
-                                    <Button icon="pi pi-pencil" severity="info" text rounded size="small" @click="openEditTier(tier)" />
-                                    <Button icon="pi pi-trash" severity="danger" text rounded size="small" @click="deleteTier(tier)" />
+                                    <Button v-if="hasPermission('print_prices.update')" icon="pi pi-pencil" severity="info" text rounded size="small" @click="openEditTier(tier)" />
+                                    <Button v-if="hasPermission('print_prices.delete')" icon="pi pi-trash" severity="danger" text rounded size="small" @click="deleteTier(tier)" />
                                 </div>
                             </template>
                         </Column>

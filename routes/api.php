@@ -59,53 +59,49 @@ Route::middleware('auth:web')->group(function () {
     Route::post('/transactions/{transaction}/print', [TransactionController::class, 'print']);
     Route::post('/transactions/{transaction}/return', [App\Http\Controllers\ReturnController::class, 'store']);
 
-    // Owner-only routes
-    Route::middleware('role:owner')->group(function () {
+    // User management
+    Route::get('/users', [UserController::class, 'index'])->middleware('permission:users.read');
+    Route::post('/users', [UserController::class, 'store'])->middleware('permission:users.create');
+    Route::put('/users/{user}', [UserController::class, 'update'])->middleware('permission:users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->middleware('permission:users.delete');
 
-        // User management
-        Route::get('/users', [UserController::class, 'index']);
-        Route::post('/users', [UserController::class, 'store']);
-        Route::put('/users/{user}', [UserController::class, 'update']);
-        Route::delete('/users/{user}', [UserController::class, 'destroy']);
+    // Customer management
+    Route::get('/customers', [CustomerController::class, 'index'])->middleware('permission:customers.read');
+    Route::post('/customers', [CustomerController::class, 'store'])->middleware('permission:customers.create');
+    Route::put('/customers/{customer}', [CustomerController::class, 'update'])->middleware('permission:customers.update');
+    Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])->middleware('permission:customers.delete');
 
-        // Customer management
-        Route::get('/customers', [CustomerController::class, 'index']);
-        Route::post('/customers', [CustomerController::class, 'store']);
-        Route::put('/customers/{customer}', [CustomerController::class, 'update']);
-        Route::delete('/customers/{customer}', [CustomerController::class, 'destroy']);
+    // Shift history
+    Route::get('/shifts', [ShiftController::class, 'index'])->middleware('permission:reports.read');
 
-        // Shift history
-        Route::get('/shifts', [ShiftController::class, 'index']);
+    // Categories
+    Route::get('/categories', [CategoryController::class, 'index'])->middleware('permission:categories.read');
+    Route::post('/categories', [CategoryController::class, 'store'])->middleware('permission:categories.create');
+    Route::put('/categories/{category}', [CategoryController::class, 'update'])->middleware('permission:categories.update');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->middleware('permission:categories.delete');
 
-        // Categories
-        Route::get('/categories', [CategoryController::class, 'index']);
-        Route::post('/categories', [CategoryController::class, 'store']);
-        Route::put('/categories/{category}', [CategoryController::class, 'update']);
-        Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
+    // Products
+    Route::get('/products', [ProductController::class, 'index'])->middleware('permission:products.read');
+    Route::post('/products', [ProductController::class, 'store'])->middleware('permission:products.create');
+    Route::put('/products/{product}', [ProductController::class, 'update'])->middleware('permission:products.update');
+    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->middleware('permission:products.delete');
+    Route::post('/products/{product}/stock-adjust', [ProductController::class, 'stockAdjust'])->middleware('permission:products.update');
 
-        // Products
-        Route::get('/products', [ProductController::class, 'index']);
-        Route::post('/products', [ProductController::class, 'store']);
-        Route::put('/products/{product}', [ProductController::class, 'update']);
-        Route::delete('/products/{product}', [ProductController::class, 'destroy']);
-        Route::post('/products/{product}/stock-adjust', [ProductController::class, 'stockAdjust']);
+    // Print prices & Tiers
+    Route::post('/print-prices', [PrintPriceController::class, 'store'])->middleware('permission:print_prices.create');
+    Route::put('/print-prices/{printPrice}', [PrintPriceController::class, 'update'])->middleware('permission:print_prices.update');
+    Route::delete('/print-prices/{printPrice}', [PrintPriceController::class, 'destroy'])->middleware('permission:print_prices.delete');
+    Route::post('/print-prices/{printPrice}/tiers', [PrintPriceController::class, 'storeTier'])->middleware('permission:print_prices.create');
+    Route::put('/print-price-tiers/{tier}', [PrintPriceController::class, 'updateTier'])->middleware('permission:print_prices.update');
+    Route::delete('/print-price-tiers/{tier}', [PrintPriceController::class, 'destroyTier'])->middleware('permission:print_prices.delete');
 
-        // Print prices
-        Route::post('/print-prices', [PrintPriceController::class, 'store']);
-        Route::put('/print-prices/{printPrice}', [PrintPriceController::class, 'update']);
-        Route::delete('/print-prices/{printPrice}', [PrintPriceController::class, 'destroy']);
+    // Addon services
+    Route::post('/addon-services', [AddonServiceController::class, 'store'])->middleware('permission:addons.create');
+    Route::put('/addon-services/{addonService}', [AddonServiceController::class, 'update'])->middleware('permission:addons.update');
+    Route::delete('/addon-services/{addonService}', [AddonServiceController::class, 'destroy'])->middleware('permission:addons.delete');
 
-        // Print price tiers
-        Route::post('/print-prices/{printPrice}/tiers', [PrintPriceController::class, 'storeTier']);
-        Route::put('/print-price-tiers/{tier}', [PrintPriceController::class, 'updateTier']);
-        Route::delete('/print-price-tiers/{tier}', [PrintPriceController::class, 'destroyTier']);
-
-        // Addon services
-        Route::post('/addon-services', [AddonServiceController::class, 'store']);
-        Route::put('/addon-services/{addonService}', [AddonServiceController::class, 'update']);
-        Route::delete('/addon-services/{addonService}', [AddonServiceController::class, 'destroy']);
-
-        // Reports & Dashboard
+    // Reports & Dashboard
+    Route::middleware('permission:reports.read')->group(function () {
         Route::get('/reports/dashboard', [ReportController::class, 'dashboard']);
         Route::get('/reports/sales', [ReportController::class, 'salesReport']);
         Route::get('/reports/cashier', [ReportController::class, 'cashierReport']);
@@ -113,23 +109,21 @@ Route::middleware('auth:web')->group(function () {
         Route::get('/reports/stock', [ReportController::class, 'stockReport']);
         Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss']);
         Route::get('/reports/cash-flow', [ReportController::class, 'cashFlow']);
-        
-        // Report Exports
         Route::get('/reports/sales/export', [ReportController::class, 'exportSales']);
         Route::get('/reports/cash-flow/export', [ReportController::class, 'exportCashFlow']);
-
-        // Purchases (Pembelian Barang)
-        Route::get('/purchases', [PurchaseController::class, 'index']);
-        Route::get('/purchases/export', [PurchaseController::class, 'exportPurchases']);
-        Route::post('/purchases', [PurchaseController::class, 'store']);
-        Route::get('/purchases/{purchase}', [PurchaseController::class, 'show']);
-        Route::patch('/purchases/{purchase}/mark-paid', [PurchaseController::class, 'markAsPaid']);
-        Route::delete('/purchases/{purchase}', [PurchaseController::class, 'destroy']);
-
-        // Expenses (Pengeluaran Operasional)
-        Route::get('/expenses', [ExpenseController::class, 'index']);
-        Route::post('/expenses', [ExpenseController::class, 'store']);
-        Route::put('/expenses/{expense}', [ExpenseController::class, 'update']);
-        Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy']);
     });
+
+    // Purchases (Pembelian Barang)
+    Route::get('/purchases', [PurchaseController::class, 'index'])->middleware('permission:purchases.read');
+    Route::get('/purchases/export', [PurchaseController::class, 'exportPurchases'])->middleware('permission:purchases.read');
+    Route::post('/purchases', [PurchaseController::class, 'store'])->middleware('permission:purchases.create');
+    Route::get('/purchases/{purchase}', [PurchaseController::class, 'show'])->middleware('permission:purchases.read');
+    Route::patch('/purchases/{purchase}/mark-paid', [PurchaseController::class, 'markAsPaid'])->middleware('permission:purchases.update');
+    Route::delete('/purchases/{purchase}', [PurchaseController::class, 'destroy'])->middleware('permission:purchases.delete');
+
+    // Expenses (Pengeluaran Operasional)
+    Route::get('/expenses', [ExpenseController::class, 'index'])->middleware('permission:expenses.read');
+    Route::post('/expenses', [ExpenseController::class, 'store'])->middleware('permission:expenses.create');
+    Route::put('/expenses/{expense}', [ExpenseController::class, 'update'])->middleware('permission:expenses.update');
+    Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy'])->middleware('permission:expenses.delete');
 });

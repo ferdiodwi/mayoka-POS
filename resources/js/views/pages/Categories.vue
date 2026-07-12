@@ -3,9 +3,11 @@ import { ref, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/composables/useApi';
+import { useAuth } from '@/composables/useAuth';
 
 const toast = useToast();
 const confirm = useConfirm();
+const { hasPermission } = useAuth();
 
 const categories = ref([]);
 const loading = ref(false);
@@ -83,7 +85,7 @@ onMounted(fetchData);
     <div class="card">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-semibold m-0">Kategori Produk</h2>
-            <Button label="Tambah Kategori" icon="pi pi-plus" @click="openCreate" />
+            <Button v-if="hasPermission('categories.create')" label="Tambah Kategori" icon="pi pi-plus" @click="openCreate" />
         </div>
 
         <DataTable :value="categories" :loading="loading" stripedRows dataKey="id"
@@ -93,11 +95,11 @@ onMounted(fetchData);
             </Column>
             <Column field="name" header="Nama Kategori" sortable />
             <Column field="products_count" header="Jumlah Produk" sortable style="width: 10rem" />
-            <Column header="Aksi" style="width: 10rem">
+            <Column header="Aksi" style="width: 10rem" v-if="hasPermission('categories.update') || hasPermission('categories.delete')">
                 <template #body="{ data }">
                     <div class="flex gap-2">
-                        <Button icon="pi pi-pencil" severity="info" text rounded @click="openEdit(data)" />
-                        <Button icon="pi pi-trash" severity="danger" text rounded @click="confirmDelete(data)" />
+                        <Button v-if="hasPermission('categories.update')" icon="pi pi-pencil" severity="info" text rounded @click="openEdit(data)" />
+                        <Button v-if="hasPermission('categories.delete')" icon="pi pi-trash" severity="danger" text rounded @click="confirmDelete(data)" />
                     </div>
                 </template>
             </Column>
