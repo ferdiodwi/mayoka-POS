@@ -181,6 +181,9 @@ function selectProduct(product) {
     lookupVisible.value = false;
     isPriceManual.value = false;
     
+    // Set default unit (level 1, smallest)
+    selectedUnitIndex.value = 0;
+    
     if (product.type === 'print') {
         printPaperSize.value = uniquePaperSizes.value.length > 0 ? uniquePaperSizes.value[0] : 'A4';
         printColorType.value = 'bw';
@@ -191,12 +194,13 @@ function selectProduct(product) {
         if (calc) {
             price.value = calc.effectivePrice;
             product.pp = calc;
+        } else {
+            price.value = 0;
+            product.pp = null;
         }
+    } else {
+        updatePrice();
     }
-    
-    // Set default unit (level 1, smallest)
-    selectedUnitIndex.value = 0;
-    updatePrice();
     
     // Move to next step based on type
     if (product.type === 'print') {
