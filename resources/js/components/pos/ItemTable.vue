@@ -31,6 +31,7 @@ function itemTotal(item) {
                         <th class="p-2 w-16 text-center">QTY</th>
                         <th class="p-2 w-24 text-right">DISC</th>
                         <th class="p-2 w-28 text-right">TOTAL</th>
+                        <th class="p-2 w-12 text-center">#</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -46,12 +47,15 @@ function itemTotal(item) {
                         <td class="p-2 text-center font-bold">{{ item.qty }}</td>
                         <td class="p-2 text-right text-red-500">{{ item.discount > 0 ? formatRp(item.discount) : '-' }}</td>
                         <td class="p-2 text-right font-bold text-primary">{{ formatRp(itemTotal(item)) }}</td>
+                        <td class="p-2 text-center">
+                            <Button icon="pi pi-trash" severity="danger" text rounded class="!w-8 !h-8" @click.stop="removeItem(i)" v-tooltip="'Hapus (F7)'" />
+                        </td>
                     </tr>
                     <!-- Empty rows to fill space -->
                     <tr v-for="n in Math.max(0, 8 - cartItems.length)" :key="'empty-' + n"
                         class="border-b border-surface-200 dark:border-surface-700">
                         <td class="p-2 text-center text-muted-color">{{ cartItems.length + n }}</td>
-                        <td class="p-2" colspan="7">&nbsp;</td>
+                        <td class="p-2" colspan="8">&nbsp;</td>
                     </tr>
                 </tbody>
             </table>

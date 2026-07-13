@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $fillable = ['name'];
 
     public function products(): HasMany

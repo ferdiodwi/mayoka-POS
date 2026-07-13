@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Transaction extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $fillable = [
         'invoice_number', 'user_id', 'shift_id', 'customer_id', 'price_level',
         'subtotal', 'discount', 'total',
@@ -27,7 +29,7 @@ class Transaction extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withoutGlobalScope('branch');
     }
 
     public function shift(): BelongsTo
@@ -53,7 +55,8 @@ class Transaction extends Model
         $date = now()->format('Ymd');
         $prefix = "INV-{$date}-";
 
-        $last = static::where('invoice_number', 'like', "{$prefix}%")
+        $last = static::withoutGlobalScope('branch')
+            ->where('invoice_number', 'like', "{$prefix}%")
             ->orderBy('invoice_number', 'desc')
             ->first();
 

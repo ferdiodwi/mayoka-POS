@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $fillable = [
         'category_id', 'name', 'barcode', 'type',
         'cost_price', 'stock', 'min_stock', 'is_active',

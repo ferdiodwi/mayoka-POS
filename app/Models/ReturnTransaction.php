@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ReturnTransaction extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $table = 'returns';
     
     protected $guarded = ['id'];

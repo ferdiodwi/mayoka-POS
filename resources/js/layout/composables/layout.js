@@ -25,6 +25,18 @@ watch(layoutConfig, (val) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
 }, { deep: true });
 
+const STATE_KEY = 'mayoka_layout_state';
+
+function loadLayoutState() {
+    try {
+        const raw = localStorage.getItem(STATE_KEY);
+        if (raw) return JSON.parse(raw);
+    } catch {}
+    return null;
+}
+
+const savedState = loadLayoutState();
+
 // Apply dark mode class immediately on script evaluation
 if (typeof document !== 'undefined') {
     if (layoutConfig.darkTheme) {
@@ -35,7 +47,7 @@ if (typeof document !== 'undefined') {
 }
 
 const layoutState = reactive({
-    staticMenuInactive: false,
+    staticMenuInactive: savedState?.staticMenuInactive ?? false,
     overlayMenuActive: false,
     profileSidebarVisible: false,
     configSidebarVisible: false,
@@ -43,6 +55,12 @@ const layoutState = reactive({
     menuHoverActive: false,
     activeMenuItem: null,
     activePath: null
+});
+
+watch(() => layoutState.staticMenuInactive, (val) => {
+    const currentState = loadLayoutState() || {};
+    currentState.staticMenuInactive = val;
+    localStorage.setItem(STATE_KEY, JSON.stringify(currentState));
 });
 
 export function useLayout() {

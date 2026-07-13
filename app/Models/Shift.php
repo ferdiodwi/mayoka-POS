@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Shift extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $fillable = [
         'user_id',
         'started_at',

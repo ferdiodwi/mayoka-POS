@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Purchase extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $fillable = [
         'user_id', 'purchase_number', 'supplier_name', 'purchase_date',
         'total_amount', 'payment_status', 'notes',

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StockMovement extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $fillable = [
         'product_id', 'type', 'qty', 'reference', 'notes', 'user_id',
     ];

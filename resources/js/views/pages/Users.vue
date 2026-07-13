@@ -4,16 +4,18 @@ import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
 
 import { useAuth } from '@/composables/useAuth';
+import { useBranch } from '@/composables/useBranch';
 
 const toast = useToast();
 const confirm = useConfirm();
 const { hasPermission } = useAuth();
+const { branches, fetchBranches } = useBranch();
 
 const users = ref([]);
 const loading = ref(false);
 const dialogVisible = ref(false);
 const dialogMode = ref('create'); // 'create' or 'edit'
-const form = ref({ name: '', username: '', password: '', role: 'kasir', is_active: true, permissions: [] });
+const form = ref({ name: '', username: '', password: '', role: 'kasir', branch_id: null, is_active: true, permissions: [] });
 const editingUserId = ref(null);
 const submitting = ref(false);
 
@@ -57,7 +59,7 @@ async function fetchUsers() {
 
 function openCreateDialog() {
     dialogMode.value = 'create';
-    form.value = { name: '', username: '', password: '', role: 'kasir', is_active: true, permissions: [] };
+    form.value = { name: '', username: '', password: '', role: 'kasir', branch_id: branches.value[0]?.id || null, is_active: true, permissions: [] };
     editingUserId.value = null;
     dialogVisible.value = true;
 }
@@ -69,6 +71,7 @@ function openEditDialog(user) {
         username: user.username,
         password: '',
         role: user.role,
+        branch_id: user.branch_id,
         is_active: user.is_active,
         permissions: user.permissions || [],
     };
@@ -150,7 +153,10 @@ async function deactivateUser(userId) {
     }
 }
 
-onMounted(fetchUsers);
+onMounted(() => {
+    fetchUsers();
+    fetchBranches();
+});
 </script>
 
 <template>
@@ -164,6 +170,11 @@ onMounted(fetchUsers);
             emptyMessage="Belum ada data user.">
             <Column field="name" header="Nama" sortable />
             <Column field="username" header="Username" sortable />
+            <Column field="branch.name" header="Cabang" sortable>
+                <template #body="{ data }">
+                    {{ data.branch?.name || '-' }}
+                </template>
+            </Column>
             <Column field="role" header="Role" sortable>
                 <template #body="{ data }">
                     <Tag :value="data.role === 'owner' ? 'Owner' : 'Kasir'"
@@ -214,6 +225,11 @@ onMounted(fetchUsers);
                     <label for="form-role" class="font-semibold">Role</label>
                     <Select id="form-role" v-model="form.role" :options="roleOptions" optionLabel="label"
                         optionValue="value" placeholder="Pilih role" />
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label for="form-branch" class="font-semibold">Cabang Penempatan</label>
+                    <Select id="form-branch" v-model="form.branch_id" :options="branches" optionLabel="name"
+                        optionValue="id" placeholder="Pilih cabang" />
                 </div>
                 
                 <!-- Permissions Checklist for Kasir -->

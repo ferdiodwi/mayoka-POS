@@ -28,6 +28,12 @@ const router = createRouter({
                 },
                 // Manajemen (Owner)
                 {
+                    path: '/branches',
+                    name: 'branches',
+                    component: () => import('@/views/pages/Branches.vue'),
+                    meta: { role: 'owner' }
+                },
+                {
                     path: '/users',
                     name: 'users',
                     component: () => import('@/views/pages/Users.vue'),
@@ -154,6 +160,10 @@ router.beforeEach(async (to, from) => {
     }
 
     if (to.meta.permission && !hasPermission(to.meta.permission)) {
+        return { name: 'accessDenied' };
+    }
+
+    if (to.meta.role && to.meta.role === 'owner' && user.value.role !== 'owner') {
         return { name: 'accessDenied' };
     }
 

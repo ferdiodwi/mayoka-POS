@@ -217,7 +217,7 @@ class TransactionController extends Controller
     public function print(Transaction $transaction): JsonResponse
     {
         $receiptData = $this->buildReceiptData($transaction);
-        
+
         try {
             $this->printRawReceipt($receiptData);
             return response()->json(['message' => 'Struk berhasil dicetak.']);
@@ -231,7 +231,7 @@ class TransactionController extends Controller
      */
     private function buildReceiptData(Transaction $transaction): array
     {
-        $transaction->load(['items', 'user:id,name', 'customer']);
+        $transaction->load(['items', 'user:id,name', 'customer', 'branch']);
 
         $mainItems = $transaction->items->where('item_type', '!=', 'addon');
         $receiptItems = [];
@@ -256,9 +256,38 @@ class TransactionController extends Controller
             $receiptItems[] = $entry;
         }
 
+        // Dynamic Store Name & Address based on Branch
+        $storeName = 'MAYOKA';
+        
+        $addressLines = [];
+
+        if ($transaction->branch) {
+            if (strtoupper($transaction->branch->name) !== 'PUSAT') {
+                $storeName = 'MAYOKA - ' . strtoupper($transaction->branch->name);
+            }
+            
+            if (!empty($transaction->branch->tagline)) {
+                $addressLines[] = $transaction->branch->tagline;
+            }
+            
+            if (!empty($transaction->branch->address)) {
+                $addressLines[] = $transaction->branch->address;
+            }
+            if (!empty($transaction->branch->phone)) {
+                $addressLines[] = $transaction->branch->phone;
+            }
+        }
+
+        $storeAddress = implode("\n", $addressLines);
+
+        $footerText = 'Terima Kasih Atas Kunjungan Anda';
+        if ($transaction->branch && !empty($transaction->branch->receipt_footer)) {
+            $footerText = $transaction->branch->receipt_footer;
+        }
+
         return [
-            'store_name' => 'MAYOKA ATK',
-            'store_address' => "TOKO ALAT TULIS KANTOR\nJL. JEMBER DESA TAMAN\n082 234 278 798",
+            'store_name' => $storeName,
+            'store_address' => $storeAddress,
             'invoice_number' => $transaction->invoice_number,
             'date' => $transaction->created_at->format('Y/m/d H:i:s'),
             'cashier' => $transaction->user->name,
@@ -271,6 +300,7 @@ class TransactionController extends Controller
             'payment_method' => $transaction->payment_method,
             'cash_paid' => $transaction->cash_paid,
             'cash_change' => $transaction->cash_change,
+            'footer_text' => $footerText,
         ];
     }
 
@@ -288,13 +318,14 @@ class TransactionController extends Controller
             // Linux/Mac default
             $connector = new FilePrintConnector($printerPath);
         }
-        
+
         $printer = new Printer($connector);
 
         try {
             // Header
             $printer->setJustification(Printer::JUSTIFY_CENTER);
-            $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH | Printer::MODE_DOUBLE_HEIGHT);
+            // Changed from DOUBLE_WIDTH | DOUBLE_HEIGHT to just EMPHASIZED | DOUBLE_HEIGHT to make it slightly smaller and fit better.
+            $printer->selectPrintMode(Printer::MODE_EMPHASIZED | Printer::MODE_DOUBLE_HEIGHT);
             $printer->text($r['store_name'] . "\n");
 
             $printer->selectPrintMode();
@@ -305,11 +336,11 @@ class TransactionController extends Controller
             $printer->text("Tanggal: " . $r['date'] . "\n");
             $printer->text("No     : " . $r['invoice_number'] . "\n");
             $printer->text("Kasir  : " . $r['cashier'] . "\n");
-            
+
             if (!empty($r['customer_name']) && $r['customer_type'] === 'member') {
                 $printer->text("Member : " . $r['customer_name'] . "\n");
             }
-            
+
             $printer->text("--------------------------------\n");
 
             // Items
@@ -374,7 +405,13 @@ class TransactionController extends Controller
 
             // Footer
             $printer->setJustification(Printer::JUSTIFY_CENTER);
-            $printer->text("Terima Kasih Atas Kunjungan Anda");
+            
+            // Handle multiline footer if user uses newlines
+            $footerLines = explode("\n", $r['footer_text']);
+            foreach ($footerLines as $line) {
+                $printer->text(trim($line) . "\n");
+            }
+            
             $printer->feed(3);
 
             // Cut and close

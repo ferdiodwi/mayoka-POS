@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import AppMenuItem from './AppMenuItem.vue';
 
-const { hasPermission } = useAuth();
+const { hasPermission, isOwner } = useAuth();
 
 const rawMenu = [
     {
@@ -46,6 +46,7 @@ const rawMenu = [
         label: 'Manajemen',
         items: [
             { label: 'Manajemen User', icon: 'pi pi-fw pi-user-edit', to: '/users', permission: 'users.read' },
+            { label: 'Manajemen Cabang', icon: 'pi pi-fw pi-building', to: '/branches', ownerOnly: true },
         ]
     },
 ];
@@ -54,7 +55,10 @@ const model = computed(() => {
     return rawMenu.map(group => {
         return {
             ...group,
-            items: group.items.filter(item => !item.permission || hasPermission(item.permission))
+            items: group.items.filter(item => {
+                if (item.ownerOnly && !isOwner.value) return false;
+                return !item.permission || hasPermission(item.permission);
+            })
         };
     }).filter(group => group.items.length > 0);
 });

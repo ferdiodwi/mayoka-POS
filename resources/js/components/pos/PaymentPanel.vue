@@ -154,7 +154,7 @@ defineExpose({ focusBayar });
 
         <div v-if="paymentMethod === 'cash'" class="flex flex-col gap-2">
             <label class="text-sm font-semibold text-muted-color">Bayar</label>
-            <InputNumber ref="bayarRef" v-model="cashPaid" :min="0" mode="currency" currency="IDR" locale="id-ID"
+            <InputNumber ref="bayarRef" v-model="cashPaid" @input="cashPaid = $event.value || 0" :min="0" mode="currency" currency="IDR" locale="id-ID"
                 class="w-full" inputClass="text-right text-xl font-bold"
                 @keydown="handleBayarKeydown" />
         </div>

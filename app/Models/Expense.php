@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Expense extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $fillable = [
         'user_id', 'shift_id', 'expense_date', 'category', 'amount', 'description', 'notes',
     ];

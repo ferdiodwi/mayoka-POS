@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductUnit extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $fillable = [
         'product_id', 'level', 'unit_name', 'qty_per_previous', 'base_multiplier',
         'price_h1', 'price_h2', 'price_h3',

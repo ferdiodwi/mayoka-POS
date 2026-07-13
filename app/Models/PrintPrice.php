@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PrintPrice extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $fillable = [
         'paper_size', 'color_type', 'side_type',
         'price_per_sheet', 'cost_per_sheet',

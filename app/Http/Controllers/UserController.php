@@ -14,7 +14,7 @@ class UserController extends Controller
      */
     public function index(): JsonResponse
     {
-        $users = User::orderBy('name')->get();
+        $users = User::withoutGlobalScope('branch')->with('branch')->orderBy('name')->get();
 
         return response()->json([
             'users' => $users,
@@ -31,6 +31,7 @@ class UserController extends Controller
             'username' => 'required|string|max:50|unique:users,username',
             'password' => 'required|string|min:6',
             'role' => 'required|in:kasir,owner',
+            'branch_id' => 'required|exists:branches,id',
             'permissions' => 'nullable|array',
             'permissions.*' => 'string',
         ]);
@@ -58,6 +59,7 @@ class UserController extends Controller
             ],
             'password' => 'nullable|string|min:6',
             'role' => 'required|in:kasir,owner',
+            'branch_id' => 'required|exists:branches,id',
             'is_active' => 'boolean',
             'permissions' => 'nullable|array',
             'permissions.*' => 'string',

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PrintPriceTier extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $fillable = ['print_price_id', 'min_qty', 'price_per_sheet'];
 
     protected function casts(): array
