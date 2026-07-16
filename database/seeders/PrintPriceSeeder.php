@@ -28,6 +28,7 @@ class PrintPriceSeeder extends Seeder
 
         foreach ($matrix as [$size, $color, $side, $price, $cost]) {
             $pp = PrintPrice::create([
+                'branch_id' => 1,
                 'paper_size' => $size,
                 'color_type' => $color,
                 'side_type' => $side,
@@ -38,11 +39,13 @@ class PrintPriceSeeder extends Seeder
             // Add sample tier for BW single-side
             if ($color === 'bw' && $side === 'single') {
                 PrintPriceTier::create([
+                    'branch_id' => 1,
                     'print_price_id' => $pp->id,
                     'min_qty' => 50,
                     'price_per_sheet' => $price - 50,
                 ]);
                 PrintPriceTier::create([
+                    'branch_id' => 1,
                     'print_price_id' => $pp->id,
                     'min_qty' => 100,
                     'price_per_sheet' => $price - 80,

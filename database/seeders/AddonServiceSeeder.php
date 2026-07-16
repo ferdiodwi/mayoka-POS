@@ -19,6 +19,7 @@ class AddonServiceSeeder extends Seeder
         ];
 
         foreach ($addons as $addon) {
+            $addon['branch_id'] = 1;
             AddonService::create($addon);
         }
     }

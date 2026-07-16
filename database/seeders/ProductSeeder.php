@@ -68,6 +68,7 @@ class ProductSeeder extends Seeder
 
         foreach ($products as $item) {
             $product = Product::create([
+                'branch_id' => 1,
                 'category_id' => $categories[$item['category']],
                 'name' => $item['name'],
                 'barcode' => $item['barcode'],
@@ -78,6 +79,7 @@ class ProductSeeder extends Seeder
             ]);
 
             $product->units()->create([
+                'branch_id' => 1,
                 'level' => 1,
                 'unit_name' => strtoupper($item['unit']),
                 'qty_per_previous' => 1,
@@ -92,6 +94,7 @@ class ProductSeeder extends Seeder
                 $h2 = isset($item['wholesale_price']) && $item['wholesale_price'] > 0 ? $item['wholesale_price'] : $item['price'];
 
                 $product->units()->create([
+                    'branch_id' => 1,
                     'level' => 2,
                     'unit_name' => 'PCK',
                     'qty_per_previous' => 12,
@@ -102,6 +105,7 @@ class ProductSeeder extends Seeder
                 ]);
 
                 $product->units()->create([
+                    'branch_id' => 1,
                     'level' => 3,
                     'unit_name' => 'DOS',
                     'qty_per_previous' => 10,

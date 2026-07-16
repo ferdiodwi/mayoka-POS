@@ -12,7 +12,7 @@ class CategorySeeder extends Seeder
         $categories = ['ATK', 'Kertas', 'Jasa Cetak', 'Jasa Jilid', 'Lainnya'];
 
         foreach ($categories as $name) {
-            Category::create(['name' => $name]);
+            Category::create(['name' => $name, 'branch_id' => 1]);
         }
     }
 }

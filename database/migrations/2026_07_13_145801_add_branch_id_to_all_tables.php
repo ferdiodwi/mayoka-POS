@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -39,9 +38,9 @@ return new class extends Migration
 
         // 2. Buat data cabang pusat bawaan
         $branchId = \Illuminate\Support\Facades\DB::table('branches')->insertGetId([
-            'name' => 'Pusat',
-            'address' => 'Jl. Pusat',
-            'phone' => '-',
+            'name' => 'ATK',
+            'address' => 'JL. JEMBER DESA TAMAN',
+            'phone' => '082 234 278 798',
             'is_active' => 1,
             'created_at' => now(),
             'updated_at' => now(),

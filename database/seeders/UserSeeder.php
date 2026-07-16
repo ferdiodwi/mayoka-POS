@@ -13,6 +13,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         User::create([
+            'branch_id' => 1,
             'name' => 'Pemilik Toko',
             'username' => 'admin',
             'password' => 'password',
@@ -21,6 +22,7 @@ class UserSeeder extends Seeder
         ]);
 
         User::create([
+            'branch_id' => 1,
             'name' => 'Ferdio',
             'username' => 'ferdio',
             'password' => 'password',
@@ -29,6 +31,7 @@ class UserSeeder extends Seeder
         ]);
 
         User::create([
+            'branch_id' => 1,
             'name' => 'Albert',
             'username' => 'albert',
             'password' => 'password',
