@@ -70,6 +70,12 @@ const router = createRouter({
                     component: () => import('@/views/pages/AddonServices.vue'),
                     meta: { permission: 'addons.read' }
                 },
+                {
+                    path: '/price-labels',
+                    name: 'priceLabels',
+                    component: () => import('@/views/pages/PriceLabel.vue'),
+                    meta: { permission: 'products.read' }
+                },
                 // Laporan (Owner)
                 {
                     path: '/reports/sales',

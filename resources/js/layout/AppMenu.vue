@@ -21,6 +21,7 @@ const rawMenu = [
             { label: 'Pelanggan', icon: 'pi pi-fw pi-users', to: '/customers', permission: 'customers.read' },
             { label: 'Harga Cetak', icon: 'pi pi-fw pi-print', to: '/print-prices', permission: 'print_prices.read' },
             { label: 'Jasa Tambahan', icon: 'pi pi-fw pi-plus-circle', to: '/addon-services', permission: 'addons.read' },
+            { label: 'Cetak Label Harga', icon: 'pi pi-fw pi-tag', to: '/price-labels', permission: 'products.read' },
         ]
     },
     {
