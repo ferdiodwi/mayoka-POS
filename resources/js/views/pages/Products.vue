@@ -573,7 +573,7 @@ onUnmounted(() => {
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Catatan Alasan</label>
-                    <InputText v-model="adjustForm.notes" placeholder="Misal: Restock dari supplier" />
+                    <InputText v-model="adjustForm.notes" placeholder="Misal: Barang rusak / hilang" />
                 </div>
             </div>
             <template #footer>

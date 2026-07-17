@@ -6,6 +6,8 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PrintPriceController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\TransactionController;
@@ -82,6 +84,14 @@ Route::middleware(['auth:web', 'branch_scope'])->group(function () {
     Route::put('/customers/{customer}', [CustomerController::class, 'update'])->middleware('permission:customers.update');
     Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])->middleware('permission:customers.delete');
 
+    // Suppliers
+    Route::get('/suppliers/template', [SupplierController::class, 'downloadTemplate']);
+    Route::post('/suppliers/import', [SupplierController::class, 'import']);
+    Route::get('/suppliers', [SupplierController::class, 'index'])->middleware('permission:purchases.read');
+    Route::post('/suppliers', [SupplierController::class, 'store'])->middleware('permission:purchases.create');
+    Route::put('/suppliers/{supplier}', [SupplierController::class, 'update'])->middleware('permission:purchases.update');
+    Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->middleware('permission:purchases.delete');
+
     // Shift history
     Route::get('/shifts', [ShiftController::class, 'index'])->middleware('permission:reports.read');
 
@@ -131,7 +141,15 @@ Route::middleware(['auth:web', 'branch_scope'])->group(function () {
     Route::post('/purchases', [PurchaseController::class, 'store'])->middleware('permission:purchases.create');
     Route::get('/purchases/{purchase}', [PurchaseController::class, 'show'])->middleware('permission:purchases.read');
     Route::patch('/purchases/{purchase}/mark-paid', [PurchaseController::class, 'markAsPaid'])->middleware('permission:purchases.update');
-    Route::delete('/purchases/{purchase}', [PurchaseController::class, 'destroy'])->middleware('permission:purchases.delete');
+    Route::post('/purchases/{purchase}/void', [PurchaseController::class, 'voidPurchase'])->middleware('permission:purchases.delete');
+
+    // Stock Opname
+    Route::get('/stock-opname', [StockOpnameController::class, 'index'])->middleware('permission:purchases.read');
+    Route::get('/stock-opname/export', [StockOpnameController::class, 'export'])->middleware('permission:purchases.read');
+    Route::post('/stock-opname', [StockOpnameController::class, 'store'])->middleware('permission:purchases.create');
+    Route::get('/stock-opname/{stockOpname}', [StockOpnameController::class, 'show'])->middleware('permission:purchases.read');
+    Route::put('/stock-opname/{stockOpname}', [StockOpnameController::class, 'update'])->middleware('permission:purchases.update');
+    Route::post('/stock-opname/{stockOpname}/complete', [StockOpnameController::class, 'complete'])->middleware('permission:purchases.update');
 
     // Expenses (Pengeluaran Operasional)
     Route::get('/expenses', [ExpenseController::class, 'index'])->middleware('permission:expenses.read');

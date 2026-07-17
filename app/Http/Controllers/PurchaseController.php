@@ -108,6 +108,7 @@ class PurchaseController extends Controller
             $purchase = Purchase::create([
                 'user_id' => auth()->id(),
                 'purchase_number' => $purchaseNumber,
+                'supplier_id' => $request->supplier_id,
                 'supplier_name' => $request->supplier_name,
                 'purchase_date' => $request->purchase_date,
                 'total_amount' => $totalAmount,
@@ -122,11 +123,21 @@ class PurchaseController extends Controller
                 $product = Product::find($item['product_id']);
                 if ($product && $product->type === 'barang') {
                     $stockAddition = $item['qty'] * $item['base_multiplier'];
-                    $product->increment('stock', $stockAddition);
-
-                    // Update cost_price to latest purchase price (per base unit)
                     $costPerBaseUnit = $item['unit_price'] / $item['base_multiplier'];
-                    $product->update(['cost_price' => $costPerBaseUnit]);
+                    
+                    $stockBefore = $product->stock;
+                    $hppBefore = (float) $product->cost_price;
+                    $totalStockAfter = $stockBefore + $stockAddition;
+                    
+                    if ($totalStockAfter > 0) {
+                        $newHpp = (($stockBefore * $hppBefore) + ($stockAddition * $costPerBaseUnit)) / $totalStockAfter;
+                    } else {
+                        $newHpp = $costPerBaseUnit;
+                    }
+
+                    // Update cost_price FIRST, then stock
+                    $product->update(['cost_price' => round($newHpp, 2)]);
+                    $product->increment('stock', $stockAddition);
 
                     // Record stock movement
                     StockMovement::create([
@@ -183,12 +194,56 @@ class PurchaseController extends Controller
     }
 
     /**
-     * Delete a purchase (only recent, no stock reversal for simplicity).
+     * Void a purchase (reverse stock, keep record).
      */
-    public function destroy(Purchase $purchase): JsonResponse
+    public function voidPurchase(Request $request, Purchase $purchase): JsonResponse
     {
-        $purchase->delete();
+        if ($purchase->payment_status === 'voided') {
+            return response()->json(['message' => 'Pembelian ini sudah dibatalkan sebelumnya.'], 400);
+        }
 
-        return response()->json(['message' => 'Data pembelian dihapus.']);
+        $request->validate([
+            'reason' => 'nullable|string|max:255',
+        ]);
+
+        DB::transaction(function () use ($request, $purchase) {
+            // Reverse stock for each item
+            foreach ($purchase->items as $item) {
+                $product = Product::find($item->product_id);
+                if ($product && $product->type === 'barang') {
+                    $stockReduction = $item->qty * ($item->base_multiplier ?? 1);
+                    $product->decrement('stock', $stockReduction);
+
+                    // Record stock movement
+                    StockMovement::create([
+                        'product_id' => $product->id,
+                        'type' => 'adjustment',
+                        'qty' => -$stockReduction,
+                        'reference' => 'VOID-' . $purchase->purchase_number,
+                        'notes' => 'Pembatalan pembelian' . ($request->reason ? ': ' . $request->reason : ''),
+                        'user_id' => auth()->id(),
+                    ]);
+                }
+            }
+
+            // Mark as voided
+            $purchase->update([
+                'payment_status' => 'voided',
+                'voided_at' => now(),
+                'voided_by' => auth()->id(),
+                'void_reason' => $request->reason,
+            ]);
+        });
+
+        // Fire events
+        event(new \App\Events\DashboardUpdated());
+        foreach ($purchase->items as $item) {
+            $product = Product::find($item->product_id);
+            if ($product && $product->type === 'barang') {
+                event(new \App\Events\ProductStockUpdated($product->id, $product->stock));
+            }
+        }
+
+        return response()->json(['message' => 'Pembelian berhasil dibatalkan. Stok telah dikembalikan.']);
     }
 }

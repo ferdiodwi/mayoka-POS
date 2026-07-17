@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
-import { apiGet, apiPost, apiDelete, apiPatch } from '@/composables/useApi';
+import { apiGet, apiPost, apiPatch } from '@/composables/useApi';
 import { useAuth } from '@/composables/useAuth';
 
 const toast = useToast();
@@ -11,6 +11,7 @@ const { hasPermission } = useAuth();
 
 const purchases = ref([]);
 const products = ref([]);
+const suppliersList = ref([]);
 const loading = ref(false);
 const dialogVisible = ref(false);
 const detailDialogVisible = ref(false);
@@ -26,7 +27,7 @@ const filterDateTo = ref(new Date());
 const filterSupplier = ref('');
 
 const form = ref({
-    supplier_name: '',
+    supplier_input: null,
     purchase_date: new Date(),
     payment_status: 'paid',
     notes: '',
@@ -91,6 +92,11 @@ async function fetchProducts() {
     products.value = (Array.isArray(data) ? data : data.data || []).filter(p => p.type === 'barang');
 }
 
+async function fetchSuppliers() {
+    const data = await apiGet('/api/suppliers?per_page=all');
+    suppliersList.value = (data.suppliers || []).filter(s => s.is_active);
+}
+
 function onPageChange(event) {
     currentPage.value = event.page + 1;
     fetchPurchases();
@@ -98,13 +104,13 @@ function onPageChange(event) {
 
 function openCreate() {
     form.value = {
-        supplier_name: '',
+        supplier_input: null,
         purchase_date: new Date(),
         payment_status: 'paid',
         notes: '',
         items: [],
     };
-    newItem.value = { product_id: null, qty: 1, unit_price: 0 };
+    newItem.value = { product_id: null };
     dialogVisible.value = true;
 }
 
@@ -124,19 +130,22 @@ function addItem() {
     }
 
     const baseUnit = product.units && product.units.length > 0 ? product.units[0] : null;
-
+    const baseMultiplier = baseUnit ? baseUnit.base_multiplier : 1;
+    const defaultPrice = 0;
+    
     form.value.items.push({
         product_id: product.id,
         product_name: product.name,
         units: product.units || [],
         unit_name: baseUnit ? baseUnit.unit_name : 'PCS',
-        base_multiplier: 1,
-        qty: newItem.value.qty,
-        unit_price: newItem.value.unit_price || product.cost_price || 0,
-        subtotal: newItem.value.qty * (newItem.value.unit_price || product.cost_price || 0),
+        base_multiplier: baseMultiplier,
+        qty: 1,
+        unit_price: 0,
+        price_per_pcs: 0,
+        subtotal: 0,
     });
 
-    newItem.value = { product_id: null, qty: 1, unit_price: 0 };
+    newItem.value = { product_id: null };
 }
 
 function removeFormItem(index) {
@@ -147,11 +156,13 @@ function handleUnitChange(item) {
     const selectedUnit = item.units.find(u => u.unit_name === item.unit_name);
     if (selectedUnit) {
         item.base_multiplier = selectedUnit.base_multiplier;
+        recalcItem(item);
     }
 }
 
 function recalcItem(item) {
     item.subtotal = item.qty * item.unit_price;
+    item.price_per_pcs = (item.unit_price || 0) / (item.base_multiplier || 1);
 }
 
 async function save() {
@@ -161,8 +172,26 @@ async function save() {
     }
     submitting.value = true;
     try {
+        let finalSupplierId = null;
+        let finalSupplierName = null;
+
+        if (typeof form.value.supplier_input === 'object' && form.value.supplier_input !== null) {
+            finalSupplierId = form.value.supplier_input.id;
+            finalSupplierName = null; // Backend uses name from relation if id exists
+        } else if (typeof form.value.supplier_input === 'string' && form.value.supplier_input.trim() !== '') {
+            const typedName = form.value.supplier_input.trim();
+            const found = suppliersList.value.find(s => s.name.toLowerCase() === typedName.toLowerCase());
+            if (found) {
+                finalSupplierId = found.id;
+                finalSupplierName = null;
+            } else {
+                finalSupplierName = typedName;
+            }
+        }
+
         await apiPost('/api/purchases', {
-            supplier_name: form.value.supplier_name || null,
+            supplier_id: finalSupplierId,
+            supplier_name: finalSupplierName,
             purchase_date: toApiDate(form.value.purchase_date),
             payment_status: form.value.payment_status,
             notes: form.value.notes || null,
@@ -194,18 +223,18 @@ async function viewDetail(purchase) {
     }
 }
 
-function confirmDelete(purchase) {
+function confirmVoid(purchase) {
     confirm.require({
-        message: `Hapus pembelian ${purchase.purchase_number}?`,
-        header: 'Konfirmasi',
+        message: `Batalkan pembelian ${purchase.purchase_number}? Stok yang sudah masuk akan dikurangi kembali.`,
+        header: 'Konfirmasi Pembatalan',
         icon: 'pi pi-exclamation-triangle',
-        rejectLabel: 'Batal',
-        acceptLabel: 'Hapus',
+        rejectLabel: 'Tidak',
+        acceptLabel: 'Ya, Batalkan',
         acceptClass: 'p-button-danger',
         accept: async () => {
             try {
-                await apiDelete(`/api/purchases/${purchase.id}`);
-                toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Data pembelian dihapus.', life: 3000 });
+                await apiPost(`/api/purchases/${purchase.id}/void`, { reason: 'Dibatalkan oleh admin' });
+                toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Pembelian dibatalkan. Stok dikembalikan.', life: 3000 });
                 await fetchPurchases();
             } catch (err) {
                 toast.add({ severity: 'error', summary: 'Gagal', detail: err.message, life: 4000 });
@@ -235,7 +264,7 @@ function confirmMarkPaid(purchase) {
 }
 
 onMounted(async () => {
-    await Promise.all([fetchPurchases(), fetchProducts()]);
+    await Promise.all([fetchPurchases(), fetchProducts(), fetchSuppliers()]);
 });
 </script>
 
@@ -281,7 +310,7 @@ onMounted(async () => {
                 <template #body="{ data }">{{ formatDate(data.purchase_date) }}</template>
             </Column>
             <Column field="supplier_name" header="Supplier">
-                <template #body="{ data }">{{ data.supplier_name || '—' }}</template>
+                <template #body="{ data }">{{ data.supplier?.name || data.supplier_name || '—' }}</template>
             </Column>
             <Column header="Total" style="width: 9rem">
                 <template #body="{ data }">
@@ -290,8 +319,8 @@ onMounted(async () => {
             </Column>
             <Column header="Status" style="width: 6rem">
                 <template #body="{ data }">
-                    <Tag :value="data.payment_status === 'paid' ? 'Lunas' : 'Belum'"
-                        :severity="data.payment_status === 'paid' ? 'success' : 'warn'" />
+                    <Tag :value="data.payment_status === 'paid' ? 'Lunas' : data.payment_status === 'voided' ? 'Dibatalkan' : 'Belum'"
+                        :severity="data.payment_status === 'paid' ? 'success' : data.payment_status === 'voided' ? 'danger' : 'warn'" />
                 </template>
             </Column>
             <Column header="Dicatat Oleh" style="width: 7rem">
@@ -302,7 +331,7 @@ onMounted(async () => {
                     <div class="flex gap-1">
                         <Button icon="pi pi-eye" severity="info" text rounded size="small" @click="viewDetail(data)" v-tooltip="'Detail'" />
                         <Button v-if="hasPermission('purchases.update') && data.payment_status === 'unpaid'" icon="pi pi-check-circle" severity="success" text rounded size="small" @click="confirmMarkPaid(data)" v-tooltip="'Tandai Lunas'" />
-                        <Button v-if="hasPermission('purchases.delete')" icon="pi pi-trash" severity="danger" text rounded size="small" @click="confirmDelete(data)" v-tooltip="'Hapus'" />
+                        <Button v-if="hasPermission('purchases.delete') && data.payment_status !== 'voided'" icon="pi pi-ban" severity="danger" text rounded size="small" @click="confirmVoid(data)" v-tooltip="'Batalkan'" />
                     </div>
                 </template>
             </Column>
@@ -310,12 +339,14 @@ onMounted(async () => {
 
         <!-- Create Dialog -->
         <Dialog v-model:visible="dialogVisible" header="Buat Pembelian Baru" modal
-            :style="{ width: '700px' }" :breakpoints="{ '768px': '95vw' }">
+            :style="{ width: '1000px' }" :breakpoints="{ '1024px': '90vw', '768px': '95vw' }">
             <div class="flex flex-col gap-4 pt-2">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="flex flex-col gap-2">
-                        <label class="font-semibold">Nama Supplier</label>
-                        <InputText v-model="form.supplier_name" placeholder="Opsional" />
+                        <label class="font-semibold">Supplier</label>
+                        <Select v-model="form.supplier_input" :options="suppliersList" optionLabel="name"
+                            placeholder="Pilih atau ketik nama supplier..." editable class="w-full" showClear />
+                        <small class="text-muted-color text-xs">Pilih dari daftar atau langsung ketik nama supplier baru.</small>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="font-semibold">Tanggal Pembelian</label>
@@ -340,46 +371,50 @@ onMounted(async () => {
                 <div class="p-3 bg-surface-100 dark:bg-surface-800 rounded-lg">
                     <label class="font-semibold block mb-3">Tambah Produk</label>
                     <div class="flex flex-wrap gap-2 items-end">
-                        <div class="flex flex-col gap-1 flex-1 min-w-[150px]">
-                            <label class="text-xs text-muted-color">Produk</label>
+                        <div class="flex flex-col gap-1 flex-1">
                             <Select v-model="newItem.product_id" :options="products" optionLabel="name" optionValue="id"
-                                placeholder="Pilih produk" filter showClear />
+                                placeholder="Cari dan pilih produk..." filter showClear 
+                                @change="addItem" @keyup.enter="addItem" />
                         </div>
-                        <div class="flex flex-col gap-1 w-24">
-                            <label class="text-xs text-muted-color">Qty</label>
-                            <InputNumber v-model="newItem.qty" :min="1" showButtons size="small" />
-                        </div>
-                        <div class="flex flex-col gap-1 w-40">
-                            <label class="text-xs text-muted-color">Harga Beli</label>
-                            <InputNumber v-model="newItem.unit_price" mode="currency" currency="IDR" locale="id-ID" :min="0" />
-                        </div>
-                        <Button icon="pi pi-plus" severity="success" @click="addItem" />
                     </div>
                 </div>
 
                 <!-- Item List -->
-                <DataTable :value="form.items" dataKey="product_id" class="p-datatable-sm"
+                <DataTable :value="form.items" dataKey="product_id"
                     emptyMessage="Belum ada item.">
                     <Column field="product_name" header="Produk" />
-                    <Column header="Satuan" style="width: 7rem">
+                    <Column header="Satuan" style="width: 12rem">
                         <template #body="{ data }">
-                            <Select v-if="data.units && data.units.length > 0" v-model="data.unit_name" :options="data.units.filter(u => u.unit_name)" optionLabel="unit_name" optionValue="unit_name" class="w-full text-sm" size="small" @change="handleUnitChange(data)" />
-                            <span v-else>PCS</span>
+                            <Select v-if="data.units && data.units.length > 0" v-model="data.unit_name" :options="data.units.filter(u => u.unit_name)" optionLabel="unit_name" optionValue="unit_name" class="w-full" @change="handleUnitChange(data)">
+                                <template #option="slotProps">
+                                    <div class="flex justify-between w-full">
+                                        <span>{{ slotProps.option.unit_name }}</span>
+                                        <span class="text-muted-color text-sm ml-2">Isi {{ slotProps.option.base_multiplier }}</span>
+                                    </div>
+                                </template>
+                            </Select>
+                            <span v-else>PCS <small class="text-muted-color">(Isi 1)</small></span>
+                            <div v-if="data.units && data.units.length > 0" class="text-xs text-blue-500 font-medium mt-1">Isi: {{ data.base_multiplier }} Dasar</div>
                         </template>
                     </Column>
-                    <Column header="Qty" style="width: 6rem">
+                    <Column header="Qty" style="width: 8rem">
                         <template #body="{ data, index }">
-                            <InputNumber v-model="data.qty" :min="1" showButtons size="small"
-                                class="w-20" @update:modelValue="recalcItem(data)" />
+                            <InputNumber :modelValue="data.qty" :min="1" showButtons 
+                                class="w-24" @input="(e) => { data.qty = e.value; recalcItem(data); }" />
                         </template>
                     </Column>
-                    <Column header="Harga Beli" style="width: 8rem">
+                    <Column header="Harga (Input)" style="width: 12rem">
                         <template #body="{ data }">
-                            <InputNumber v-model="data.unit_price" :min="0" mode="currency" currency="IDR"
-                                locale="id-ID" size="small" @update:modelValue="recalcItem(data)" />
+                            <InputNumber :modelValue="data.unit_price" :min="0" mode="currency" currency="IDR"
+                                locale="id-ID" class="w-full" @input="(e) => { data.unit_price = e.value; recalcItem(data); }" />
                         </template>
                     </Column>
-                    <Column header="Subtotal" style="width: 7rem">
+                    <Column header="Harga / Pcs" style="width: 9rem">
+                        <template #body="{ data }">
+                            <span class="text-muted-color font-semibold">{{ formatRp(data.price_per_pcs || 0) }}</span>
+                        </template>
+                    </Column>
+                    <Column header="Subtotal" style="width: 9rem">
                         <template #body="{ data }">{{ formatRp(data.subtotal) }}</template>
                     </Column>
                     <Column style="width: 3rem">
@@ -412,7 +447,7 @@ onMounted(async () => {
                     <div><span class="text-sm text-muted-color">Tanggal</span>
                         <p class="m-0 font-semibold">{{ formatDate(selectedPurchase.purchase_date) }}</p></div>
                     <div><span class="text-sm text-muted-color">Supplier</span>
-                        <p class="m-0 font-semibold">{{ selectedPurchase.supplier_name || '—' }}</p></div>
+                        <p class="m-0 font-semibold">{{ selectedPurchase.supplier?.name || selectedPurchase.supplier_name || '—' }}</p></div>
                     <div><span class="text-sm text-muted-color">Status</span>
                         <p class="m-0"><Tag :value="selectedPurchase.payment_status === 'paid' ? 'Lunas' : 'Belum'"
                             :severity="selectedPurchase.payment_status === 'paid' ? 'success' : 'warn'" /></p></div>

@@ -115,9 +115,21 @@ const router = createRouter({
                 },
                 // Keuangan (Owner)
                 {
+                    path: '/suppliers',
+                    name: 'suppliers',
+                    component: () => import('@/views/pages/Suppliers.vue'),
+                    meta: { permission: 'purchases.read' }
+                },
+                {
                     path: '/purchases',
                     name: 'purchases',
                     component: () => import('@/views/pages/Purchases.vue'),
+                    meta: { permission: 'purchases.read' }
+                },
+                {
+                    path: '/stock-opname',
+                    name: 'stockOpname',
+                    component: () => import('@/views/pages/StockOpname.vue'),
                     meta: { permission: 'purchases.read' }
                 },
                 {

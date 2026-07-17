@@ -8,12 +8,13 @@ function getCsrfToken() {
 
 export async function apiFetch(url, options = {}) {
     const branchId = localStorage.getItem('activeBranchId');
+    const isFormData = options.body instanceof FormData;
     const defaults = {
         headers: {
             'Accept': 'application/json',
             'X-XSRF-TOKEN': getCsrfToken(),
             ...(branchId ? { 'X-Branch-Id': branchId } : {}),
-            ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+            ...((options.body && !isFormData) ? { 'Content-Type': 'application/json' } : {}),
         },
         credentials: 'same-origin',
     };

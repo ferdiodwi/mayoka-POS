@@ -27,7 +27,9 @@ const rawMenu = [
     {
         label: 'Keuangan',
         items: [
-            { label: 'Pembelian Barang', icon: 'pi pi-fw pi-truck', to: '/purchases', permission: 'purchases.read' },
+            { label: 'Data Supplier', icon: 'pi pi-fw pi-truck', to: '/suppliers', permission: 'purchases.read' },
+            { label: 'Pembelian Barang', icon: 'pi pi-fw pi-shopping-bag', to: '/purchases', permission: 'purchases.read' },
+            { label: 'Stok Opname', icon: 'pi pi-fw pi-check-square', to: '/stock-opname', permission: 'purchases.read' },
             { label: 'Pengeluaran', icon: 'pi pi-fw pi-credit-card', to: '/expenses', permission: 'expenses.read' },
             { label: 'Laba Rugi', icon: 'pi pi-fw pi-chart-line', to: '/reports/profit-loss', permission: 'reports.read' },
             { label: 'Arus Kas (Cash Flow)', icon: 'pi pi-fw pi-wallet', to: '/reports/cash-flow', permission: 'reports.read' },
