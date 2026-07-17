@@ -8,28 +8,23 @@ try:
         child.sendline('123')
         child.expect(r'mayoka@mayoka-server:~\$')
     
-    # Check current content of app.js
-    child.sendline('grep wsHost /var/www/mayoka-app/resources/js/app.js')
+    # Run sed to replace the reverb options in config/broadcasting.php
+    sed_script = r"""
+sed -i -e "s/'host' => env('REVERB_HOST')/'host' => env('REVERB_SERVER_HOST', '127.0.0.1')/g" \
+       -e "s/'port' => env('REVERB_PORT', 443)/'port' => env('REVERB_SERVER_PORT', 8080)/g" \
+       -e "s/'scheme' => env('REVERB_SCHEME', 'https')/'scheme' => 'http'/g" \
+       -e "s/'useTLS' => env('REVERB_SCHEME', 'https') === 'https'/'useTLS' => false/g" \
+       /var/www/mayoka-app/config/broadcasting.php
+"""
+    child.sendline(sed_script)
     child.expect(r'mayoka@mayoka-server:~\$')
-    print("CURRENT WSHOST:")
+    print("SED OUTPUT:")
     print(child.before)
     
-    # Replace the line using sed
-    sed_cmd = "sed -i \"s/wsHost: import.meta.env.VITE_REVERB_HOST || window.location.hostname/wsHost: window.location.hostname/g\" /var/www/mayoka-app/resources/js/app.js"
-    child.sendline(sed_cmd)
-    child.expect(r'mayoka@mayoka-server:~\$')
-    
-    # Check again
-    child.sendline('grep wsHost /var/www/mayoka-app/resources/js/app.js')
-    child.expect(r'mayoka@mayoka-server:~\$')
-    print("NEW WSHOST:")
-    print(child.before)
-    
-    # Build it
-    child.sendline('cd /var/www/mayoka-app && npm run build')
-    # npm run build might take a while, so increase timeout
-    i = child.expect([r'mayoka@mayoka-server:/var/www/mayoka-app\$', pexpect.TIMEOUT], timeout=60)
-    print("NPM BUILD OUTPUT:")
+    # Clear config cache
+    child.sendline('cd /var/www/mayoka-app && php artisan config:clear')
+    child.expect(r'mayoka@mayoka-server:/var/www/mayoka-app\$')
+    print("ARTISAN OUTPUT:")
     print(child.before)
     
     child.sendline('exit')
