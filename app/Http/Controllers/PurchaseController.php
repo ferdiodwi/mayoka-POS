@@ -207,11 +207,27 @@ class PurchaseController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $purchase) {
-            // Reverse stock for each item
+            // Reverse stock and recalculate HPP for each item
             foreach ($purchase->items as $item) {
                 $product = Product::find($item->product_id);
                 if ($product && $product->type === 'barang') {
                     $stockReduction = $item->qty * ($item->base_multiplier ?? 1);
+                    $costPerBaseUnit = $item->unit_price / ($item->base_multiplier ?? 1);
+
+                    // Recalculate HPP (reverse weighted average)
+                    $currentStock = $product->stock;
+                    $currentHpp = (float) $product->cost_price;
+                    $stockAfterVoid = $currentStock - $stockReduction;
+
+                    if ($stockAfterVoid > 0) {
+                        // Reverse: (totalValue - voidedValue) / remainingStock
+                        $totalValueBefore = $currentStock * $currentHpp;
+                        $voidedValue = $stockReduction * $costPerBaseUnit;
+                        $newHpp = ($totalValueBefore - $voidedValue) / $stockAfterVoid;
+                        $product->update(['cost_price' => round(max($newHpp, 0), 2)]);
+                    }
+                    // If stock becomes 0 or negative, keep current HPP as reference
+
                     $product->decrement('stock', $stockReduction);
 
                     // Record stock movement
