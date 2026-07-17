@@ -79,6 +79,7 @@ export function useCart() {
             unitLevel,
             baseMultiplier,
             priceTier: priceLevel,
+            productCode: product.product_code,
             barcode: product.barcode,
             addons: [],
         });

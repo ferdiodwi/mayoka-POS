@@ -102,14 +102,20 @@ export function usePosData() {
         if (!query || query.length < 1) return [];
 
         // Exact barcode match — instant
+        const q = query.toLowerCase();
+
+        // Exact barcode match — instant
         const barcodeMatch = productsByBarcode.get(query);
         if (barcodeMatch) return [barcodeMatch];
 
-        // Name/barcode partial search
-        const q = query.toLowerCase();
+        const codeMatch = products.value.find(p => p.product_code && String(p.product_code) === query);
+        if (codeMatch) return [codeMatch];
+
+        // Search by name
         let results = products.value.filter(p =>
-            p.name.toLowerCase().includes(q) ||
-            (p.barcode && p.barcode.includes(query))
+            p.name.toLowerCase().includes(q) || 
+            (p.barcode && p.barcode.toLowerCase().includes(q)) ||
+            (p.product_code && String(p.product_code).toLowerCase().includes(q))
         );
 
 

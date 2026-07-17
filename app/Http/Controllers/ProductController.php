@@ -28,6 +28,7 @@ class ProductController extends Controller
             $s = $request->search;
             $query->where(function ($q) use ($s) {
                 $q->where('name', 'like', "%{$s}%")
+                  ->orWhere('product_code', 'like', "%{$s}%")
                   ->orWhere('barcode', 'like', "%{$s}%");
             });
         }
@@ -55,6 +56,7 @@ class ProductController extends Controller
             ->with(['category:id,name', 'units'])
             ->where(function ($query) use ($q) {
                 $query->where('name', 'like', "%{$q}%")
+                      ->orWhere('product_code', $q)
                       ->orWhere('barcode', $q);
             })
             ->limit(20)
@@ -106,6 +108,11 @@ class ProductController extends Controller
         $product = DB::transaction(function () use ($validated, $request) {
             // Extract product fields only
             $productData = collect($validated)->except('units')->toArray();
+            
+            // Auto generate product code
+            $maxCode = DB::table('products')->max(DB::raw('CAST(product_code AS UNSIGNED)'));
+            $productData['product_code'] = $maxCode && (int)$maxCode >= 101 ? ((int)$maxCode + 1) : 101;
+            
             $product = Product::create($productData);
 
             // Create units

@@ -66,10 +66,12 @@ class ProductSeeder extends Seeder
             ['category' => 'Lainnya', 'name' => 'Flashdisk 8GB', 'barcode' => '8993333340021', 'type' => 'barang', 'price' => 35000, 'cost_price' => 22000, 'stock' => 10, 'min_stock' => 3, 'unit' => 'pcs'],
         ];
 
+        $startCode = 101;
         foreach ($products as $item) {
             $product = Product::create([
                 'branch_id' => 1,
                 'category_id' => $categories[$item['category']],
+                'product_code' => $startCode++,
                 'name' => $item['name'],
                 'barcode' => $item['barcode'],
                 'type' => $item['type'],

@@ -142,7 +142,7 @@ defineExpose({ focusInput });
 
         <div v-else class="text-center p-8 text-muted-color">
             <i class="pi pi-barcode text-4xl mb-3 block"></i>
-            <p class="m-0">Scan barcode atau ketik nama produk.</p>
+            <p class="m-0">Scan barcode, ketik kode barang, atau nama produk.</p>
             <p class="m-0 text-sm mt-1">Tekan <kbd class="px-1 py-0.5 bg-surface-200 dark:bg-surface-700 rounded text-xs">Enter</kbd> saat kosong untuk bayar.</p>
         </div>
     </div>

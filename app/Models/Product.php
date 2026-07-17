@@ -12,7 +12,7 @@ class Product extends Model
     use \App\Traits\BelongsToBranch;
 
     protected $fillable = [
-        'category_id', 'name', 'barcode', 'type',
+        'category_id', 'product_code', 'name', 'barcode', 'type',
         'cost_price', 'stock', 'min_stock', 'is_active',
     ];
 

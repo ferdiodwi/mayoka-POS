@@ -281,6 +281,7 @@ function confirmDisc() {
         addProductItem({
             id: p.id,
             name: finalDesc,
+            product_code: p.product_code,
             barcode: p.barcode,
             type: p.type,
             stock: p.stock,
@@ -442,7 +443,7 @@ defineExpose({ focusSearch });
                         :class="{'ring-2 ring-primary bg-primary/10': selectedProduct && selectedProduct.type === 'print'}"
                         title="Toggle Mode Print" />
                     <InputText ref="searchRef" v-model="searchQuery"
-                        placeholder="Scan barcode atau ketik nama..."
+                        placeholder="Scan barcode, ketik kode, atau nama..."
                         class="w-full font-mono h-10"
                         :class="entryPhase === 'search' ? 'ring-2 ring-primary' : ''"
                         @keydown="handleSearchKeydown"
@@ -544,6 +545,7 @@ defineExpose({ focusSearch });
             <table class="w-full text-sm">
                 <thead>
                     <tr class="bg-surface-100 dark:bg-surface-800 text-left text-xs font-semibold sticky top-0">
+                        <th class="p-2 w-20">KODE</th>
                         <th class="p-2">NAMA BARANG</th>
                         <th class="p-2 w-16">SAT1</th>
                         <th class="p-2 w-24 text-right">HARGA 1</th>
@@ -558,6 +560,7 @@ defineExpose({ focusSearch });
                         :class="i === lookupIndex ? 'bg-primary/20 font-semibold' : 'hover:bg-surface-50 dark:hover:bg-surface-800'"
                         @click="selectProduct(p)"
                         @mouseenter="lookupIndex = i">
+                        <td class="p-2 font-mono font-bold">{{ p.product_code || '-' }}</td>
                         <td class="p-2">{{ p.name }}</td>
                         <td class="p-2">{{ p.units?.[0]?.unit_name || '-' }}</td>
                         <td class="p-2 text-right">{{ formatRp(p.units?.[0]?.[`price_${priceLevel}`] || p.units?.[0]?.price_h1 || 0) }}</td>

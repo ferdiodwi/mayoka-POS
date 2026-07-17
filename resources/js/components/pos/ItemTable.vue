@@ -25,6 +25,7 @@ function itemTotal(item) {
                     <tr class="bg-surface-100 dark:bg-surface-800 text-left font-semibold sticky top-0 z-10">
                         <th class="p-2 w-10 text-center">NO</th>
                         <th class="p-2 w-24">KODE</th>
+                        <th class="p-2 w-28">BARCODE</th>
                         <th class="p-2">NAMA</th>
                         <th class="p-2 w-20">SATUAN</th>
                         <th class="p-2 w-24 text-right">HARGA</th>
@@ -40,7 +41,8 @@ function itemTotal(item) {
                         :class="i === selectedIndex ? 'bg-primary/15 font-semibold' : 'hover:bg-surface-50 dark:hover:bg-surface-800'"
                         @click="emit('select-row', i)">
                         <td class="p-2 text-center text-muted-color">{{ i + 1 }}</td>
-                        <td class="p-2 font-mono text-xs">{{ item.barcode || '-' }}</td>
+                        <td class="p-2 font-mono text-xs font-bold">{{ item.productCode || '-' }}</td>
+                        <td class="p-2 font-mono text-xs text-muted-color">{{ item.barcode || '-' }}</td>
                         <td class="p-2">{{ item.description }}</td>
                         <td class="p-2">{{ item.unitName || '-' }}</td>
                         <td class="p-2 text-right">{{ formatRp(item.unitPrice) }}</td>
@@ -55,7 +57,7 @@ function itemTotal(item) {
                     <tr v-for="n in Math.max(0, 8 - cartItems.length)" :key="'empty-' + n"
                         class="border-b border-surface-200 dark:border-surface-700">
                         <td class="p-2 text-center text-muted-color">{{ cartItems.length + n }}</td>
-                        <td class="p-2" colspan="8">&nbsp;</td>
+                        <td class="p-2" colspan="9">&nbsp;</td>
                     </tr>
                 </tbody>
             </table>

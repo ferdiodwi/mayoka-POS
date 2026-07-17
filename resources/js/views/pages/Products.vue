@@ -31,7 +31,7 @@ const typeOptions = [
 ];
 
 const form = ref({
-    category_id: null, name: '', barcode: '', type: 'barang',
+    category_id: null, name: '', product_code: '', barcode: '', type: 'barang',
     cost_price: 0, stock: 0, min_stock: 0, is_active: true,
     units: [
         { level: 1, unit_name: 'PCS', qty_per_previous: 1, base_multiplier: 1, price_h1: 0, price_h2: 0, price_h3: 0 },
@@ -80,7 +80,7 @@ async function fetchCategories() {
 function openCreate() {
     dialogMode.value = 'create';
     form.value = {
-        category_id: null, name: '', barcode: '', type: 'barang',
+        category_id: null, name: '', product_code: '', barcode: '', type: 'barang',
         cost_price: 0, stock: 0, min_stock: 0, is_active: true,
         units: [
             { level: 1, unit_name: 'PCS', qty_per_previous: 1, base_multiplier: 1, price_h1: 0, price_h2: 0, price_h3: 0 },
@@ -266,7 +266,7 @@ onUnmounted(() => {
 
         <!-- Filters -->
         <div class="flex flex-wrap gap-4 mb-4">
-            <InputText v-model="searchQuery" placeholder="Cari nama / barcode..." class="w-64"
+            <InputText v-model="searchQuery" placeholder="Cari nama / kode / barcode..." class="w-64"
                 @keyup.enter="fetchProducts" />
             <Select v-model="filterCategory" :options="categories" optionLabel="name" optionValue="id"
                 placeholder="Semua Kategori" showClear class="w-48" @change="fetchProducts" />
@@ -286,6 +286,7 @@ onUnmounted(() => {
                 <template #body="{ index }">{{ index + 1 }}</template>
             </Column>
             <Column field="name" header="Nama Produk" sortable />
+            <Column field="product_code" header="Kode Barang" sortable style="width: 8rem" />
             <Column field="barcode" header="Barcode" sortable style="width: 8rem" />
             <Column header="Kategori" sortable sortField="category.name" style="width: 8rem">
                 <template #body="{ data }">{{ data.category?.name }}</template>
@@ -350,6 +351,10 @@ onUnmounted(() => {
                     <label class="font-semibold">Tipe</label>
                     <Select v-model="form.type" :options="[{label:'Barang',value:'barang'},{label:'Jasa',value:'jasa'}]"
                         optionLabel="label" optionValue="value" />
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="font-semibold">Kode Barang</label>
+                    <InputText :value="dialogMode === 'create' ? 'Dibuat Otomatis' : form.product_code" disabled placeholder="Dibuat otomatis" />
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Barcode</label>
