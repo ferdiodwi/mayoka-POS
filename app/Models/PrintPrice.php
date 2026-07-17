@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PrintPrice extends Model
 {
@@ -22,22 +21,13 @@ class PrintPrice extends Model
         ];
     }
 
-    public function tiers(): HasMany
-    {
-        return $this->hasMany(PrintPriceTier::class)->orderBy('min_qty');
-    }
-
     /**
-     * Get the effective price for a given quantity (considering tier discounts).
+     * Get the effective price for a given quantity.
+     * Simplified: returns base price.
      */
     public function getPriceForQty(int $qty): string
     {
-        $tier = $this->tiers()
-            ->where('min_qty', '<=', $qty)
-            ->orderBy('min_qty', 'desc')
-            ->first();
-
-        return $tier ? $tier->price_per_sheet : $this->price_per_sheet;
+        return $this->price_per_sheet;
     }
 
     /**

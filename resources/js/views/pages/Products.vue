@@ -14,9 +14,38 @@ const categories = ref([]);
 const loading = ref(false);
 const dialogVisible = ref(false);
 const adjustDialogVisible = ref(false);
+const importDialogVisible = ref(false);
 const dialogMode = ref('create');
 const submitting = ref(false);
+const uploading = ref(false);
+const importFile = ref(null);
+const fileInput = ref(null);
 const editingId = ref(null);
+
+const stockBreakdownText = computed(() => {
+    if (dialogMode.value !== 'edit' || form.value.type !== 'barang' || !form.value.units || form.value.units.length === 0) return '';
+    
+    let remainingStock = form.value.stock || 0;
+    const breakdown = [];
+    const baseUnitName = form.value.units[0].unit_name || 'PCS';
+    const totalStock = remainingStock;
+    
+    // Reverse loop to start from highest level
+    for (let i = form.value.units.length - 1; i >= 0; i--) {
+        const unit = form.value.units[i];
+        if (unit.base_multiplier > 0 && unit.unit_name) {
+            const qty = Math.floor(remainingStock / unit.base_multiplier);
+            if (qty > 0) {
+                breakdown.push(`${qty} ${unit.unit_name}`);
+                remainingStock -= (qty * unit.base_multiplier);
+            }
+        }
+    }
+    
+    if (breakdown.length === 0) return `0 ${baseUnitName}`;
+    
+    return `Sisa ${breakdown.join(' ')} (Total stok: ${totalStock} ${baseUnitName})`;
+});
 
 // Filters
 const filterCategory = ref(null);
@@ -202,12 +231,14 @@ function formatHierarchicalStock(totalBaseQty, units) {
         }
     }
     
+    const base = sortedUnits.find(u => u.level === 1);
+    const baseUnitName = base ? base.unit_name : '';
+
     if (parts.length === 0) {
-        const base = sortedUnits.find(u => u.level === 1);
-        return `0 ${base ? base.unit_name : ''}`;
+        return `0 ${baseUnitName} (Total: 0 ${baseUnitName})`;
     }
     
-    return parts.join(' ');
+    return parts.join(' ') + ` (Total: ${totalBaseQty} ${baseUnitName})`;
 }
 
 // Intercept save to calculate multipliers and filter empty units
@@ -233,6 +264,60 @@ save = async function() {
 
 function isLowStock(item) {
     return item.type === 'barang' && item.stock <= item.min_stock;
+}
+
+function openImport() {
+    importFile.value = null;
+    if (fileInput.value) fileInput.value.value = '';
+    importDialogVisible.value = true;
+}
+
+function handleFileChange(e) {
+    importFile.value = e.target.files[0];
+}
+
+async function downloadTemplate() {
+    window.location.href = '/api/products/template';
+}
+
+async function submitImport() {
+    if (!importFile.value) {
+        toast.add({ severity: 'warn', summary: 'Peringatan', detail: 'Pilih file Excel terlebih dahulu.', life: 3000 });
+        return;
+    }
+
+    uploading.value = true;
+    try {
+        const formData = new FormData();
+        formData.append('file', importFile.value);
+
+        // Extract CSRF token
+        const tokenMatch = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+        const token = tokenMatch ? decodeURIComponent(tokenMatch[1]) : '';
+        const branchId = localStorage.getItem('activeBranchId');
+
+        const res = await fetch('/api/products/import', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json',
+                'X-XSRF-TOKEN': token,
+                ...(branchId ? { 'X-Branch-Id': branchId } : {}),
+            }
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok) throw new Error(data.message || 'Import gagal.');
+
+        toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Data produk berhasil diimport.', life: 3000 });
+        importDialogVisible.value = false;
+        fetchProducts();
+    } catch (e) {
+        toast.add({ severity: 'error', summary: 'Error', detail: e.message, life: 5000 });
+    } finally {
+        uploading.value = false;
+    }
 }
 
 onMounted(async () => {
@@ -261,7 +346,10 @@ onUnmounted(() => {
     <div class="card">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-semibold m-0">Manajemen Produk</h2>
-            <Button v-if="hasPermission('products.create')" label="Tambah Produk" icon="pi pi-plus" @click="openCreate" />
+            <div class="flex gap-2">
+                <Button v-if="hasPermission('products.create')" label="Import Excel" icon="pi pi-upload" severity="secondary" outlined @click="openImport" />
+                <Button v-if="hasPermission('products.create')" label="Tambah Produk" icon="pi pi-plus" @click="openCreate" />
+            </div>
         </div>
 
         <!-- Filters -->
@@ -305,7 +393,7 @@ onUnmounted(() => {
                     <div v-else>0</div>
                 </template>
             </Column>
-            <Column header="Stok" sortable sortField="stock" style="width: 6rem">
+            <Column header="Stok" sortable sortField="stock" style="min-width: 12rem">
                 <template #body="{ data }">
                     <span v-if="data.type === 'barang'" :class="{ 'text-red-500 font-bold': isLowStock(data) }">
                         {{ formatHierarchicalStock(data.stock, data.units) }}
@@ -364,6 +452,14 @@ onUnmounted(() => {
                     <label class="font-semibold">Stok Awal (Satuan Terkecil)</label>
                     <InputNumber v-model="form.stock" :min="0" />
                 </div>
+                <div v-else-if="form.type === 'barang' && dialogMode === 'edit'" class="flex flex-col gap-2 md:col-span-1">
+                    <label class="font-semibold">Informasi Stok</label>
+                    <div class="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-700 dark:text-blue-300">
+                        <i class="pi pi-box mr-2"></i>
+                        <span class="font-semibold">{{ stockBreakdownText }}</span>
+                    </div>
+                </div>
+
                 <div v-if="form.type === 'barang'" class="flex flex-col gap-2 md:col-span-1">
                     <label class="font-semibold">Minimal Stok (Satuan Terkecil)</label>
                     <InputNumber v-model="form.min_stock" :min="0" />
@@ -483,6 +579,34 @@ onUnmounted(() => {
             <template #footer>
                 <Button label="Batal" severity="secondary" text @click="adjustDialogVisible = false" />
                 <Button label="Simpan" icon="pi pi-check" :loading="submitting" @click="saveAdjust" />
+            </template>
+        </Dialog>
+
+        <!-- Import Excel Dialog -->
+        <Dialog v-model:visible="importDialogVisible" header="Import Produk (Excel)" modal :style="{ width: '500px' }">
+            <div class="flex flex-col gap-4 pt-4">
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <p class="m-0 text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">Instruksi Import:</p>
+                    <ol class="m-0 pl-4 text-sm text-blue-600 dark:text-blue-400 space-y-1">
+                        <li>Download template Excel.</li>
+                        <li>Isi data produk sesuai format kolom. Jangan ubah nama kolom di baris pertama.</li>
+                        <li>Upload file yang sudah diisi ke sini.</li>
+                    </ol>
+                    <Button label="Download Template" icon="pi pi-download" class="mt-4 w-full" size="small" outlined @click="downloadTemplate" />
+                </div>
+                
+                <div class="flex flex-col gap-2">
+                    <label class="font-semibold text-sm">Upload File Excel (.xlsx)</label>
+                    <input type="file" ref="fileInput" accept=".xlsx, .xls, .csv" @change="handleFileChange"
+                        class="w-full border border-surface-300 dark:border-surface-600 rounded-lg p-2 text-sm
+                               file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
+                               file:text-sm file:font-semibold
+                               file:bg-primary file:text-white hover:file:bg-primary-emphasis cursor-pointer" />
+                </div>
+            </div>
+            <template #footer>
+                <Button label="Batal" icon="pi pi-times" text @click="importDialogVisible = false" />
+                <Button label="Mulai Import" icon="pi pi-check" @click="submitImport" :loading="uploading" :disabled="!importFile" />
             </template>
         </Dialog>
 

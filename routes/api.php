@@ -47,6 +47,8 @@ Route::middleware(['auth:web', 'branch_scope'])->group(function () {
     Route::post('/shifts/{shift}/print', [ShiftController::class, 'printReport']);
 
     // Product search & catalog (kasir + owner)
+    Route::get('/products/template', [ProductController::class, 'downloadTemplate']);
+    Route::post('/products/import', [ProductController::class, 'import']);
     Route::get('/products/catalog', [ProductController::class, 'catalog']);
     Route::get('/products/search', [ProductController::class, 'search']);
 
@@ -96,15 +98,16 @@ Route::middleware(['auth:web', 'branch_scope'])->group(function () {
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->middleware('permission:products.delete');
     Route::post('/products/{product}/stock-adjust', [ProductController::class, 'stockAdjust'])->middleware('permission:products.update');
 
-    // Print prices & Tiers
+    // Print prices
+    Route::get('/print-prices/template', [PrintPriceController::class, 'downloadTemplate']);
+    Route::post('/print-prices/import', [PrintPriceController::class, 'import']);
     Route::post('/print-prices', [PrintPriceController::class, 'store'])->middleware('permission:print_prices.create');
     Route::put('/print-prices/{printPrice}', [PrintPriceController::class, 'update'])->middleware('permission:print_prices.update');
     Route::delete('/print-prices/{printPrice}', [PrintPriceController::class, 'destroy'])->middleware('permission:print_prices.delete');
-    Route::post('/print-prices/{printPrice}/tiers', [PrintPriceController::class, 'storeTier'])->middleware('permission:print_prices.create');
-    Route::put('/print-price-tiers/{tier}', [PrintPriceController::class, 'updateTier'])->middleware('permission:print_prices.update');
-    Route::delete('/print-price-tiers/{tier}', [PrintPriceController::class, 'destroyTier'])->middleware('permission:print_prices.delete');
 
     // Addon services
+    Route::get('/addon-services/template', [AddonServiceController::class, 'downloadTemplate']);
+    Route::post('/addon-services/import', [AddonServiceController::class, 'import']);
     Route::post('/addon-services', [AddonServiceController::class, 'store'])->middleware('permission:addons.create');
     Route::put('/addon-services/{addonService}', [AddonServiceController::class, 'update'])->middleware('permission:addons.update');
     Route::delete('/addon-services/{addonService}', [AddonServiceController::class, 'destroy'])->middleware('permission:addons.delete');

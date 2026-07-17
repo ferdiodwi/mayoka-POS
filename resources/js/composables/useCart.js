@@ -103,9 +103,8 @@ export function useCart() {
                 const unit = item.units.find(u => u.level === item.unitLevel);
                 if (unit) {
                     item.priceTier = newPriceLevel;
-                    if (newPriceLevel === 'h1') item.unitPrice = parseFloat(unit.price_h1 || 0);
-                    else if (newPriceLevel === 'h2') item.unitPrice = parseFloat(unit.price_h2 || 0);
-                    else if (newPriceLevel === 'h3') item.unitPrice = parseFloat(unit.price_h3 || 0);
+                    const key = `price_${newPriceLevel}`;
+                    item.unitPrice = parseFloat(unit[key]) || parseFloat(unit.price_h1) || 0;
                 }
             }
         });

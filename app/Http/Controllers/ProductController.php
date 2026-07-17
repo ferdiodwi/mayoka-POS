@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductUnit;
 use App\Models\StockMovement;
+use App\Imports\ProductsImport;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
@@ -219,5 +222,64 @@ class ProductController extends Controller
             'message' => 'Stok berhasil disesuaikan.',
             'product' => $product->fresh(),
         ]);
+    }
+
+    public function downloadTemplate()
+    {
+        $headers = [
+            'Nama Kategori', 'Nama Produk', 'Barcode', 'Tipe (barang/jasa)', 
+            'Harga Modal', 'Stok', 'Min Stok', 
+            'Satuan 1', 'Harga S1', 
+            'Satuan 2', 'Isi S2', 'Harga S2', 
+            'Satuan 3', 'Isi S3', 'Harga S3'
+        ];
+
+        $example = [
+            'ATK', 'Pulpen Pilot G1', '89912345', 'barang', 
+            '2000', '100', '10', 
+            'PCS', '3000', 
+            'PCK', '12', '35000', 
+            'DOS', '12', '400000'
+        ];
+
+        $export = new class($headers, $example) implements \Maatwebsite\Excel\Concerns\FromArray {
+            protected $headers;
+            protected $example;
+
+            public function __construct($headers, $example)
+            {
+                $this->headers = $headers;
+                $this->example = $example;
+            }
+
+            public function array(): array
+            {
+                return [
+                    $this->headers,
+                    $this->example
+                ];
+            }
+        };
+
+        return Excel::download($export, 'Template_Import_Produk_MAYOKA.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:5120', // 5MB max
+        ]);
+
+        try {
+            Excel::import(new ProductsImport($request->user()->id), $request->file('file'));
+            
+            return response()->json([
+                'message' => 'Data produk berhasil diimport.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat import: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

@@ -3,15 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\PrintPrice;
-use App\Models\PrintPriceTier;
+use App\Imports\PrintPricesImport;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PrintPriceController extends Controller
 {
     public function index(): JsonResponse
     {
-        $prices = PrintPrice::with('tiers')->get()->map(function ($p) {
+        $prices = PrintPrice::all()->map(function ($p) {
             $p->label = $p->label;
             return $p;
         });
@@ -45,7 +47,7 @@ class PrintPriceController extends Controller
 
         return response()->json([
             'message' => 'Harga cetak berhasil ditambahkan.',
-            'print_price' => $price->load('tiers'),
+            'print_price' => $price,
         ], 201);
     }
 
@@ -60,7 +62,7 @@ class PrintPriceController extends Controller
 
         return response()->json([
             'message' => 'Harga cetak berhasil diperbarui.',
-            'print_price' => $printPrice->fresh()->load('tiers'),
+            'print_price' => $printPrice->fresh(),
         ]);
     }
 
@@ -82,8 +84,7 @@ class PrintPriceController extends Controller
             'qty' => 'required|integer|min:1',
         ]);
 
-        $printPrice = PrintPrice::with('tiers')
-            ->where('paper_size', $request->paper_size)
+        $printPrice = PrintPrice::where('paper_size', $request->paper_size)
             ->where('color_type', $request->color_type)
             ->where('side_type', $request->side_type)
             ->first();
@@ -103,42 +104,74 @@ class PrintPriceController extends Controller
         ]);
     }
 
-    // --- Tier Management ---
+    // Tiers removed
 
-    public function storeTier(Request $request, PrintPrice $printPrice): JsonResponse
+    public function downloadTemplate()
     {
-        $validated = $request->validate([
-            'min_qty' => 'required|integer|min:1',
-            'price_per_sheet' => 'required|numeric|min:0',
-        ]);
+        $headers = [
+            'ukuran_kertas',
+            'tinta',
+            'sisi',
+            'harga_jual_per_lembar',
+            'hpp_per_lembar',
+        ];
 
-        $validated['print_price_id'] = $printPrice->id;
-        $tier = PrintPriceTier::create($validated);
+        $example1 = [
+            'A4',
+            'bw',
+            'single',
+            '500',
+            '200',
+        ];
 
-        return response()->json([
-            'message' => 'Tier harga berhasil ditambahkan.',
-            'tier' => $tier,
-        ], 201);
+        $example2 = [
+            'A4',
+            'color',
+            'duplex',
+            '1500',
+            '500',
+        ];
+
+        $export = new class($headers, $example1, $example2) implements \Maatwebsite\Excel\Concerns\FromArray {
+            protected $headers;
+            protected $example1;
+            protected $example2;
+
+            public function __construct($headers, $example1, $example2)
+            {
+                $this->headers = $headers;
+                $this->example1 = $example1;
+                $this->example2 = $example2;
+            }
+
+            public function array(): array
+            {
+                return [
+                    $this->headers,
+                    $this->example1,
+                    $this->example2
+                ];
+            }
+        };
+
+        return Excel::download($export, 'Template_Import_Harga_Cetak_MAYOKA.xlsx');
     }
 
-    public function updateTier(Request $request, PrintPriceTier $tier): JsonResponse
+    public function import(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'min_qty' => 'required|integer|min:1',
-            'price_per_sheet' => 'required|numeric|min:0',
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048'
         ]);
 
-        $tier->update($validated);
-
-        return response()->json([
-            'message' => 'Tier harga berhasil diperbarui.',
-            'tier' => $tier,
-        ]);
-    }
-
-    public function destroyTier(PrintPriceTier $tier): JsonResponse
-    {
-        $tier->delete();
-        return response()->json(['message' => 'Tier harga berhasil dihapus.']);
+        try {
+            Excel::import(new PrintPricesImport(), $request->file('file'));
+            return response()->json([
+                'message' => 'Data harga cetak berhasil diimport.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat import: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

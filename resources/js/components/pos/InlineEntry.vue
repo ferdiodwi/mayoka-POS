@@ -220,12 +220,21 @@ function selectProduct(product) {
 }
 
 function confirmUnit() {
-    entryPhase.value = 'qty';
-    nextTick(() => {
-        const el = qtyRef.value?.$el || qtyRef.value;
-        const input = el?.tagName === 'INPUT' ? el : el?.querySelector('input');
-        if (input) { input.focus(); input.select(); }
-    });
+    if (selectedProduct.value && selectedProduct.value.type === 'jasa') {
+        entryPhase.value = 'price';
+        nextTick(() => {
+            const el = priceRef.value?.$el || priceRef.value;
+            const input = el?.tagName === 'INPUT' ? el : el?.querySelector('input');
+            if (input) { input.focus(); input.select(); }
+        });
+    } else {
+        entryPhase.value = 'qty';
+        nextTick(() => {
+            const el = qtyRef.value?.$el || qtyRef.value;
+            const input = el?.tagName === 'INPUT' ? el : el?.querySelector('input');
+            if (input) { input.focus(); input.select(); }
+        });
+    }
 }
 
 function confirmQty() {

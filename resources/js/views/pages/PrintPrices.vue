@@ -1,10 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
+import { useConfirm } from 'primevue/useconfirm';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/composables/useApi';
 import { useAuth } from '@/composables/useAuth';
 
 const toast = useToast();
+const confirm = useConfirm();
 const { hasPermission } = useAuth();
 
 const printPrices = ref([]);
@@ -17,12 +19,11 @@ const priceDialogMode = ref('create');
 const priceForm = ref({ paper_size: 'A4', color_type: 'bw', side_type: 'single', price_per_sheet: 0, cost_per_sheet: 0 });
 const editingPriceId = ref(null);
 
-// Tier dialog
-const tierDialogVisible = ref(false);
-const tierDialogMode = ref('create');
-const tierForm = ref({ min_qty: 0, price_per_sheet: 0 });
-const editingTierId = ref(null);
-const tierParentId = ref(null);
+// Import logic
+const importDialogVisible = ref(false);
+const uploading = ref(false);
+const importFile = ref(null);
+const fileInput = ref(null);
 
 const paperSizes = [
     { label: 'A4', value: 'A4' }, 
@@ -89,51 +90,74 @@ async function deletePrice(item) {
     }
 }
 
-// --- Tier CRUD ---
-function openCreateTier(priceId) {
-    tierDialogMode.value = 'create';
-    tierForm.value = { min_qty: 50, price_per_sheet: 0 };
-    tierParentId.value = priceId;
-    editingTierId.value = null;
-    tierDialogVisible.value = true;
+function confirmDeletePrice(item) {
+    confirm.require({
+        message: 'Apakah Anda yakin ingin menghapus harga cetak ini?',
+        header: 'Konfirmasi Hapus',
+        icon: 'pi pi-exclamation-triangle',
+        acceptClass: 'p-button-danger',
+        rejectClass: 'p-button-secondary p-button-text',
+        acceptLabel: 'Ya, Hapus',
+        rejectLabel: 'Batal',
+        accept: () => deletePrice(item)
+    });
 }
 
-function openEditTier(tier) {
-    tierDialogMode.value = 'edit';
-    tierForm.value = { min_qty: tier.min_qty, price_per_sheet: parseFloat(tier.price_per_sheet) };
-    editingTierId.value = tier.id;
-    tierDialogVisible.value = true;
+// --- Import Logic ---
+function openImport() {
+    importFile.value = null;
+    if (fileInput.value) fileInput.value.value = '';
+    importDialogVisible.value = true;
 }
 
-async function saveTier() {
-    submitting.value = true;
+function handleFileChange(e) {
+    importFile.value = e.target.files[0];
+}
+
+async function downloadTemplate() {
+    window.location.href = '/api/print-prices/template';
+}
+
+async function submitImport() {
+    if (!importFile.value) {
+        toast.add({ severity: 'warn', summary: 'Peringatan', detail: 'Pilih file Excel terlebih dahulu.', life: 3000 });
+        return;
+    }
+
+    uploading.value = true;
     try {
-        const isEdit = tierDialogMode.value === 'edit';
-        const data = isEdit
-            ? await apiPut(`/api/print-price-tiers/${editingTierId.value}`, tierForm.value)
-            : await apiPost(`/api/print-prices/${tierParentId.value}/tiers`, tierForm.value);
-        toast.add({ severity: 'success', summary: 'Berhasil', detail: data.message, life: 3000 });
-        tierDialogVisible.value = false;
-        await fetchData();
-    } catch (err) {
-        toast.add({ severity: 'error', summary: 'Gagal', detail: err.message, life: 4000 });
+        const formData = new FormData();
+        formData.append('file', importFile.value);
+
+        const tokenMatch = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+        const token = tokenMatch ? decodeURIComponent(tokenMatch[1]) : '';
+        const branchId = localStorage.getItem('activeBranchId');
+
+        const res = await fetch('/api/print-prices/import', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json',
+                'X-XSRF-TOKEN': token,
+                ...(branchId ? { 'X-Branch-Id': branchId } : {}),
+            }
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok) throw new Error(data.message || 'Import gagal.');
+
+        toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Data harga cetak berhasil diimport.', life: 3000 });
+        importDialogVisible.value = false;
+        fetchData();
+    } catch (e) {
+        toast.add({ severity: 'error', summary: 'Error', detail: e.message, life: 5000 });
     } finally {
-        submitting.value = false;
+        uploading.value = false;
     }
 }
 
-async function deleteTier(tier) {
-    try {
-        const data = await apiDelete(`/api/print-price-tiers/${tier.id}`);
-        toast.add({ severity: 'success', summary: 'Berhasil', detail: data.message, life: 3000 });
-        await fetchData();
-    } catch (err) {
-        toast.add({ severity: 'error', summary: 'Gagal', detail: err.message, life: 4000 });
-    }
-}
-
-// --- Expanded rows ---
-const expandedRows = ref({});
+// Expanded rows removed
 
 onMounted(fetchData);
 </script>
@@ -142,12 +166,14 @@ onMounted(fetchData);
     <div class="card">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-semibold m-0">Harga Cetak</h2>
-            <Button v-if="hasPermission('print_prices.create')" label="Tambah Kombinasi" icon="pi pi-plus" @click="openCreatePrice" />
+            <div class="flex gap-2">
+                <Button v-if="hasPermission('print_prices.create')" label="Import Excel" icon="pi pi-upload" severity="secondary" outlined @click="openImport" />
+                <Button v-if="hasPermission('print_prices.create')" label="Tambah Kombinasi" icon="pi pi-plus" @click="openCreatePrice" />
+            </div>
         </div>
 
-        <DataTable :value="printPrices" :loading="loading" v-model:expandedRows="expandedRows"
+        <DataTable :value="printPrices" :loading="loading"
             dataKey="id" stripedRows emptyMessage="Belum ada data harga cetak.">
-            <Column expander style="width: 3rem" />
             <Column field="paper_size" header="Ukuran" sortable style="width: 6rem" />
             <Column header="Tinta" sortable sortField="color_type" style="width: 8rem">
                 <template #body="{ data }">
@@ -166,45 +192,14 @@ onMounted(fetchData);
             <Column header="HPP/Lembar" sortable sortField="cost_per_sheet">
                 <template #body="{ data }">{{ formatRp(data.cost_per_sheet) }}</template>
             </Column>
-            <Column header="Tier Grosir" style="width: 6rem">
-                <template #body="{ data }">
-                    <Tag :value="`${data.tiers?.length || 0} tier`" severity="info" />
-                </template>
-            </Column>
             <Column header="Aksi" style="width: 8rem" v-if="hasPermission('print_prices.update') || hasPermission('print_prices.delete')">
                 <template #body="{ data }">
                     <div class="flex gap-1">
                         <Button v-if="hasPermission('print_prices.update')" icon="pi pi-pencil" severity="info" text rounded size="small" @click="openEditPrice(data)" />
-                        <Button v-if="hasPermission('print_prices.delete')" icon="pi pi-trash" severity="danger" text rounded size="small" @click="deletePrice(data)" />
+                        <Button v-if="hasPermission('print_prices.delete')" icon="pi pi-trash" severity="danger" text rounded size="small" @click="confirmDeletePrice(data)" />
                     </div>
                 </template>
             </Column>
-
-            <!-- Expanded row: Tier list -->
-            <template #expansion="{ data }">
-                <div class="p-4">
-                    <div class="flex items-center justify-between mb-3">
-                        <h4 class="m-0 text-lg">Tier Harga Grosir — {{ data.paper_size }} {{ colorLabel(data.color_type) }}</h4>
-                        <Button v-if="hasPermission('print_prices.create')" label="Tambah Tier" icon="pi pi-plus" size="small" outlined @click="openCreateTier(data.id)" />
-                    </div>
-                    <DataTable :value="data.tiers" dataKey="id" emptyMessage="Belum ada tier grosir." class="p-datatable-sm">
-                        <Column header="Min. Qty (lembar)">
-                            <template #body="{ data: tier }">≥ {{ tier.min_qty }} lembar</template>
-                        </Column>
-                        <Column header="Harga/Lembar">
-                            <template #body="{ data: tier }">{{ formatRp(tier.price_per_sheet) }}</template>
-                        </Column>
-                        <Column header="Aksi" style="width: 8rem" v-if="hasPermission('print_prices.update') || hasPermission('print_prices.delete')">
-                            <template #body="{ data: tier }">
-                                <div class="flex gap-1">
-                                    <Button v-if="hasPermission('print_prices.update')" icon="pi pi-pencil" severity="info" text rounded size="small" @click="openEditTier(tier)" />
-                                    <Button v-if="hasPermission('print_prices.delete')" icon="pi pi-trash" severity="danger" text rounded size="small" @click="deleteTier(tier)" />
-                                </div>
-                            </template>
-                        </Column>
-                    </DataTable>
-                </div>
-            </template>
         </DataTable>
 
         <!-- Price Dialog -->
@@ -240,25 +235,34 @@ onMounted(fetchData);
             </template>
         </Dialog>
 
-        <!-- Tier Dialog -->
-        <Dialog v-model:visible="tierDialogVisible"
-            :header="tierDialogMode === 'create' ? 'Tambah Tier Grosir' : 'Edit Tier Grosir'"
-            modal :style="{ width: '400px' }">
+        <!-- Import Excel Dialog -->
+        <Dialog v-model:visible="importDialogVisible" header="Import Harga Cetak (Excel)" modal :style="{ width: '500px' }">
             <div class="flex flex-col gap-4 pt-4">
-                <div class="flex flex-col gap-2">
-                    <label class="font-semibold">Minimal Qty (lembar)</label>
-                    <InputNumber v-model="tierForm.min_qty" :min="1" />
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <p class="m-0 text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">Instruksi Import:</p>
+                    <ol class="m-0 pl-4 text-sm text-blue-600 dark:text-blue-400 space-y-1">
+                        <li>Download template Excel.</li>
+                        <li>Isi kombinasi Ukuran, Warna, Sisi, dan Harga.</li>
+                        <li>Upload file yang sudah diisi ke sini.</li>
+                    </ol>
+                    <Button label="Download Template" icon="pi pi-download" class="mt-4 w-full" size="small" outlined @click="downloadTemplate" />
                 </div>
+                
                 <div class="flex flex-col gap-2">
-                    <label class="font-semibold">Harga per Lembar (Rp)</label>
-                    <InputNumber v-model="tierForm.price_per_sheet" mode="currency" currency="IDR" locale="id-ID" :min="0" />
+                    <label class="font-semibold text-sm">Upload File Excel (.xlsx)</label>
+                    <input type="file" ref="fileInput" accept=".xlsx, .xls, .csv" @change="handleFileChange"
+                        class="w-full border border-surface-300 dark:border-surface-600 rounded-lg p-2 text-sm
+                               file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
+                               file:text-sm file:font-semibold
+                               file:bg-primary file:text-white hover:file:bg-primary-emphasis cursor-pointer" />
                 </div>
             </div>
             <template #footer>
-                <Button label="Batal" severity="secondary" text @click="tierDialogVisible = false" />
-                <Button :label="tierDialogMode === 'create' ? 'Simpan' : 'Perbarui'" icon="pi pi-check"
-                    :loading="submitting" @click="saveTier" />
+                <Button label="Batal" icon="pi pi-times" text @click="importDialogVisible = false" />
+                <Button label="Mulai Import" icon="pi pi-check" @click="submitImport" :loading="uploading" :disabled="!importFile" />
             </template>
         </Dialog>
+
+        <ConfirmDialog />
     </div>
 </template>
