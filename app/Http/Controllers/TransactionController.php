@@ -452,12 +452,3 @@ class TransactionController extends Controller
         return response()->json($transactions);
     }
 }
-        if ($request->has('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        $transactions = $query->orderBy('created_at', 'desc')->paginate(20);
-
-        return response()->json($transactions);
-    }
-}
