@@ -1,0 +1,593 @@
+2026-07-18T21:12:41,345 [INFO] QZ Tray version: 2.2.6
+2026-07-18T21:12:41,346 [INFO] QZ Tray vendor: QZ Industries, LLC
+2026-07-18T21:12:41,348 [INFO] Java version: 11.0.30
+2026-07-18T21:12:41,348 [INFO] Java vendor: BellSoft
+2026-07-18T21:12:42,487 [INFO] Try to find SSL properties file...
+2026-07-18T21:12:42,631 [INFO] Found C:\Program Files\QZ Tray/qz-tray.properties
+2026-07-18T21:12:42,637 [DEBUG] Executing: [net, session]
+2026-07-18T21:12:42,725 [DEBUG] Parsed hostNames: localhost, localhost.qz.io
+2026-07-18T21:12:42,770 [INFO] Email address support@qz.io found, assuming CertProvider is INTERNAL
+2026-07-18T21:12:42,772 [DEBUG] Executing: [CheckNetIsolation.exe, LoopbackExempt, -a, -n=Microsoft.MicrosoftEdge_8wekyb3d8bbwe]
+2026-07-18T21:12:42,953 [INFO] If other instances of QZ Tray are found, THIS INSTANCE will shut down
+2026-07-18T21:12:42,957 [INFO] Provision file not found 'C:\Program Files\QZ Tray\provision\provision.json', skipping
+2026-07-18T21:12:42,958 [INFO] Starting QZ Tray 2.2.6
+2026-07-18T21:12:43,058 [WARN] Could not load file: C:\Users\ferdi\AppData\Roaming\qz\prefs.properties, reason: C:\Users\ferdi\AppData\Roaming\qz\prefs.properties (The system cannot find the file specified)
+2026-07-18T21:12:43,135 [WARN] Failed to retrieve QZ CRL, skipping CRL check
+2026-07-18T21:12:43,135 [INFO] Loading CRL from https://crl.qz.io
+2026-07-18T21:12:43,135 [DEBUG] Adding internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T21:12:43,168 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:12:46,020 [INFO] Successfully loaded 10 CRL entries from https://crl.qz.io
+2026-07-18T21:12:46,190 [DEBUG] Checking for .autostart preference in user directory C:\Users\ferdi\AppData\Roaming\qz...
+2026-07-18T21:12:46,190 [DEBUG] Checking for .autostart preference in shared directory C:\ProgramData\qz...
+2026-07-18T21:12:47,460 [INFO] Server started on port(s) 8182, 8181
+2026-07-18T21:12:47,460 [DEBUG] Checking for a running instance of QZ Tray on port 8282
+2026-07-18T21:12:47,989 [DEBUG] Checking for a running instance of QZ Tray on port 8383
+2026-07-18T21:12:48,274 [DEBUG] Checking for a running instance of QZ Tray on port 8484
+2026-07-18T21:12:48,555 [DEBUG] Checking for a running instance of QZ Tray on port 8283
+2026-07-18T21:12:48,896 [DEBUG] Checking for a running instance of QZ Tray on port 8384
+2026-07-18T21:12:49,251 [DEBUG] Checking for a running instance of QZ Tray on port 8485
+2026-07-18T21:12:50,608 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:13:17,668 [INFO] Connection opened from /0:0:0:0:0:0:0:1:54176 on socket port 8182
+2026-07-18T21:13:17,759 [DEBUG] Message: {"call":"getVersion","timestamp":1784383997731,"uid":"5fj3ys","position":{"x":960,"y":516}}
+2026-07-18T21:13:17,759 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:13:17,777 [DEBUG] Message: {"certificate":"-----BEGIN CERTIFICATE-----\nMIIDRzCCAi+gAwIBAgIUKaII9zWJCOzsfZXOF8LDSFc2J+IwDQYJKoZIhvcNAQEL\nBQAwMzETMBEGA1UEAwwKTWF5b2thIFBPUzEPMA0GA1UECgwGTWF5b2thMQswCQYD\nVQQGEwJJRDAeFw0yNjA3MTgxMzQwNTBaFw0zNjA3MTUxMzQwNTBaMDMxEzARBgNV\nBAMMCk1heW9rYSBQT1MxDzANBgNVBAoMBk1heW9rYTELMAkGA1UEBhMCSUQwggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCgQfVvWrMVhKmi4b73Q0CGQ+3R\nH4d5T59DcXLm0yK+mWLjsJmn\/7DZr4HjzhbWtMH1t7Ip7S08Q1qL\/j+OArpC6zM3\nvD2xxUfu1InzTcIolTDaidBnXUoNAlqT+HU8UncTgsfyQoIcXY2b0C2vxVAvqQaE\nh+\/aEui7Ij2WuCTUhsOm+os4V1FfFpcv+wECRZg+pzpmaSVX2Yaa1LJYRmioARPJ\nxjfHEat+4bYGSQGva0PrWAFVAUo3GcO9n7CrCmcm7cc8MHFktEMYXPmGVYX6SrVe\ndaMOJIcmbH4S6JA6lE9jqxqpXqCUFRmor4p7HrkGrcepi7KEuC07iSDvHNB\/AgMB\nAAGjUzBRMB0GA1UdDgQWBBSZiF+wHts7LIXl6gaqnWG5jqlkzjAfBgNVHSMEGDAW\ngBSZiF+wHts7LIXl6gaqnWG5jqlkzjAPBgNVHRMBAf8EBTADAQH\/MA0GCSqGSIb3\nDQEBCwUAA4IBAQCQ5YjniE0hi4+ffXOAsXel9p5jsdSJxmHKdwvLJ2UWcqX0sXZa\nAoSot1UGlIjyLkqfXlApM0wDiAiYvUyDjVJR\/mkCkRnSyRUnAL7r\/xUjUII6QI\/N\nTeMEq2fqJYHEivm+aw7Sp6SIrBY95j2klj+krqVpT6FHhUiSA4wtJ1XOvYuLxFny\n665VAxcyDTtHF6BJzEZ2Lsg0VzWJ0dTvR71XSpdpzfu9V0ToQlDgX9OVyRM1US7b\ns8CAf6WqKmORUS\/\/9Hc+uY9TwQIESGnsWpjL21KzHSHf7mxl\/Eju2D1bzT9inytS\nHf\/ZOgUf7MihMop\/ptogJ+fMXW0cgjCQlVDd\n-----END CERTIFICATE-----\n","timestamp":1784383997776,"uid":"4r2ebh","position":{"x":960,"y":516}}
+2026-07-18T21:13:17,783 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T21:13:17,785 [DEBUG] Received new certificate from connection through 54176
+2026-07-18T21:13:17,819 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T21:13:22,979 [INFO] Allowed Mayoka POS to connect to QZ Tray
+2026-07-18T21:13:23,122 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"dDZ1g5Zy4CO+dn1rg+2DEvXWu0+44ZYnxsNLwtgjvrHeVDarw\/MiwSiCZN6y5725ZVFarqMQB7F4zYymqHq5yJZG4EGcamSS7bqrWmZnMIMi0mwJpLLJ2sb\/v4WCnJZCL2qznYfxQCyLdclW\/rZUNxPJijLgJUBx7TUAAx+N5iyLizIBl4oPHoPNx5v0buS4uWy6BQBCCOA03ftbsdh\/dOfTJmi7kt8qqHSOYwZU2L0kXboHN56XfaY6Ql\/rpqEsRhsthZwktRzRgs++mOZzGg36aay\/5dGiv3XmFTs7cRkysGe1UdZjGRqfzGxHjWxi1ncYYiZLO+ZxWUEIn8+IoQ==","timestamp":1784384002985,"uid":"6ylv31","position":{"x":960,"y":516},"signAlgorithm":"SHA512"}
+2026-07-18T21:13:23,135 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:13:23,183 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T21:13:23,975 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T21:13:23,987 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T21:13:24,055 [DEBUG] Found 0 printers
+2026-07-18T21:13:24,055 [WARN] Printer not found: pos-80
+2026-07-18T21:13:42,785 [INFO] SSL certificate is still valid for 824 more days: 2028-10-19T14:12Z.  We'll make a new one automatically when needed.
+2026-07-18T21:18:05,456 [INFO] Connection closed: 1001 - null
+2026-07-18T21:18:05,459 [INFO] Closing all communication channels for Mayoka POS
+2026-07-18T21:18:16,562 [INFO] Connection opened from /0:0:0:0:0:0:0:1:57819 on socket port 8182
+2026-07-18T21:18:16,638 [DEBUG] Message: {"call":"getVersion","timestamp":1784384296637,"uid":"soa73y","position":{"x":960,"y":516}}
+2026-07-18T21:18:16,640 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:18:16,642 [DEBUG] Message: {"certificate":"-----BEGIN CERTIFICATE-----\nMIIDRzCCAi+gAwIBAgIUKaII9zWJCOzsfZXOF8LDSFc2J+IwDQYJKoZIhvcNAQEL\nBQAwMzETMBEGA1UEAwwKTWF5b2thIFBPUzEPMA0GA1UECgwGTWF5b2thMQswCQYD\nVQQGEwJJRDAeFw0yNjA3MTgxMzQwNTBaFw0zNjA3MTUxMzQwNTBaMDMxEzARBgNV\nBAMMCk1heW9rYSBQT1MxDzANBgNVBAoMBk1heW9rYTELMAkGA1UEBhMCSUQwggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCgQfVvWrMVhKmi4b73Q0CGQ+3R\nH4d5T59DcXLm0yK+mWLjsJmn\/7DZr4HjzhbWtMH1t7Ip7S08Q1qL\/j+OArpC6zM3\nvD2xxUfu1InzTcIolTDaidBnXUoNAlqT+HU8UncTgsfyQoIcXY2b0C2vxVAvqQaE\nh+\/aEui7Ij2WuCTUhsOm+os4V1FfFpcv+wECRZg+pzpmaSVX2Yaa1LJYRmioARPJ\nxjfHEat+4bYGSQGva0PrWAFVAUo3GcO9n7CrCmcm7cc8MHFktEMYXPmGVYX6SrVe\ndaMOJIcmbH4S6JA6lE9jqxqpXqCUFRmor4p7HrkGrcepi7KEuC07iSDvHNB\/AgMB\nAAGjUzBRMB0GA1UdDgQWBBSZiF+wHts7LIXl6gaqnWG5jqlkzjAfBgNVHSMEGDAW\ngBSZiF+wHts7LIXl6gaqnWG5jqlkzjAPBgNVHRMBAf8EBTADAQH\/MA0GCSqGSIb3\nDQEBCwUAA4IBAQCQ5YjniE0hi4+ffXOAsXel9p5jsdSJxmHKdwvLJ2UWcqX0sXZa\nAoSot1UGlIjyLkqfXlApM0wDiAiYvUyDjVJR\/mkCkRnSyRUnAL7r\/xUjUII6QI\/N\nTeMEq2fqJYHEivm+aw7Sp6SIrBY95j2klj+krqVpT6FHhUiSA4wtJ1XOvYuLxFny\n665VAxcyDTtHF6BJzEZ2Lsg0VzWJ0dTvR71XSpdpzfu9V0ToQlDgX9OVyRM1US7b\ns8CAf6WqKmORUS\/\/9Hc+uY9TwQIESGnsWpjL21KzHSHf7mxl\/Eju2D1bzT9inytS\nHf\/ZOgUf7MihMop\/ptogJ+fMXW0cgjCQlVDd\n-----END CERTIFICATE-----\n","timestamp":1784384296642,"uid":"s74bw9","position":{"x":960,"y":516}}
+2026-07-18T21:18:16,645 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T21:18:16,646 [DEBUG] Received new certificate from connection through 57819
+2026-07-18T21:18:16,655 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T21:18:20,143 [INFO] Allowed Mayoka POS to connect to QZ Tray
+2026-07-18T21:18:20,726 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"bdwJ8d6aNoJrIWkpn7Lv8kDvRgpZ22TkP+mc+H+MVAxWP3aXP3SF9CK0JY7Sixlb+Mr1p88yF99Ro0Qn+2qLmsParHDu\/Fz9JlXlZ9BdUQd50JjQwssbYHeyiPeFvCh9AMRY\/dc2EHz6T65XVMdPccfe\/i8X7uzqIKqCfVUpGBUaF7kiipT968YmL1Dm2YnX28hK3rc7Gn+cMKkUMiMtX7ygrrqG7ZCp0Qhx0K7cr07tTFbBo2BvZEH++7uOI47SsdDaErKfVOvHVHQSt2m9DvKiC2mO6p7u6pGo5THMGN75Vfu2bGhlS2aY9HSs1Oi1enWPZOfzpQdsPDI1Q7aEUQ==","timestamp":1784384300145,"uid":"0zasrn","position":{"x":960,"y":516},"signAlgorithm":"SHA512"}
+2026-07-18T21:18:20,729 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:18:20,738 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T21:18:21,453 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T21:18:21,454 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T21:18:21,455 [DEBUG] Found 1 printers
+2026-07-18T21:18:21,455 [WARN] Printer not found: pos-80
+2026-07-18T21:19:02,353 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"FjbUKp8skwzZuK1QLxHe7JZEN5F6PpPtK+vESURcA1s54V+Z764cdwstl5uIHzg+LOUhPPUG6SaQ2POCVoiBzG750U+A11LBE31TZp2JjKWhkp2kHVAnR4zRCgy\/nV0QNXnwAvwJp1GeriQo86+xtjnE1R+JPIVDYUXIwySPx0ZFrzMrSthcl3Nr2stSu23Ej\/T6Vv3+8oBEMBjMdozAAOI6USZV1Z10oT1qpC8D3Bmp7HcshyJGAYGauH87RDNObdYRp1c4Va4ogeYVJijdHIc\/H\/nWy2dWHMlBgb6FBbv8xD8\/IJMeRw1Xhl+fVCm82NFd9zkVH7TJwNcY\/QrnRQ==","timestamp":1784384342269,"uid":"knlgw1","position":{"x":960,"y":516},"signAlgorithm":"SHA512"}
+2026-07-18T21:19:02,355 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:19:02,356 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T21:19:07,637 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T21:19:07,638 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T21:19:07,638 [DEBUG] Found 1 printers
+2026-07-18T21:19:07,638 [WARN] Printer not found: pos-80
+2026-07-18T21:19:19,455 [INFO] Connection closed: 1001 - null
+2026-07-18T21:19:19,455 [INFO] Closing all communication channels for Mayoka POS
+2026-07-18T21:33:43,166 [INFO] QZ Tray version: 2.2.6
+2026-07-18T21:33:43,167 [INFO] QZ Tray vendor: QZ Industries, LLC
+2026-07-18T21:33:43,168 [INFO] Java version: 11.0.30
+2026-07-18T21:33:43,169 [INFO] Java vendor: BellSoft
+2026-07-18T21:33:44,386 [INFO] Try to find SSL properties file...
+2026-07-18T21:33:44,599 [INFO] Found C:\Program Files\QZ Tray/qz-tray.properties
+2026-07-18T21:33:44,602 [DEBUG] Executing: [net, session]
+2026-07-18T21:33:44,739 [DEBUG] Parsed hostNames: localhost, localhost.qz.io
+2026-07-18T21:33:44,833 [INFO] Email address support@qz.io found, assuming CertProvider is INTERNAL
+2026-07-18T21:33:44,836 [DEBUG] Executing: [CheckNetIsolation.exe, LoopbackExempt, -a, -n=Microsoft.MicrosoftEdge_8wekyb3d8bbwe]
+2026-07-18T21:33:45,096 [INFO] If other instances of QZ Tray are found, THIS INSTANCE will shut down
+2026-07-18T21:33:45,100 [INFO] Provision file not found 'C:\Program Files\QZ Tray\provision\provision.json', skipping
+2026-07-18T21:33:45,101 [INFO] Starting QZ Tray 2.2.6
+2026-07-18T21:33:45,234 [WARN] Could not load file: C:\Users\ferdi\AppData\Roaming\qz\prefs.properties, reason: C:\Users\ferdi\AppData\Roaming\qz\prefs.properties (The system cannot find the file specified)
+2026-07-18T21:33:45,299 [WARN] Failed to retrieve QZ CRL, skipping CRL check
+2026-07-18T21:33:45,299 [INFO] Loading CRL from https://crl.qz.io
+2026-07-18T21:33:45,299 [DEBUG] Adding internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T21:33:45,345 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T21:33:45,371 [WARN] Failed to retrieve QZ CRL, skipping CRL check
+2026-07-18T21:33:45,373 [DEBUG] Adding CA certificate: CN=Mayoka POS, O= (71c8d27a84998448b59cc8bf630dac0bd961ca8b)
+2026-07-18T21:33:45,373 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:33:47,645 [INFO] Successfully loaded 10 CRL entries from https://crl.qz.io
+2026-07-18T21:33:48,720 [DEBUG] Checking for .autostart preference in user directory C:\Users\ferdi\AppData\Roaming\qz...
+2026-07-18T21:33:48,720 [DEBUG] Checking for .autostart preference in shared directory C:\ProgramData\qz...
+2026-07-18T21:33:49,707 [INFO] Server started on port(s) 8182, 8181
+2026-07-18T21:33:49,707 [DEBUG] Checking for a running instance of QZ Tray on port 8282
+2026-07-18T21:33:50,065 [DEBUG] Checking for a running instance of QZ Tray on port 8383
+2026-07-18T21:33:50,241 [DEBUG] Checking for a running instance of QZ Tray on port 8484
+2026-07-18T21:33:50,484 [DEBUG] Checking for a running instance of QZ Tray on port 8283
+2026-07-18T21:33:50,658 [DEBUG] Checking for a running instance of QZ Tray on port 8384
+2026-07-18T21:33:50,838 [DEBUG] Checking for a running instance of QZ Tray on port 8485
+2026-07-18T21:33:51,929 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:34:44,839 [INFO] SSL certificate is still valid for 824 more days: 2028-10-19T14:12Z.  We'll make a new one automatically when needed.
+2026-07-18T21:34:48,728 [DEBUG] IDLE: Starting up JFX for HTML printing
+2026-07-18T21:34:49,158 [DEBUG] Started JavaFX
+2026-07-18T21:34:49,785 [WARN] WebKit version couldn't be parsed from UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/613.1 (KHTML, like Gecko) JavaFX/19 Safari/613.1
+2026-07-18T21:34:50,140 [DEBUG] Attempting image capture
+2026-07-18T21:35:48,721 [DEBUG] IDLE: Performing first run of find printers
+2026-07-18T21:35:49,338 [DEBUG] Found 1 printers
+2026-07-18T21:35:54,447 [INFO] Connection opened from /0:0:0:0:0:0:0:1:58979 on socket port 8182
+2026-07-18T21:35:54,552 [DEBUG] Message: {"call":"getVersion","timestamp":1784385354521,"uid":"ssg6b7","position":{"x":960,"y":516}}
+2026-07-18T21:35:54,556 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:35:54,567 [DEBUG] Message: {"certificate":"-----BEGIN CERTIFICATE-----\nMIIDRzCCAi+gAwIBAgIUKaII9zWJCOzsfZXOF8LDSFc2J+IwDQYJKoZIhvcNAQEL\nBQAwMzETMBEGA1UEAwwKTWF5b2thIFBPUzEPMA0GA1UECgwGTWF5b2thMQswCQYD\nVQQGEwJJRDAeFw0yNjA3MTgxMzQwNTBaFw0zNjA3MTUxMzQwNTBaMDMxEzARBgNV\nBAMMCk1heW9rYSBQT1MxDzANBgNVBAoMBk1heW9rYTELMAkGA1UEBhMCSUQwggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCgQfVvWrMVhKmi4b73Q0CGQ+3R\nH4d5T59DcXLm0yK+mWLjsJmn\/7DZr4HjzhbWtMH1t7Ip7S08Q1qL\/j+OArpC6zM3\nvD2xxUfu1InzTcIolTDaidBnXUoNAlqT+HU8UncTgsfyQoIcXY2b0C2vxVAvqQaE\nh+\/aEui7Ij2WuCTUhsOm+os4V1FfFpcv+wECRZg+pzpmaSVX2Yaa1LJYRmioARPJ\nxjfHEat+4bYGSQGva0PrWAFVAUo3GcO9n7CrCmcm7cc8MHFktEMYXPmGVYX6SrVe\ndaMOJIcmbH4S6JA6lE9jqxqpXqCUFRmor4p7HrkGrcepi7KEuC07iSDvHNB\/AgMB\nAAGjUzBRMB0GA1UdDgQWBBSZiF+wHts7LIXl6gaqnWG5jqlkzjAfBgNVHSMEGDAW\ngBSZiF+wHts7LIXl6gaqnWG5jqlkzjAPBgNVHRMBAf8EBTADAQH\/MA0GCSqGSIb3\nDQEBCwUAA4IBAQCQ5YjniE0hi4+ffXOAsXel9p5jsdSJxmHKdwvLJ2UWcqX0sXZa\nAoSot1UGlIjyLkqfXlApM0wDiAiYvUyDjVJR\/mkCkRnSyRUnAL7r\/xUjUII6QI\/N\nTeMEq2fqJYHEivm+aw7Sp6SIrBY95j2klj+krqVpT6FHhUiSA4wtJ1XOvYuLxFny\n665VAxcyDTtHF6BJzEZ2Lsg0VzWJ0dTvR71XSpdpzfu9V0ToQlDgX9OVyRM1US7b\ns8CAf6WqKmORUS\/\/9Hc+uY9TwQIESGnsWpjL21KzHSHf7mxl\/Eju2D1bzT9inytS\nHf\/ZOgUf7MihMop\/ptogJ+fMXW0cgjCQlVDd\n-----END CERTIFICATE-----\n","timestamp":1784385354566,"uid":"ala1h5","position":{"x":960,"y":516}}
+2026-07-18T21:35:54,571 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T21:35:54,571 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T21:35:54,572 [DEBUG] Received new certificate from connection through 58979
+2026-07-18T21:35:54,606 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T21:35:59,556 [INFO] Allowed Mayoka POS to connect to QZ Tray
+2026-07-18T21:35:59,654 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"JvdcdCj9RNNtM4+U1Wkxq29Rc7Tfbn3W1\/Lo1\/HWLPVesU+kz7ZxBR+nD\/HGNYAVZy0xyGdNuTN8wTi9GfyTQdN55Pb3Ng7oQEgbgHSYS3vKWxbyhXKLkTuSUuCmJ11LfLaLLK+rOKtR4OnbP3c7NF38YgjqwGpWy53iGQ2KLfarnt8iJs\/qecpgpK6a7zfioL+lQ4j3Ol1TqvnAZ40kNWrHMvLiBnIQZ0UzsUymW6Eqa0EwxHMjmJDhaePHiAJMJy+4Maj8wsnFUl3sjoC8U0ePdSLZguFwxGqK91GC2RujSYQCQIL9KbZ4Lp4CTZ6RGZV8uSGKyQGYeQhuB\/svsg==","timestamp":1784385359557,"uid":"e0kyh4","position":{"x":960,"y":516},"signAlgorithm":"SHA512"}
+2026-07-18T21:35:59,799 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:35:59,812 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T21:36:00,492 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T21:36:00,496 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T21:36:00,498 [DEBUG] Found 1 printers
+2026-07-18T21:36:00,499 [WARN] Printer not found: pos-80
+2026-07-18T21:36:13,188 [DEBUG] Removing internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T21:36:21,283 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"Cv3F7uNckcE79hwllQkpgA+Z98jJGuwuz0kin1sK+xsIuvDvp2mkEv45IKC1GXlC6Dq8avNlwqh\/QehalAOGYzuJ\/hhzTowkTLcqPGhKtCt6hgtHGRjrpaaW2e4T1rVfdfpoyEnV+7WJ5I3Fyrci2UxbqmUS4d\/Gx172Zf3oP5TfkM30JS5jA5RLy\/\/QJH3sFXtiHQGnw5bsMcnLe5eag3gSgcdRSXeA3gstjDbXh+R72oHXqbcV5tbiVuZP7KlioYqa+Flr372+YMvY\/i3Xq5pnKKtPzVxq1E4SQ\/MjlAT1BhXZD6107Vk32iIU+VEMnca42dPiErnQ1ZEunFKSAQ==","timestamp":1784385381206,"uid":"oavv5s","position":{"x":960,"y":516},"signAlgorithm":"SHA512"}
+2026-07-18T21:36:21,285 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:36:21,286 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T21:36:23,554 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T21:36:23,556 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T21:36:23,556 [DEBUG] Found 1 printers
+2026-07-18T21:36:23,557 [WARN] Printer not found: pos-80
+2026-07-18T21:36:51,103 [INFO] Connection closed: 1006 - Session Closed
+2026-07-18T21:36:51,410 [INFO] Server started on port(s) 8182, 8181
+2026-07-18T21:36:51,411 [DEBUG] Checking for a running instance of QZ Tray on port 8282
+2026-07-18T21:36:51,670 [DEBUG] Checking for a running instance of QZ Tray on port 8383
+2026-07-18T21:36:51,924 [DEBUG] Checking for a running instance of QZ Tray on port 8484
+2026-07-18T21:36:52,121 [DEBUG] Checking for a running instance of QZ Tray on port 8283
+2026-07-18T21:36:52,416 [DEBUG] Checking for a running instance of QZ Tray on port 8384
+2026-07-18T21:36:52,677 [DEBUG] Checking for a running instance of QZ Tray on port 8485
+2026-07-18T21:36:53,591 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:38:25,725 [INFO] Connection opened from /0:0:0:0:0:0:0:1:54715 on socket port 8182
+2026-07-18T21:38:25,729 [DEBUG] Message: {"call":"getVersion","timestamp":1784385505729,"uid":"0owdix","position":{"x":960,"y":516}}
+2026-07-18T21:38:25,730 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:38:25,734 [DEBUG] Message: {"certificate":"-----BEGIN CERTIFICATE-----\nMIIDRzCCAi+gAwIBAgIUKaII9zWJCOzsfZXOF8LDSFc2J+IwDQYJKoZIhvcNAQEL\nBQAwMzETMBEGA1UEAwwKTWF5b2thIFBPUzEPMA0GA1UECgwGTWF5b2thMQswCQYD\nVQQGEwJJRDAeFw0yNjA3MTgxMzQwNTBaFw0zNjA3MTUxMzQwNTBaMDMxEzARBgNV\nBAMMCk1heW9rYSBQT1MxDzANBgNVBAoMBk1heW9rYTELMAkGA1UEBhMCSUQwggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCgQfVvWrMVhKmi4b73Q0CGQ+3R\nH4d5T59DcXLm0yK+mWLjsJmn\/7DZr4HjzhbWtMH1t7Ip7S08Q1qL\/j+OArpC6zM3\nvD2xxUfu1InzTcIolTDaidBnXUoNAlqT+HU8UncTgsfyQoIcXY2b0C2vxVAvqQaE\nh+\/aEui7Ij2WuCTUhsOm+os4V1FfFpcv+wECRZg+pzpmaSVX2Yaa1LJYRmioARPJ\nxjfHEat+4bYGSQGva0PrWAFVAUo3GcO9n7CrCmcm7cc8MHFktEMYXPmGVYX6SrVe\ndaMOJIcmbH4S6JA6lE9jqxqpXqCUFRmor4p7HrkGrcepi7KEuC07iSDvHNB\/AgMB\nAAGjUzBRMB0GA1UdDgQWBBSZiF+wHts7LIXl6gaqnWG5jqlkzjAfBgNVHSMEGDAW\ngBSZiF+wHts7LIXl6gaqnWG5jqlkzjAPBgNVHRMBAf8EBTADAQH\/MA0GCSqGSIb3\nDQEBCwUAA4IBAQCQ5YjniE0hi4+ffXOAsXel9p5jsdSJxmHKdwvLJ2UWcqX0sXZa\nAoSot1UGlIjyLkqfXlApM0wDiAiYvUyDjVJR\/mkCkRnSyRUnAL7r\/xUjUII6QI\/N\nTeMEq2fqJYHEivm+aw7Sp6SIrBY95j2klj+krqVpT6FHhUiSA4wtJ1XOvYuLxFny\n665VAxcyDTtHF6BJzEZ2Lsg0VzWJ0dTvR71XSpdpzfu9V0ToQlDgX9OVyRM1US7b\ns8CAf6WqKmORUS\/\/9Hc+uY9TwQIESGnsWpjL21KzHSHf7mxl\/Eju2D1bzT9inytS\nHf\/ZOgUf7MihMop\/ptogJ+fMXW0cgjCQlVDd\n-----END CERTIFICATE-----\n","timestamp":1784385505732,"uid":"z6m2u0","position":{"x":960,"y":516}}
+2026-07-18T21:38:25,735 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T21:38:25,736 [DEBUG] Received new certificate from connection through 54715
+2026-07-18T21:38:25,742 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T21:38:30,241 [INFO] Allowed Mayoka POS to connect to QZ Tray
+2026-07-18T21:38:30,353 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"G6PQ6RnsWw\/JFty\/MsuoWQX4o869WH3tl2BLSMDkMFZYB1TAkXDIInYvzQIy1GNLV\/5dSQJvMgPYVZ4df0I5mPvYMO20XFLEKTPxXIQQHHsxkNZ0LRzKoTFt33jIVPM5AnwcJdp17Xf2W2umIPQc9L5jezCsV6CI9lXhgmcN+9IIdC7MFad9GBoBbYwsUgRIasztMzLmJ+MtxlF0Gsifwn23a9QHZjJh0AaLtBaPJGHcejmMHa01FS4b+5AXcIwCNqBRSvxTDuTRlSg\/zus3+Hdm8HBp6K2PLURLpHaexhRa2Oflga5iRIrR1j0Xp8nnri4BqGJeN2wYSIfQA07\/cQ==","timestamp":1784385510242,"uid":"aj2qkc","position":{"x":960,"y":516},"signAlgorithm":"SHA512"}
+2026-07-18T21:38:30,356 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:38:30,360 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T21:38:31,046 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T21:38:31,046 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T21:38:31,047 [DEBUG] Found 1 printers
+2026-07-18T21:38:31,047 [WARN] Printer not found: pos-80
+2026-07-18T21:38:39,421 [INFO] Connection closed: 1006 - Session Closed
+2026-07-18T21:38:39,423 [WARN] The web socket server is no longer running
+2026-07-18T21:40:46,175 [INFO] QZ Tray version: 2.2.6
+2026-07-18T21:40:46,175 [INFO] QZ Tray vendor: QZ Industries, LLC
+2026-07-18T21:40:46,175 [INFO] Java version: 11.0.30
+2026-07-18T21:40:46,177 [INFO] Java vendor: BellSoft
+2026-07-18T21:40:47,006 [INFO] Try to find SSL properties file...
+2026-07-18T21:40:47,095 [INFO] Found C:\Program Files\QZ Tray/qz-tray.properties
+2026-07-18T21:40:47,095 [DEBUG] Executing: [net, session]
+2026-07-18T21:40:47,156 [DEBUG] Parsed hostNames: localhost, localhost.qz.io
+2026-07-18T21:40:47,187 [INFO] Email address support@qz.io found, assuming CertProvider is INTERNAL
+2026-07-18T21:40:47,187 [DEBUG] Executing: [CheckNetIsolation.exe, LoopbackExempt, -a, -n=Microsoft.MicrosoftEdge_8wekyb3d8bbwe]
+2026-07-18T21:40:47,304 [INFO] If other instances of QZ Tray are found, THIS INSTANCE will shut down
+2026-07-18T21:40:47,304 [INFO] Provision file not found 'C:\Program Files\QZ Tray\provision\provision.json', skipping
+2026-07-18T21:40:47,304 [INFO] Starting QZ Tray 2.2.6
+2026-07-18T21:40:47,378 [INFO] Picked up property tray.strictmode=true
+2026-07-18T21:40:47,410 [WARN] Failed to retrieve QZ CRL, skipping CRL check
+2026-07-18T21:40:47,410 [INFO] Loading CRL from https://crl.qz.io
+2026-07-18T21:40:47,410 [DEBUG] Adding internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T21:40:47,439 [DEBUG] Removing internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T21:40:47,439 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:40:48,258 [INFO] Successfully loaded 10 CRL entries from https://crl.qz.io
+2026-07-18T21:40:49,806 [INFO] Picked up property tray.strictmode=true
+2026-07-18T21:40:49,991 [DEBUG] Checking for .autostart preference in user directory C:\Users\ferdi\AppData\Roaming\qz...
+2026-07-18T21:40:49,991 [DEBUG] Checking for .autostart preference in shared directory C:\ProgramData\qz...
+2026-07-18T21:40:51,225 [INFO] Server started on port(s) 8182, 8181
+2026-07-18T21:40:51,227 [DEBUG] Checking for a running instance of QZ Tray on port 8282
+2026-07-18T21:40:51,731 [DEBUG] Checking for a running instance of QZ Tray on port 8383
+2026-07-18T21:40:52,022 [DEBUG] Checking for a running instance of QZ Tray on port 8484
+2026-07-18T21:40:52,265 [DEBUG] Checking for a running instance of QZ Tray on port 8283
+2026-07-18T21:40:52,512 [DEBUG] Checking for a running instance of QZ Tray on port 8384
+2026-07-18T21:40:52,755 [DEBUG] Checking for a running instance of QZ Tray on port 8485
+2026-07-18T21:40:53,974 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:47:46,633 [INFO] QZ Tray version: 2.2.6
+2026-07-18T21:47:46,634 [INFO] QZ Tray vendor: QZ Industries, LLC
+2026-07-18T21:47:46,636 [INFO] Java version: 11.0.30
+2026-07-18T21:47:46,637 [INFO] Java vendor: BellSoft
+2026-07-18T21:47:48,619 [INFO] Try to find SSL properties file...
+2026-07-18T21:47:48,803 [INFO] Found C:\Program Files\QZ Tray/qz-tray.properties
+2026-07-18T21:47:48,817 [DEBUG] Executing: [net, session]
+2026-07-18T21:47:48,900 [DEBUG] Parsed hostNames: localhost, localhost.qz.io
+2026-07-18T21:47:48,944 [INFO] Email address support@qz.io found, assuming CertProvider is INTERNAL
+2026-07-18T21:47:48,946 [DEBUG] Executing: [CheckNetIsolation.exe, LoopbackExempt, -a, -n=Microsoft.MicrosoftEdge_8wekyb3d8bbwe]
+2026-07-18T21:47:49,145 [INFO] If other instances of QZ Tray are found, THIS INSTANCE will shut down
+2026-07-18T21:47:49,148 [INFO] Provision file not found 'C:\Program Files\QZ Tray\provision\provision.json', skipping
+2026-07-18T21:47:49,151 [INFO] Starting QZ Tray 2.2.6
+2026-07-18T21:47:49,302 [INFO] Picked up property tray.strictmode=true
+2026-07-18T21:47:49,419 [WARN] Failed to retrieve QZ CRL, skipping CRL check
+2026-07-18T21:47:49,419 [INFO] Loading CRL from https://crl.qz.io
+2026-07-18T21:47:49,419 [DEBUG] Adding internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T21:47:49,477 [DEBUG] Removing internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T21:47:49,481 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:47:51,037 [INFO] Successfully loaded 10 CRL entries from https://crl.qz.io
+2026-07-18T21:47:52,299 [INFO] Picked up property tray.strictmode=true
+2026-07-18T21:47:52,652 [DEBUG] Checking for .autostart preference in user directory C:\Users\ferdi\AppData\Roaming\qz...
+2026-07-18T21:47:52,652 [DEBUG] Checking for .autostart preference in shared directory C:\ProgramData\qz...
+2026-07-18T21:47:53,903 [INFO] Server started on port(s) 8182, 8181
+2026-07-18T21:47:53,905 [DEBUG] Checking for a running instance of QZ Tray on port 8282
+2026-07-18T21:47:54,252 [DEBUG] Checking for a running instance of QZ Tray on port 8383
+2026-07-18T21:47:54,488 [DEBUG] Checking for a running instance of QZ Tray on port 8484
+2026-07-18T21:47:54,774 [DEBUG] Checking for a running instance of QZ Tray on port 8283
+2026-07-18T21:47:55,027 [DEBUG] Checking for a running instance of QZ Tray on port 8384
+2026-07-18T21:47:55,274 [DEBUG] Checking for a running instance of QZ Tray on port 8485
+2026-07-18T21:47:56,462 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:48:48,959 [INFO] SSL certificate is still valid for 824 more days: 2028-10-19T14:40Z.  We'll make a new one automatically when needed.
+2026-07-18T21:48:52,665 [DEBUG] IDLE: Starting up JFX for HTML printing
+2026-07-18T21:48:53,104 [DEBUG] Started JavaFX
+2026-07-18T21:48:53,710 [WARN] WebKit version couldn't be parsed from UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/613.1 (KHTML, like Gecko) JavaFX/19 Safari/613.1
+2026-07-18T21:48:54,055 [DEBUG] Attempting image capture
+2026-07-18T21:49:52,660 [DEBUG] IDLE: Performing first run of find printers
+2026-07-18T21:49:52,942 [DEBUG] Found 1 printers
+2026-07-18T21:50:05,049 [WARN] The web socket server is no longer running
+2026-07-18T21:50:13,785 [INFO] QZ Tray version: 2.2.6
+2026-07-18T21:50:13,785 [INFO] QZ Tray vendor: QZ Industries, LLC
+2026-07-18T21:50:13,785 [INFO] Java version: 11.0.30
+2026-07-18T21:50:13,785 [INFO] Java vendor: BellSoft
+2026-07-18T21:50:14,777 [INFO] Try to find SSL properties file...
+2026-07-18T21:50:14,872 [INFO] Found C:\Program Files\QZ Tray/qz-tray.properties
+2026-07-18T21:50:14,872 [DEBUG] Executing: [net, session]
+2026-07-18T21:50:14,930 [DEBUG] Parsed hostNames: localhost, localhost.qz.io
+2026-07-18T21:50:14,951 [INFO] Email address support@qz.io found, assuming CertProvider is INTERNAL
+2026-07-18T21:50:14,951 [DEBUG] Executing: [CheckNetIsolation.exe, LoopbackExempt, -a, -n=Microsoft.MicrosoftEdge_8wekyb3d8bbwe]
+2026-07-18T21:50:15,064 [INFO] If other instances of QZ Tray are found, THIS INSTANCE will shut down
+2026-07-18T21:50:15,064 [INFO] Provision file not found 'C:\Program Files\QZ Tray\provision\provision.json', skipping
+2026-07-18T21:50:15,064 [INFO] Starting QZ Tray 2.2.6
+2026-07-18T21:50:15,135 [INFO] Picked up property tray.strictmode=true
+2026-07-18T21:50:15,170 [WARN] Failed to retrieve QZ CRL, skipping CRL check
+2026-07-18T21:50:15,170 [INFO] Loading CRL from https://crl.qz.io
+2026-07-18T21:50:15,170 [DEBUG] Adding internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T21:50:15,195 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T21:50:15,220 [WARN] Failed to retrieve QZ CRL, skipping CRL check
+2026-07-18T21:50:15,220 [DEBUG] Adding CA certificate: CN=Mayoka POS, O= (71c8d27a84998448b59cc8bf630dac0bd961ca8b)
+2026-07-18T21:50:15,220 [DEBUG] Removing internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T21:50:15,220 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:50:16,239 [INFO] Successfully loaded 10 CRL entries from https://crl.qz.io
+2026-07-18T21:50:17,549 [INFO] Picked up property tray.strictmode=true
+2026-07-18T21:50:17,728 [DEBUG] Checking for .autostart preference in user directory C:\Users\ferdi\AppData\Roaming\qz...
+2026-07-18T21:50:17,728 [DEBUG] Checking for .autostart preference in shared directory C:\ProgramData\qz...
+2026-07-18T21:50:18,782 [INFO] Server started on port(s) 8182, 8181
+2026-07-18T21:50:18,782 [DEBUG] Checking for a running instance of QZ Tray on port 8282
+2026-07-18T21:50:19,130 [DEBUG] Checking for a running instance of QZ Tray on port 8383
+2026-07-18T21:50:19,352 [DEBUG] Checking for a running instance of QZ Tray on port 8484
+2026-07-18T21:50:19,607 [DEBUG] Checking for a running instance of QZ Tray on port 8283
+2026-07-18T21:50:19,828 [DEBUG] Checking for a running instance of QZ Tray on port 8384
+2026-07-18T21:50:20,051 [DEBUG] Checking for a running instance of QZ Tray on port 8485
+2026-07-18T21:50:21,114 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:50:32,675 [DEBUG] Adding internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T21:50:35,213 [DEBUG] Removing internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T21:51:11,651 [INFO] Connection opened from /0:0:0:0:0:0:0:1:64662 on socket port 8182
+2026-07-18T21:51:11,772 [DEBUG] Message: {"call":"getVersion","timestamp":1784386271723,"uid":"rej0rl","position":{"x":960,"y":516}}
+2026-07-18T21:51:11,775 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:51:11,787 [DEBUG] Message: {"certificate":"-----BEGIN CERTIFICATE-----\nMIIDRzCCAi+gAwIBAgIUKaII9zWJCOzsfZXOF8LDSFc2J+IwDQYJKoZIhvcNAQEL\nBQAwMzETMBEGA1UEAwwKTWF5b2thIFBPUzEPMA0GA1UECgwGTWF5b2thMQswCQYD\nVQQGEwJJRDAeFw0yNjA3MTgxMzQwNTBaFw0zNjA3MTUxMzQwNTBaMDMxEzARBgNV\nBAMMCk1heW9rYSBQT1MxDzANBgNVBAoMBk1heW9rYTELMAkGA1UEBhMCSUQwggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCgQfVvWrMVhKmi4b73Q0CGQ+3R\nH4d5T59DcXLm0yK+mWLjsJmn\/7DZr4HjzhbWtMH1t7Ip7S08Q1qL\/j+OArpC6zM3\nvD2xxUfu1InzTcIolTDaidBnXUoNAlqT+HU8UncTgsfyQoIcXY2b0C2vxVAvqQaE\nh+\/aEui7Ij2WuCTUhsOm+os4V1FfFpcv+wECRZg+pzpmaSVX2Yaa1LJYRmioARPJ\nxjfHEat+4bYGSQGva0PrWAFVAUo3GcO9n7CrCmcm7cc8MHFktEMYXPmGVYX6SrVe\ndaMOJIcmbH4S6JA6lE9jqxqpXqCUFRmor4p7HrkGrcepi7KEuC07iSDvHNB\/AgMB\nAAGjUzBRMB0GA1UdDgQWBBSZiF+wHts7LIXl6gaqnWG5jqlkzjAfBgNVHSMEGDAW\ngBSZiF+wHts7LIXl6gaqnWG5jqlkzjAPBgNVHRMBAf8EBTADAQH\/MA0GCSqGSIb3\nDQEBCwUAA4IBAQCQ5YjniE0hi4+ffXOAsXel9p5jsdSJxmHKdwvLJ2UWcqX0sXZa\nAoSot1UGlIjyLkqfXlApM0wDiAiYvUyDjVJR\/mkCkRnSyRUnAL7r\/xUjUII6QI\/N\nTeMEq2fqJYHEivm+aw7Sp6SIrBY95j2klj+krqVpT6FHhUiSA4wtJ1XOvYuLxFny\n665VAxcyDTtHF6BJzEZ2Lsg0VzWJ0dTvR71XSpdpzfu9V0ToQlDgX9OVyRM1US7b\ns8CAf6WqKmORUS\/\/9Hc+uY9TwQIESGnsWpjL21KzHSHf7mxl\/Eju2D1bzT9inytS\nHf\/ZOgUf7MihMop\/ptogJ+fMXW0cgjCQlVDd\n-----END CERTIFICATE-----\n","timestamp":1784386271786,"uid":"hhly8r","position":{"x":960,"y":516}}
+2026-07-18T21:51:11,790 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T21:51:11,791 [DEBUG] Received new certificate from connection through 64662
+2026-07-18T21:51:11,814 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T21:51:14,957 [INFO] SSL certificate is still valid for 824 more days: 2028-10-19T14:40Z.  We'll make a new one automatically when needed.
+2026-07-18T21:51:17,734 [DEBUG] IDLE: Starting up JFX for HTML printing
+2026-07-18T21:51:17,967 [DEBUG] Started JavaFX
+2026-07-18T21:51:18,226 [WARN] WebKit version couldn't be parsed from UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/613.1 (KHTML, like Gecko) JavaFX/19 Safari/613.1
+2026-07-18T21:51:18,462 [DEBUG] Attempting image capture
+2026-07-18T21:51:26,468 [INFO] Allowed Mayoka POS to connect to QZ Tray
+2026-07-18T21:51:26,565 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"aVEmvHlxNi\/zLuY8EqdvsQ6+IAnNPMvKmf47XJMDicX\/jjxfcZnHS3Phu6NOVqv9iJP\/ld9tcSiE0ky3CGg35xs5lulaNseNUl6UIapZXKGypQyDFUJhY4nK6K2+M0O1\/dMwAKO+\/N6AAkuf1R\/ikJxYA6e9EqEFSCYkeQLs7DUOiqRb\/mXb0X01qKqlRp0W4mUd6NHHZRQ2sRE0u0LElBLBQPqBxpZCKpPIvV7SSORk8Oj\/57MC17whSr7RhfxDz98Z\/XFHGa0Kah\/aUM0rEjO+ME5IvO4fzNb4Vo3uqFBt6xBSGHY4YUCMx7TYxTR7A8dHezB51XfM02req5DBoA==","timestamp":1784386286469,"uid":"1nbok9","position":{"x":960,"y":516},"signAlgorithm":"SHA512"}
+2026-07-18T21:51:26,574 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:51:26,586 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T21:51:42,455 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T21:51:42,458 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T21:51:42,487 [DEBUG] Found 1 printers
+2026-07-18T21:51:42,487 [WARN] Printer not found: pos-80
+2026-07-18T21:51:50,576 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"Oui1yBSYbi0W+TKxL9Vm5jlmGsPqKFqGc8b4yTDLCWHH78XpW\/4NIO0DfIbioLuhPWnZ\/SgqxfCUBodxM\/g1GZBkMWEnJ3D9T\/InPeTEhdEWhTvUYOA8Op10slkMjfGx44oF7obkExbF+KnOsGnOGIvf+1SZ\/r7fQ0vsm\/sud0A2LbT2Dc12NWsyWut5FZWTcRuxxLHwwwGVsOKV\/uubX+I5yqPuyfeHUz\/LKEF0f2zWPsOdCl6cWmiORhGeSiQ0Sp9R6JwT\/Bz6oUY7jR8QN8MgxtgkDQ1vwAifKPnQlxzKYD6YVVDlJlhdahFOhYhnqWnLzXJymVaO5InkUeIxdA==","timestamp":1784386310486,"uid":"skp817","position":{"x":960,"y":516},"signAlgorithm":"SHA512"}
+2026-07-18T21:51:50,578 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T21:51:50,580 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T21:52:03,252 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T21:52:03,256 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T21:52:03,257 [DEBUG] Found 1 printers
+2026-07-18T21:52:03,258 [WARN] Printer not found: pos-80
+2026-07-18T21:52:40,859 [INFO] Connection closed: 1001 - null
+2026-07-18T21:52:40,861 [INFO] Closing all communication channels for Mayoka POS
+2026-07-18T22:06:08,807 [INFO] QZ Tray version: 2.2.6
+2026-07-18T22:06:08,807 [INFO] QZ Tray vendor: QZ Industries, LLC
+2026-07-18T22:06:08,807 [INFO] Java version: 11.0.30
+2026-07-18T22:06:08,807 [INFO] Java vendor: BellSoft
+2026-07-18T22:06:09,794 [INFO] Try to find SSL properties file...
+2026-07-18T22:06:09,896 [INFO] Found C:\Program Files\QZ Tray/qz-tray.properties
+2026-07-18T22:06:09,922 [DEBUG] Executing: [net, session]
+2026-07-18T22:06:10,020 [DEBUG] Parsed hostNames: localhost, localhost.qz.io
+2026-07-18T22:06:10,084 [INFO] Email address support@qz.io found, assuming CertProvider is INTERNAL
+2026-07-18T22:06:10,084 [DEBUG] Executing: [CheckNetIsolation.exe, LoopbackExempt, -a, -n=Microsoft.MicrosoftEdge_8wekyb3d8bbwe]
+2026-07-18T22:06:10,325 [INFO] If other instances of QZ Tray are found, THIS INSTANCE will shut down
+2026-07-18T22:06:10,328 [INFO] Provision file not found 'C:\Program Files\QZ Tray\provision\provision.json', skipping
+2026-07-18T22:06:10,330 [INFO] Starting QZ Tray 2.2.6
+2026-07-18T22:06:10,460 [INFO] Picked up property tray.strictmode=true
+2026-07-18T22:06:10,510 [WARN] Failed to retrieve QZ CRL, skipping CRL check
+2026-07-18T22:06:10,510 [INFO] Loading CRL from https://crl.qz.io
+2026-07-18T22:06:10,512 [DEBUG] Adding internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T22:06:10,537 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T22:06:10,557 [WARN] Failed to retrieve QZ CRL, skipping CRL check
+2026-07-18T22:06:10,557 [DEBUG] Adding CA certificate: CN=Mayoka POS, O= (71c8d27a84998448b59cc8bf630dac0bd961ca8b)
+2026-07-18T22:06:10,557 [DEBUG] Removing internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T22:06:10,557 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T22:06:11,510 [INFO] Successfully loaded 10 CRL entries from https://crl.qz.io
+2026-07-18T22:06:13,028 [INFO] Picked up property tray.strictmode=true
+2026-07-18T22:06:13,364 [DEBUG] Checking for .autostart preference in user directory C:\Users\ferdi\AppData\Roaming\qz...
+2026-07-18T22:06:13,364 [DEBUG] Checking for .autostart preference in shared directory C:\ProgramData\qz...
+2026-07-18T22:06:14,561 [INFO] Server started on port(s) 8182, 8181
+2026-07-18T22:06:14,561 [DEBUG] Checking for a running instance of QZ Tray on port 8282
+2026-07-18T22:06:14,871 [DEBUG] Checking for a running instance of QZ Tray on port 8383
+2026-07-18T22:06:15,090 [DEBUG] Checking for a running instance of QZ Tray on port 8484
+2026-07-18T22:06:15,268 [DEBUG] Checking for a running instance of QZ Tray on port 8283
+2026-07-18T22:06:15,472 [DEBUG] Checking for a running instance of QZ Tray on port 8384
+2026-07-18T22:06:15,761 [DEBUG] Checking for a running instance of QZ Tray on port 8485
+2026-07-18T22:06:17,010 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T22:07:10,103 [INFO] SSL certificate is still valid for 824 more days: 2028-10-19T14:40Z.  We'll make a new one automatically when needed.
+2026-07-18T22:07:13,379 [DEBUG] IDLE: Starting up JFX for HTML printing
+2026-07-18T22:07:13,947 [DEBUG] Started JavaFX
+2026-07-18T22:07:14,895 [WARN] WebKit version couldn't be parsed from UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/613.1 (KHTML, like Gecko) JavaFX/19 Safari/613.1
+2026-07-18T22:07:15,323 [DEBUG] Attempting image capture
+2026-07-18T22:08:13,371 [DEBUG] IDLE: Performing first run of find printers
+2026-07-18T22:08:13,643 [DEBUG] Found 1 printers
+2026-07-18T22:28:53,062 [INFO] Connection opened from /0:0:0:0:0:0:0:1:50845 on socket port 8182
+2026-07-18T22:28:53,162 [DEBUG] Message: {"call":"getVersion","timestamp":1784388533129,"uid":"4u50oq","position":{"x":960,"y":516}}
+2026-07-18T22:28:53,165 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T22:28:53,176 [DEBUG] Message: {"certificate":"-----BEGIN CERTIFICATE-----\nMIIDRzCCAi+gAwIBAgIUKaII9zWJCOzsfZXOF8LDSFc2J+IwDQYJKoZIhvcNAQEL\nBQAwMzETMBEGA1UEAwwKTWF5b2thIFBPUzEPMA0GA1UECgwGTWF5b2thMQswCQYD\nVQQGEwJJRDAeFw0yNjA3MTgxMzQwNTBaFw0zNjA3MTUxMzQwNTBaMDMxEzARBgNV\nBAMMCk1heW9rYSBQT1MxDzANBgNVBAoMBk1heW9rYTELMAkGA1UEBhMCSUQwggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCgQfVvWrMVhKmi4b73Q0CGQ+3R\nH4d5T59DcXLm0yK+mWLjsJmn\/7DZr4HjzhbWtMH1t7Ip7S08Q1qL\/j+OArpC6zM3\nvD2xxUfu1InzTcIolTDaidBnXUoNAlqT+HU8UncTgsfyQoIcXY2b0C2vxVAvqQaE\nh+\/aEui7Ij2WuCTUhsOm+os4V1FfFpcv+wECRZg+pzpmaSVX2Yaa1LJYRmioARPJ\nxjfHEat+4bYGSQGva0PrWAFVAUo3GcO9n7CrCmcm7cc8MHFktEMYXPmGVYX6SrVe\ndaMOJIcmbH4S6JA6lE9jqxqpXqCUFRmor4p7HrkGrcepi7KEuC07iSDvHNB\/AgMB\nAAGjUzBRMB0GA1UdDgQWBBSZiF+wHts7LIXl6gaqnWG5jqlkzjAfBgNVHSMEGDAW\ngBSZiF+wHts7LIXl6gaqnWG5jqlkzjAPBgNVHRMBAf8EBTADAQH\/MA0GCSqGSIb3\nDQEBCwUAA4IBAQCQ5YjniE0hi4+ffXOAsXel9p5jsdSJxmHKdwvLJ2UWcqX0sXZa\nAoSot1UGlIjyLkqfXlApM0wDiAiYvUyDjVJR\/mkCkRnSyRUnAL7r\/xUjUII6QI\/N\nTeMEq2fqJYHEivm+aw7Sp6SIrBY95j2klj+krqVpT6FHhUiSA4wtJ1XOvYuLxFny\n665VAxcyDTtHF6BJzEZ2Lsg0VzWJ0dTvR71XSpdpzfu9V0ToQlDgX9OVyRM1US7b\ns8CAf6WqKmORUS\/\/9Hc+uY9TwQIESGnsWpjL21KzHSHf7mxl\/Eju2D1bzT9inytS\nHf\/ZOgUf7MihMop\/ptogJ+fMXW0cgjCQlVDd\n-----END CERTIFICATE-----\n","timestamp":1784388533175,"uid":"5fk1wj","position":{"x":960,"y":516}}
+2026-07-18T22:28:53,180 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T22:28:53,181 [DEBUG] Received new certificate from connection through 50845
+2026-07-18T22:28:53,213 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T22:28:56,590 [INFO] Allowed Mayoka POS to connect to QZ Tray
+2026-07-18T22:28:56,706 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"XrtQIDnZ6KA74C+v7EeBJ7sFNEPTPwDmo77fG\/8m0lE1qpiFmNQhbM1AS\/SqR6MPJpbMCGnB4pPsaPsYRup8GCNDlVCt6CLdW4e\/J3bBOlVLuWP5fs5HcHp7HS2lceu3NDvWbE6EH6bJjwiZZapTMep6e4lMOdQ2De+hJQ16jKQkTwEbXOSs\/bJtI3OOJBoC3d7YG+I\/QsivIFGEJ+XcxTuS1Y8O7GVsUO\/mYJxv6vsn3ll6EvydTM8Lb9C1IDkdeKmv\/EyjLVJY7nfoTRFCJJi66dk00KP9rMTiLqGl6bxlDHet6M2XjgNUPKuRHCqmgtCglWIDyBVUngbD4RPIvA==","timestamp":1784388536592,"uid":"8a16pm","position":{"x":960,"y":516},"signAlgorithm":"SHA512"}
+2026-07-18T22:28:56,724 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T22:28:56,744 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T22:28:57,230 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T22:28:57,231 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T22:28:57,232 [DEBUG] Found 1 printers
+2026-07-18T22:28:57,234 [WARN] Printer not found: pos-80
+2026-07-18T22:29:02,792 [INFO] Connection closed: 1001 - null
+2026-07-18T22:29:02,796 [INFO] Closing all communication channels for Mayoka POS
+2026-07-18T22:31:13,538 [INFO] Connection opened from /0:0:0:0:0:0:0:1:54988 on socket port 8182
+2026-07-18T22:31:13,582 [DEBUG] Message: {"call":"getVersion","timestamp":1784388673575,"uid":"xn3zg3","position":{"x":960,"y":516}}
+2026-07-18T22:31:13,587 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T22:31:13,597 [DEBUG] Message: {"certificate":"-----BEGIN CERTIFICATE-----\nMIIDRzCCAi+gAwIBAgIUKaII9zWJCOzsfZXOF8LDSFc2J+IwDQYJKoZIhvcNAQEL\nBQAwMzETMBEGA1UEAwwKTWF5b2thIFBPUzEPMA0GA1UECgwGTWF5b2thMQswCQYD\nVQQGEwJJRDAeFw0yNjA3MTgxMzQwNTBaFw0zNjA3MTUxMzQwNTBaMDMxEzARBgNV\nBAMMCk1heW9rYSBQT1MxDzANBgNVBAoMBk1heW9rYTELMAkGA1UEBhMCSUQwggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCgQfVvWrMVhKmi4b73Q0CGQ+3R\nH4d5T59DcXLm0yK+mWLjsJmn\/7DZr4HjzhbWtMH1t7Ip7S08Q1qL\/j+OArpC6zM3\nvD2xxUfu1InzTcIolTDaidBnXUoNAlqT+HU8UncTgsfyQoIcXY2b0C2vxVAvqQaE\nh+\/aEui7Ij2WuCTUhsOm+os4V1FfFpcv+wECRZg+pzpmaSVX2Yaa1LJYRmioARPJ\nxjfHEat+4bYGSQGva0PrWAFVAUo3GcO9n7CrCmcm7cc8MHFktEMYXPmGVYX6SrVe\ndaMOJIcmbH4S6JA6lE9jqxqpXqCUFRmor4p7HrkGrcepi7KEuC07iSDvHNB\/AgMB\nAAGjUzBRMB0GA1UdDgQWBBSZiF+wHts7LIXl6gaqnWG5jqlkzjAfBgNVHSMEGDAW\ngBSZiF+wHts7LIXl6gaqnWG5jqlkzjAPBgNVHRMBAf8EBTADAQH\/MA0GCSqGSIb3\nDQEBCwUAA4IBAQCQ5YjniE0hi4+ffXOAsXel9p5jsdSJxmHKdwvLJ2UWcqX0sXZa\nAoSot1UGlIjyLkqfXlApM0wDiAiYvUyDjVJR\/mkCkRnSyRUnAL7r\/xUjUII6QI\/N\nTeMEq2fqJYHEivm+aw7Sp6SIrBY95j2klj+krqVpT6FHhUiSA4wtJ1XOvYuLxFny\n665VAxcyDTtHF6BJzEZ2Lsg0VzWJ0dTvR71XSpdpzfu9V0ToQlDgX9OVyRM1US7b\ns8CAf6WqKmORUS\/\/9Hc+uY9TwQIESGnsWpjL21KzHSHf7mxl\/Eju2D1bzT9inytS\nHf\/ZOgUf7MihMop\/ptogJ+fMXW0cgjCQlVDd\n-----END CERTIFICATE-----\n","timestamp":1784388673592,"uid":"xd3psw","position":{"x":960,"y":516}}
+2026-07-18T22:31:13,606 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T22:31:13,608 [DEBUG] Received new certificate from connection through 54988
+2026-07-18T22:31:13,639 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T22:31:29,663 [INFO] Allowed Mayoka POS to connect to QZ Tray
+2026-07-18T22:31:29,806 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"cwzbzxKUQc82R3ZfB1t\/MbOTcO7TaHEUhMj5+EGgBtvx7H3zIINruEA2NeXeBOj8UnbUA5dVTcTUK0jz+43OxHW801WUPI8oDviGrxy\/aKXuHem4Cgqr4JIWFaS+V6e5OldDETSn0dMWuKQ8TFDvulYwjBIkSmS7016Wq7OMUd21\/5rP9Ggqr379kAokw3BHrQ8M+wFFqSBGrwvf5wA1SrumDroBzW5lnGxFE2TEATNCHo95tsve8X4nD+rk+g\/G1cGt3H+R1A7hdDVBqtt6\/bVV95gX\/3XlW0PE5t5fcnKa1dLLvKbcG8tonWPmh4MHE2x9dhcJ1uKJTKI058RB2A==","timestamp":1784388689669,"uid":"c8wqyg","position":{"x":960,"y":516},"signAlgorithm":"SHA512"}
+2026-07-18T22:31:29,813 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T22:31:29,828 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T22:31:37,656 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T22:31:37,656 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T22:31:37,657 [DEBUG] Found 1 printers
+2026-07-18T22:31:37,657 [WARN] Printer not found: pos-80
+2026-07-18T22:36:20,500 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"D\/iB5KvJIk+YufYME29eqtV58VVnNP+ssNtWG0fiqX5qQIP9hywpe64EZNrIfCRzQsHg\/Pp9TMTD\/uZKUmaSRHqj9q2v\/qNbcXyDv3xP5SGoi4P0usMgsaPavAXRV3M5gBsmQuxjlk3fxJ8jzTmvl21\/KZ97e\/vJxPof5cYR+hnJmUrPBQ8Q7NTg79k6P5j7evbgPUUAJBUr0ppRwOVXikM7SdmYWrFVw8flcBtfXhG5Z2fQ33HDlVd3tbJNcDOEPIzHLXsksF8FohZ3GGZ25tLQ3pty7g83mwpVAJAH65Ez209G9cCun1f84dd+SUDqtMzdCp0Pr616bgswTJSVFQ==","timestamp":1784388980384,"uid":"ot8yxa","position":{"x":960,"y":516},"signAlgorithm":"SHA512"}
+2026-07-18T22:36:20,505 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T22:36:20,507 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T22:36:25,680 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T22:36:25,680 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T22:36:25,682 [DEBUG] Found 1 printers
+2026-07-18T22:36:25,682 [WARN] Printer not found: pos-80
+2026-07-18T22:36:34,080 [DEBUG] Adding internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T22:36:37,291 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"aw+eBX5\/P7lEn2wLFaBbM2ldST\/6XEPYvXFEJ80lTDtfukNbRyUdy3+er8Z1fMKE8qlEuROE4nJu11Fvuzl3gIEZfrG4+UUOehx6dPli3umte09BFEQYflaM1T1ncX7+5ls5TGa+DsWyudYe+3Cst+4VXwURErqSz\/Cw0NEulmpo7Vpi2svTJ+sJBT6Xm+cQL1IZXN6\/7gKxXnDxXiTgPZk5c5mYRZcl+hUnmcuG5rJTHr+xoRfVAmsiO0\/T7qu1puZizjAaj2C3TNGHT7bAXB\/nUQGl\/x32aHDV68\/fjQIkzmhF0PjvAxDBSEPfmIfD12szAg9ktWCsT9Ubvg33FA==","timestamp":1784388997203,"uid":"ujh2k0","position":{"x":960,"y":516},"signAlgorithm":"SHA512"}
+2026-07-18T22:36:37,292 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T22:36:37,294 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T22:36:40,878 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T22:36:40,878 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T22:36:40,879 [DEBUG] Found 1 printers
+2026-07-18T22:36:40,879 [WARN] Printer not found: pos-80
+2026-07-18T22:48:51,229 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"kgV73m+0PCcz69EZDwK7yrSLJRH5fr4GgOwaJxcuS1nBnHSJ+etg5aryGs2ymmbGIi4H9kgYhdR9JAUhqapxXwTx\/e5cXTk605lAmo78o42ZAK7AkrVLwzBBu8l9rE8cYZw7n5ONnNi\/6by21NP2CrF1+BAJ5vSZg\/vEE8XvyqPXuAxkFugnSD8ksAMRSgtJILsPVy6KMhbLzC56wlJQ66IPxJ2UpBdfdbvtZcGRoI+98F81dCjcY3j8pxHktgK43TdLKHvuC7dweIql2KpfszS6sph9YQRDGnr4WV+cAJIwWESYy1DQe6P6xbbCKa7nz5pygeDqo+Lrb8LTdMi4lQ==","timestamp":1784389731142,"uid":"n5n00f","position":{"x":960,"y":516},"signAlgorithm":"SHA512"}
+2026-07-18T22:48:51,233 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T22:48:51,234 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T22:48:55,275 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T22:48:55,275 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T22:48:55,276 [DEBUG] Found 1 printers
+2026-07-18T22:48:55,276 [WARN] Printer not found: pos-80
+2026-07-18T22:49:48,870 [INFO] Connection closed: 1001 - null
+2026-07-18T22:49:48,872 [INFO] Closing all communication channels for Mayoka POS
+2026-07-18T22:49:56,994 [WARN] The web socket server is no longer running
+2026-07-18T22:56:56,674 [INFO] QZ Tray version: 2.2.6
+2026-07-18T22:56:56,674 [INFO] QZ Tray vendor: QZ Industries, LLC
+2026-07-18T22:56:56,674 [INFO] Java version: 11.0.30
+2026-07-18T22:56:56,674 [INFO] Java vendor: BellSoft
+2026-07-18T22:56:57,452 [INFO] Try to find SSL properties file...
+2026-07-18T22:56:57,516 [INFO] Found C:\Program Files\QZ Tray/qz-tray.properties
+2026-07-18T22:56:57,516 [DEBUG] Executing: [net, session]
+2026-07-18T22:56:57,565 [DEBUG] Parsed hostNames: localhost, localhost.qz.io
+2026-07-18T22:56:57,595 [INFO] Email address support@qz.io found, assuming CertProvider is INTERNAL
+2026-07-18T22:56:57,595 [DEBUG] Executing: [CheckNetIsolation.exe, LoopbackExempt, -a, -n=Microsoft.MicrosoftEdge_8wekyb3d8bbwe]
+2026-07-18T22:56:57,691 [INFO] If other instances of QZ Tray are found, THIS INSTANCE will shut down
+2026-07-18T22:56:57,691 [INFO] Provision file not found 'C:\Program Files\QZ Tray\provision\provision.json', skipping
+2026-07-18T22:56:57,707 [INFO] Starting QZ Tray 2.2.6
+2026-07-18T22:56:57,786 [INFO] Picked up property tray.strictmode=true
+2026-07-18T22:56:57,819 [WARN] Failed to retrieve QZ CRL, skipping CRL check
+2026-07-18T22:56:57,819 [INFO] Loading CRL from https://crl.qz.io
+2026-07-18T22:56:57,819 [DEBUG] Adding internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T22:56:57,833 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T22:56:57,858 [WARN] Failed to retrieve QZ CRL, skipping CRL check
+2026-07-18T22:56:57,858 [DEBUG] Adding CA certificate: CN=Mayoka POS, O= (71c8d27a84998448b59cc8bf630dac0bd961ca8b)
+2026-07-18T22:56:57,858 [DEBUG] Removing internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T22:56:57,858 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T22:56:58,748 [INFO] Successfully loaded 10 CRL entries from https://crl.qz.io
+2026-07-18T22:57:00,443 [INFO] Picked up property tray.strictmode=true
+2026-07-18T22:57:00,692 [DEBUG] Checking for .autostart preference in user directory C:\Users\ferdi\AppData\Roaming\qz...
+2026-07-18T22:57:00,692 [DEBUG] Checking for .autostart preference in shared directory C:\ProgramData\qz...
+2026-07-18T22:57:01,882 [INFO] Server started on port(s) 8182, 8181
+2026-07-18T22:57:01,884 [DEBUG] Checking for a running instance of QZ Tray on port 8282
+2026-07-18T22:57:02,301 [DEBUG] Checking for a running instance of QZ Tray on port 8383
+2026-07-18T22:57:02,562 [DEBUG] Checking for a running instance of QZ Tray on port 8484
+2026-07-18T22:57:02,770 [DEBUG] Checking for a running instance of QZ Tray on port 8283
+2026-07-18T22:57:02,974 [DEBUG] Checking for a running instance of QZ Tray on port 8384
+2026-07-18T22:57:03,210 [DEBUG] Checking for a running instance of QZ Tray on port 8485
+2026-07-18T22:57:04,308 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T22:57:18,861 [INFO] Connection opened from /0:0:0:0:0:0:0:1:60112 on socket port 8182
+2026-07-18T22:57:18,958 [DEBUG] Message: {"call":"getVersion","timestamp":1784390238930,"uid":"scc4lh","position":{"x":960,"y":516}}
+2026-07-18T22:57:18,958 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T22:57:18,971 [DEBUG] Message: {"certificate":"-----BEGIN CERTIFICATE-----\nMIIDRzCCAi+gAwIBAgIUKaII9zWJCOzsfZXOF8LDSFc2J+IwDQYJKoZIhvcNAQEL\nBQAwMzETMBEGA1UEAwwKTWF5b2thIFBPUzEPMA0GA1UECgwGTWF5b2thMQswCQYD\nVQQGEwJJRDAeFw0yNjA3MTgxMzQwNTBaFw0zNjA3MTUxMzQwNTBaMDMxEzARBgNV\nBAMMCk1heW9rYSBQT1MxDzANBgNVBAoMBk1heW9rYTELMAkGA1UEBhMCSUQwggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCgQfVvWrMVhKmi4b73Q0CGQ+3R\nH4d5T59DcXLm0yK+mWLjsJmn\/7DZr4HjzhbWtMH1t7Ip7S08Q1qL\/j+OArpC6zM3\nvD2xxUfu1InzTcIolTDaidBnXUoNAlqT+HU8UncTgsfyQoIcXY2b0C2vxVAvqQaE\nh+\/aEui7Ij2WuCTUhsOm+os4V1FfFpcv+wECRZg+pzpmaSVX2Yaa1LJYRmioARPJ\nxjfHEat+4bYGSQGva0PrWAFVAUo3GcO9n7CrCmcm7cc8MHFktEMYXPmGVYX6SrVe\ndaMOJIcmbH4S6JA6lE9jqxqpXqCUFRmor4p7HrkGrcepi7KEuC07iSDvHNB\/AgMB\nAAGjUzBRMB0GA1UdDgQWBBSZiF+wHts7LIXl6gaqnWG5jqlkzjAfBgNVHSMEGDAW\ngBSZiF+wHts7LIXl6gaqnWG5jqlkzjAPBgNVHRMBAf8EBTADAQH\/MA0GCSqGSIb3\nDQEBCwUAA4IBAQCQ5YjniE0hi4+ffXOAsXel9p5jsdSJxmHKdwvLJ2UWcqX0sXZa\nAoSot1UGlIjyLkqfXlApM0wDiAiYvUyDjVJR\/mkCkRnSyRUnAL7r\/xUjUII6QI\/N\nTeMEq2fqJYHEivm+aw7Sp6SIrBY95j2klj+krqVpT6FHhUiSA4wtJ1XOvYuLxFny\n665VAxcyDTtHF6BJzEZ2Lsg0VzWJ0dTvR71XSpdpzfu9V0ToQlDgX9OVyRM1US7b\ns8CAf6WqKmORUS\/\/9Hc+uY9TwQIESGnsWpjL21KzHSHf7mxl\/Eju2D1bzT9inytS\nHf\/ZOgUf7MihMop\/ptogJ+fMXW0cgjCQlVDd\n-----END CERTIFICATE-----\n","timestamp":1784390238971,"uid":"cf1twg","position":{"x":960,"y":516}}
+2026-07-18T22:57:18,975 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T22:57:18,975 [DEBUG] Received new certificate from connection through 60112
+2026-07-18T22:57:19,005 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T22:57:21,281 [INFO] Allowed Mayoka POS to connect to QZ Tray
+2026-07-18T22:57:21,546 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"BkVwnW7RZ8R6UEC\/DAcXcyX+Vj++mdCUx+\/uYiujaYtKODYyKFSbwQg6mmQOmWelrTCJuC5AzHaa9Bvv7jMgDbLWar7yMvfuFAYe3lAFmSZrBBUwcn5cGfgvj+PESMGFq1lEXrSI06hO94ep+tmTZ3N6tV7vVRZTzof1KVvvX1UrfuJtOewt2z+aWUGjAjWytXP3TPEz1CsaS1uScm4D+5ylza69tt16pNBdaW5M6fddeGxDlrelyXgZ2ImlsJ3yRqk+CXqx49jFqeNI2pIQaBUTOYMJ0rOgb\/OlRnhCt8WLbnEp2r\/e8j+fXQMjoGWWWq7JzQRU0A3BM2qmmOg9YA==","timestamp":1784390241291,"uid":"saay4z","position":{"x":960,"y":516},"signAlgorithm":"SHA512"}
+2026-07-18T22:57:21,563 [WARN] Bad signature on request
+2026-07-18T22:57:21,563 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T22:57:21,580 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T22:57:22,379 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T22:57:22,379 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T22:57:22,415 [DEBUG] Found 1 printers
+2026-07-18T22:57:22,415 [WARN] Printer not found: pos-80
+2026-07-18T22:57:57,609 [INFO] SSL certificate is still valid for 824 more days: 2028-10-19T14:40Z.  We'll make a new one automatically when needed.
+2026-07-18T23:00:37,363 [INFO] Connection closed: 1001 - null
+2026-07-18T23:00:37,366 [INFO] Closing all communication channels for Mayoka POS
+2026-07-18T23:00:50,623 [INFO] Connection opened from /0:0:0:0:0:0:0:1:55559 on socket port 8182
+2026-07-18T23:00:50,629 [DEBUG] Message: {"call":"getVersion","timestamp":1784390450630,"uid":"ve8hpc","position":{"x":960,"y":516}}
+2026-07-18T23:00:50,632 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:00:50,634 [DEBUG] Message: {"certificate":"-----BEGIN CERTIFICATE-----\nMIIDRzCCAi+gAwIBAgIUKaII9zWJCOzsfZXOF8LDSFc2J+IwDQYJKoZIhvcNAQEL\nBQAwMzETMBEGA1UEAwwKTWF5b2thIFBPUzEPMA0GA1UECgwGTWF5b2thMQswCQYD\nVQQGEwJJRDAeFw0yNjA3MTgxMzQwNTBaFw0zNjA3MTUxMzQwNTBaMDMxEzARBgNV\nBAMMCk1heW9rYSBQT1MxDzANBgNVBAoMBk1heW9rYTELMAkGA1UEBhMCSUQwggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCgQfVvWrMVhKmi4b73Q0CGQ+3R\nH4d5T59DcXLm0yK+mWLjsJmn\/7DZr4HjzhbWtMH1t7Ip7S08Q1qL\/j+OArpC6zM3\nvD2xxUfu1InzTcIolTDaidBnXUoNAlqT+HU8UncTgsfyQoIcXY2b0C2vxVAvqQaE\nh+\/aEui7Ij2WuCTUhsOm+os4V1FfFpcv+wECRZg+pzpmaSVX2Yaa1LJYRmioARPJ\nxjfHEat+4bYGSQGva0PrWAFVAUo3GcO9n7CrCmcm7cc8MHFktEMYXPmGVYX6SrVe\ndaMOJIcmbH4S6JA6lE9jqxqpXqCUFRmor4p7HrkGrcepi7KEuC07iSDvHNB\/AgMB\nAAGjUzBRMB0GA1UdDgQWBBSZiF+wHts7LIXl6gaqnWG5jqlkzjAfBgNVHSMEGDAW\ngBSZiF+wHts7LIXl6gaqnWG5jqlkzjAPBgNVHRMBAf8EBTADAQH\/MA0GCSqGSIb3\nDQEBCwUAA4IBAQCQ5YjniE0hi4+ffXOAsXel9p5jsdSJxmHKdwvLJ2UWcqX0sXZa\nAoSot1UGlIjyLkqfXlApM0wDiAiYvUyDjVJR\/mkCkRnSyRUnAL7r\/xUjUII6QI\/N\nTeMEq2fqJYHEivm+aw7Sp6SIrBY95j2klj+krqVpT6FHhUiSA4wtJ1XOvYuLxFny\n665VAxcyDTtHF6BJzEZ2Lsg0VzWJ0dTvR71XSpdpzfu9V0ToQlDgX9OVyRM1US7b\ns8CAf6WqKmORUS\/\/9Hc+uY9TwQIESGnsWpjL21KzHSHf7mxl\/Eju2D1bzT9inytS\nHf\/ZOgUf7MihMop\/ptogJ+fMXW0cgjCQlVDd\n-----END CERTIFICATE-----\n","timestamp":1784390450634,"uid":"ktm1hi","position":{"x":960,"y":516}}
+2026-07-18T23:00:50,634 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T23:00:50,637 [DEBUG] Received new certificate from connection through 55559
+2026-07-18T23:00:50,642 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T23:00:56,344 [INFO] Allowed Mayoka POS to connect to QZ Tray
+2026-07-18T23:00:56,476 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"l\/J7MgFDorIyF1Va+\/qrq7pbdwChY0XyushWceQG5aldB36sAgaTOMjykSSCaXLOL2HGF4BqEpswlfV9\/OcE7IMXgfbtGVm1I9WHVbX26SlRTkZXdGPiRL9CMaQnNPv8IDVt4Zsa8X+AQnGIE4bB3q14dmB58Qqf+AUBHCgYu6FdZ2uqamIoVbouNLgisW7tmyeb72rhQam3ZaxrKruE68OR13wjL8CIDgMUt8aGq6sJxPc44n\/jCWRj+3F4DcNrQTbXYuEo1Kuih291zdOI8J99MX4tqLpbTtHb49yC8cFpwbVr6CUZTUx3y3mzCYAuuyftwOeWDuLM\/VdChfB8Ig==","timestamp":1784390456347,"uid":"obdknl","position":{"x":960,"y":516},"signAlgorithm":"SHA1"}
+2026-07-18T23:00:56,485 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:00:56,505 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T23:00:57,209 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T23:00:57,211 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T23:00:57,211 [DEBUG] Found 1 printers
+2026-07-18T23:00:57,211 [WARN] Printer not found: pos-80
+2026-07-18T23:01:11,502 [INFO] Connection closed: 1001 - null
+2026-07-18T23:01:11,506 [INFO] Closing all communication channels for Mayoka POS
+2026-07-18T23:09:01,664 [INFO] QZ Tray version: 2.2.6
+2026-07-18T23:09:01,664 [INFO] QZ Tray vendor: QZ Industries, LLC
+2026-07-18T23:09:01,664 [INFO] Java version: 11.0.30
+2026-07-18T23:09:01,664 [INFO] Java vendor: BellSoft
+2026-07-18T23:09:02,717 [INFO] Try to find SSL properties file...
+2026-07-18T23:09:02,830 [INFO] Found C:\Program Files\QZ Tray/qz-tray.properties
+2026-07-18T23:09:02,835 [DEBUG] Executing: [net, session]
+2026-07-18T23:09:02,895 [DEBUG] Parsed hostNames: localhost, localhost.qz.io
+2026-07-18T23:09:02,935 [INFO] Email address support@qz.io found, assuming CertProvider is INTERNAL
+2026-07-18T23:09:02,935 [DEBUG] Executing: [CheckNetIsolation.exe, LoopbackExempt, -a, -n=Microsoft.MicrosoftEdge_8wekyb3d8bbwe]
+2026-07-18T23:09:03,101 [INFO] If other instances of QZ Tray are found, THIS INSTANCE will shut down
+2026-07-18T23:09:03,105 [INFO] Provision file not found 'C:\Program Files\QZ Tray\provision\provision.json', skipping
+2026-07-18T23:09:03,107 [INFO] Starting QZ Tray 2.2.6
+2026-07-18T23:09:03,232 [INFO] Picked up property tray.strictmode=true
+2026-07-18T23:09:03,280 [WARN] Failed to retrieve QZ CRL, skipping CRL check
+2026-07-18T23:09:03,280 [INFO] Loading CRL from https://crl.qz.io
+2026-07-18T23:09:03,280 [DEBUG] Adding internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T23:09:03,308 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T23:09:03,335 [WARN] Failed to retrieve QZ CRL, skipping CRL check
+2026-07-18T23:09:03,335 [DEBUG] Adding CA certificate: CN=Mayoka POS, O= (71c8d27a84998448b59cc8bf630dac0bd961ca8b)
+2026-07-18T23:09:03,335 [DEBUG] Removing internal CA certificate: CN=qzindustries.com, O=QZ Industries, LLC (8ef2c0b2fe3f75754245b3fb9d54c0caa1b46bb3)
+2026-07-18T23:09:03,343 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:09:04,854 [INFO] Successfully loaded 10 CRL entries from https://crl.qz.io
+2026-07-18T23:09:05,910 [INFO] Picked up property tray.strictmode=true
+2026-07-18T23:09:06,151 [DEBUG] Checking for .autostart preference in user directory C:\Users\ferdi\AppData\Roaming\qz...
+2026-07-18T23:09:06,158 [DEBUG] Checking for .autostart preference in shared directory C:\ProgramData\qz...
+2026-07-18T23:09:07,279 [INFO] Server started on port(s) 8182, 8181
+2026-07-18T23:09:07,279 [DEBUG] Checking for a running instance of QZ Tray on port 8282
+2026-07-18T23:09:07,608 [DEBUG] Checking for a running instance of QZ Tray on port 8383
+2026-07-18T23:09:07,871 [DEBUG] Checking for a running instance of QZ Tray on port 8484
+2026-07-18T23:09:08,072 [DEBUG] Checking for a running instance of QZ Tray on port 8283
+2026-07-18T23:09:08,320 [DEBUG] Checking for a running instance of QZ Tray on port 8384
+2026-07-18T23:09:08,571 [DEBUG] Checking for a running instance of QZ Tray on port 8485
+2026-07-18T23:09:09,778 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:09:11,528 [INFO] Connection opened from /0:0:0:0:0:0:0:1:55773 on socket port 8182
+2026-07-18T23:09:11,618 [DEBUG] Message: {"call":"getVersion","timestamp":1784390951611,"uid":"izitm5","position":{"x":960,"y":516}}
+2026-07-18T23:09:11,618 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:09:11,634 [DEBUG] Message: {"certificate":"-----BEGIN CERTIFICATE-----\nMIIDRzCCAi+gAwIBAgIUKaII9zWJCOzsfZXOF8LDSFc2J+IwDQYJKoZIhvcNAQEL\nBQAwMzETMBEGA1UEAwwKTWF5b2thIFBPUzEPMA0GA1UECgwGTWF5b2thMQswCQYD\nVQQGEwJJRDAeFw0yNjA3MTgxMzQwNTBaFw0zNjA3MTUxMzQwNTBaMDMxEzARBgNV\nBAMMCk1heW9rYSBQT1MxDzANBgNVBAoMBk1heW9rYTELMAkGA1UEBhMCSUQwggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCgQfVvWrMVhKmi4b73Q0CGQ+3R\nH4d5T59DcXLm0yK+mWLjsJmn\/7DZr4HjzhbWtMH1t7Ip7S08Q1qL\/j+OArpC6zM3\nvD2xxUfu1InzTcIolTDaidBnXUoNAlqT+HU8UncTgsfyQoIcXY2b0C2vxVAvqQaE\nh+\/aEui7Ij2WuCTUhsOm+os4V1FfFpcv+wECRZg+pzpmaSVX2Yaa1LJYRmioARPJ\nxjfHEat+4bYGSQGva0PrWAFVAUo3GcO9n7CrCmcm7cc8MHFktEMYXPmGVYX6SrVe\ndaMOJIcmbH4S6JA6lE9jqxqpXqCUFRmor4p7HrkGrcepi7KEuC07iSDvHNB\/AgMB\nAAGjUzBRMB0GA1UdDgQWBBSZiF+wHts7LIXl6gaqnWG5jqlkzjAfBgNVHSMEGDAW\ngBSZiF+wHts7LIXl6gaqnWG5jqlkzjAPBgNVHRMBAf8EBTADAQH\/MA0GCSqGSIb3\nDQEBCwUAA4IBAQCQ5YjniE0hi4+ffXOAsXel9p5jsdSJxmHKdwvLJ2UWcqX0sXZa\nAoSot1UGlIjyLkqfXlApM0wDiAiYvUyDjVJR\/mkCkRnSyRUnAL7r\/xUjUII6QI\/N\nTeMEq2fqJYHEivm+aw7Sp6SIrBY95j2klj+krqVpT6FHhUiSA4wtJ1XOvYuLxFny\n665VAxcyDTtHF6BJzEZ2Lsg0VzWJ0dTvR71XSpdpzfu9V0ToQlDgX9OVyRM1US7b\ns8CAf6WqKmORUS\/\/9Hc+uY9TwQIESGnsWpjL21KzHSHf7mxl\/Eju2D1bzT9inytS\nHf\/ZOgUf7MihMop\/ptogJ+fMXW0cgjCQlVDd\n-----END CERTIFICATE-----\n","timestamp":1784390951636,"uid":"t9fmkr","position":{"x":960,"y":516}}
+2026-07-18T23:09:11,634 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T23:09:11,634 [DEBUG] Received new certificate from connection through 55773
+2026-07-18T23:09:11,649 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T23:09:13,362 [INFO] Allowed Mayoka POS to connect to QZ Tray
+2026-07-18T23:09:13,449 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"GZpEFgCaiWns5\/UeodVdWIQ8i9Gt18Jcqrc2DWTHlkZFQwoN00QZGq\/Xn7CVmh6rcbc\/tDS+hUWq+D6e8enq0HizhGfQGkPXWQcxeBg\/62ydiruqe0xMKSDC69xXcKs9b2tLcJuTtp\/XwXElSH53CF\/VJVOCFH9coqEKBkzyuYUqP6g2F59qXQtcmHDjq5V4daPnlgRFfj7pMb0vfvmdZuU3slHEoezkmamE3ARSrPrxKIbYXv6he\/4272U5K0\/Dq\/MEUlpg0TQbwCdppXgYUUlsvBhuj2a6oESq5vhirkqXIOQe+Cp8smSi7EoRxeozQ55ee7G+BfVFqQ0QVBEO5g==","timestamp":1784390953365,"uid":"pfcg59","position":{"x":960,"y":516},"signAlgorithm":"SHA1"}
+2026-07-18T23:09:13,465 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:09:13,469 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T23:09:14,016 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T23:09:14,019 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T23:09:14,044 [DEBUG] Found 1 printers
+2026-07-18T23:09:14,044 [WARN] Printer not found: pos-80
+2026-07-18T23:09:23,808 [INFO] Connection closed: 1001 - null
+2026-07-18T23:09:23,810 [INFO] Closing all communication channels for Mayoka POS
+2026-07-18T23:09:32,466 [INFO] Connection opened from /0:0:0:0:0:0:0:1:63947 on socket port 8182
+2026-07-18T23:09:32,478 [DEBUG] Message: {"call":"getVersion","timestamp":1784390972480,"uid":"3r5nu4","position":{"x":960,"y":516}}
+2026-07-18T23:09:32,478 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:09:32,486 [DEBUG] Message: {"certificate":"-----BEGIN CERTIFICATE-----\nMIIDRzCCAi+gAwIBAgIUKaII9zWJCOzsfZXOF8LDSFc2J+IwDQYJKoZIhvcNAQEL\nBQAwMzETMBEGA1UEAwwKTWF5b2thIFBPUzEPMA0GA1UECgwGTWF5b2thMQswCQYD\nVQQGEwJJRDAeFw0yNjA3MTgxMzQwNTBaFw0zNjA3MTUxMzQwNTBaMDMxEzARBgNV\nBAMMCk1heW9rYSBQT1MxDzANBgNVBAoMBk1heW9rYTELMAkGA1UEBhMCSUQwggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCgQfVvWrMVhKmi4b73Q0CGQ+3R\nH4d5T59DcXLm0yK+mWLjsJmn\/7DZr4HjzhbWtMH1t7Ip7S08Q1qL\/j+OArpC6zM3\nvD2xxUfu1InzTcIolTDaidBnXUoNAlqT+HU8UncTgsfyQoIcXY2b0C2vxVAvqQaE\nh+\/aEui7Ij2WuCTUhsOm+os4V1FfFpcv+wECRZg+pzpmaSVX2Yaa1LJYRmioARPJ\nxjfHEat+4bYGSQGva0PrWAFVAUo3GcO9n7CrCmcm7cc8MHFktEMYXPmGVYX6SrVe\ndaMOJIcmbH4S6JA6lE9jqxqpXqCUFRmor4p7HrkGrcepi7KEuC07iSDvHNB\/AgMB\nAAGjUzBRMB0GA1UdDgQWBBSZiF+wHts7LIXl6gaqnWG5jqlkzjAfBgNVHSMEGDAW\ngBSZiF+wHts7LIXl6gaqnWG5jqlkzjAPBgNVHRMBAf8EBTADAQH\/MA0GCSqGSIb3\nDQEBCwUAA4IBAQCQ5YjniE0hi4+ffXOAsXel9p5jsdSJxmHKdwvLJ2UWcqX0sXZa\nAoSot1UGlIjyLkqfXlApM0wDiAiYvUyDjVJR\/mkCkRnSyRUnAL7r\/xUjUII6QI\/N\nTeMEq2fqJYHEivm+aw7Sp6SIrBY95j2klj+krqVpT6FHhUiSA4wtJ1XOvYuLxFny\n665VAxcyDTtHF6BJzEZ2Lsg0VzWJ0dTvR71XSpdpzfu9V0ToQlDgX9OVyRM1US7b\ns8CAf6WqKmORUS\/\/9Hc+uY9TwQIESGnsWpjL21KzHSHf7mxl\/Eju2D1bzT9inytS\nHf\/ZOgUf7MihMop\/ptogJ+fMXW0cgjCQlVDd\n-----END CERTIFICATE-----\n","timestamp":1784390972484,"uid":"0umtfa","position":{"x":960,"y":516}}
+2026-07-18T23:09:32,490 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T23:09:32,490 [DEBUG] Received new certificate from connection through 63947
+2026-07-18T23:09:32,503 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T23:09:39,646 [INFO] Allowed Mayoka POS to connect to QZ Tray
+2026-07-18T23:09:39,750 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"SPX0CuUqexadwyQcKFCswVGPTnXNJ6ifBUHt0mCG\/B4WVXwMCrcaYo4ZOJzqD0GTAx9E3ymlVoVPrVPOV9N1tRtDXqZECmG+MGDTu+tuVMbhYMDuIy8LjHCMR0Kq4rah9rcpPu6Acr8eD8lwIcJAvgxfOyaMiFWxww5nXrH2kC3EdN7bK1AJdiAqMwqsxfD1e0wgEUkTpnkKCcrgU3KFClTMqtka4D1h5c0zoj657gcPMksLwtnOAlI8ZYBp2szpbhqeob6INWUtOP038PVytl5FFAfqu3WXql8FuLDa6a\/d4Ue4m8o5MprjoWGJDUikTskrlIomryeUEh6Dhspz+Q==","timestamp":1784390979650,"uid":"i4cmfp","position":{"x":960,"y":516},"signAlgorithm":"SHA1"}
+2026-07-18T23:09:39,754 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:09:39,759 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T23:09:40,656 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T23:09:40,656 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T23:09:40,666 [DEBUG] Found 1 printers
+2026-07-18T23:09:40,668 [WARN] Printer not found: pos-80
+2026-07-18T23:10:02,947 [INFO] SSL certificate is still valid for 824 more days: 2028-10-19T14:40Z.  We'll make a new one automatically when needed.
+2026-07-18T23:10:13,345 [DEBUG] Successfully chained certificate: CN=Mayoka POS, O= (71c8d27a84998448b59cc8bf630dac0bd961ca8b)
+2026-07-18T23:10:13,347 [DEBUG] Adding  (Mayoka POS) to allowed list
+2026-07-18T23:10:20,192 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"j\/lHTAB79jgl8jiPvZ6bvbRJXK+o9E\/FTVBbjJCtKeAx1wo+g\/YxHiKHK8k1oJTMc70YcqOgGI3xU+5+4UgDX7O9OautnOUCFfrLf6299fjrISb3YQImEKKIY0kk6fOBWzhZ0Qi1KmWUwKg1Yvinpht94BLvTJZCk42CxqjqnR+\/ihDO8010RTOgEQRCjJUYAr4xYxFJkpIxFlH37sDBKfT3dWJ0UWWvOQvAtu4VdcCIlWkqb5HOBjSm5ZuRCW+vLsBK\/d1bI6yKYsVzW2IzNqMG0YOcJbu0aCcK95hZHghM91hMbKWukcE91kN3ShpmtA9ntGwC75OmaKIfYZDacg==","timestamp":1784391020077,"uid":"a8lrqk","position":{"x":960,"y":516},"signAlgorithm":"SHA1"}
+2026-07-18T23:10:20,196 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:10:20,204 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T23:10:23,084 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T23:10:23,084 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T23:10:23,084 [DEBUG] Found 1 printers
+2026-07-18T23:10:23,084 [WARN] Printer not found: pos-80
+2026-07-18T23:11:33,212 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"es+BKlc0yVDIFfCmw\/T+oiWWWsroXNy7ofuEAk5VARIH\/C9lA9\/\/H6eDyTpBgHJvpHP10lLjvnh7D1ua5JFcbJN83iVNlCiIwiWZugwU0MMXqjJnHVdooeovLvABo8sFd3XTbjA6V5ZeHyN7Kr8UOKHoWairSyM2I2IMH\/OBW\/mWeupq+jyIa3IWJmyeY0fJIeco4+G7turKLP5s21IU3IwPhyjbNQAiiAKBOYFRBud1FIT5vAblhqUInPzdEysJHs9\/qfDlr+gqi99YnvVruKYfAKmsgbrP0lr6bXkDL4Pz1XJynhP41aFcnWHFSLskz5xjHB31+sHgt8P+gjlAtw==","timestamp":1784391093132,"uid":"u4f8mn","position":{"x":960,"y":516},"signAlgorithm":"SHA1"}
+2026-07-18T23:11:33,221 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:11:33,223 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T23:11:35,293 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T23:11:35,293 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T23:11:35,293 [DEBUG] Found 1 printers
+2026-07-18T23:11:35,293 [WARN] Printer not found: pos-80
+2026-07-18T23:11:52,200 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"IPVv59QI+S5VdBblfYthEpcJmpwC9f98OAYRBWt6bmBx6ngdsFy69AvDQJERDZCmOej7WHgZQgmzO66XXsuvXPI1YC5w5st6BelgqAtorfPTl4s8CYEFePjweQ3y60FnCQ2Ub\/k41fLTWIHKrksCYX0NskSoPCC9kRwxFl1ebIezxLSarWYCctyjrX2UMa+K2bJdDoVBkhs1Xv8xjpgiyaahHB0lid7WVdCCvJpj8CrMOxX5iBfxxbw4dS8CAQG26E+jR4HebZRcJeAqXGLpAzgDJIKlTwY\/8q8BFZuQuLYjalLXrccbL2ii+Zp8nSJ1YBJoBHr4lrpmQxzaQw0cbQ==","timestamp":1784391112114,"uid":"xh59w6","position":{"x":960,"y":516},"signAlgorithm":"SHA1"}
+2026-07-18T23:11:52,203 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:11:52,203 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T23:11:53,505 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T23:11:53,505 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T23:11:53,506 [DEBUG] Found 1 printers
+2026-07-18T23:11:53,506 [WARN] Printer not found: pos-80
+2026-07-18T23:12:32,485 [INFO] Connection opened from /0:0:0:0:0:0:0:1:57282 on socket port 8182
+2026-07-18T23:12:32,640 [DEBUG] Message: {"call":"getVersion","timestamp":1784391152643,"uid":"anyza5","position":{"x":960,"y":516}}
+2026-07-18T23:12:32,645 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:12:32,648 [DEBUG] Message: {"certificate":"-----BEGIN CERTIFICATE-----\nMIIDRzCCAi+gAwIBAgIUKaII9zWJCOzsfZXOF8LDSFc2J+IwDQYJKoZIhvcNAQEL\nBQAwMzETMBEGA1UEAwwKTWF5b2thIFBPUzEPMA0GA1UECgwGTWF5b2thMQswCQYD\nVQQGEwJJRDAeFw0yNjA3MTgxMzQwNTBaFw0zNjA3MTUxMzQwNTBaMDMxEzARBgNV\nBAMMCk1heW9rYSBQT1MxDzANBgNVBAoMBk1heW9rYTELMAkGA1UEBhMCSUQwggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCgQfVvWrMVhKmi4b73Q0CGQ+3R\nH4d5T59DcXLm0yK+mWLjsJmn\/7DZr4HjzhbWtMH1t7Ip7S08Q1qL\/j+OArpC6zM3\nvD2xxUfu1InzTcIolTDaidBnXUoNAlqT+HU8UncTgsfyQoIcXY2b0C2vxVAvqQaE\nh+\/aEui7Ij2WuCTUhsOm+os4V1FfFpcv+wECRZg+pzpmaSVX2Yaa1LJYRmioARPJ\nxjfHEat+4bYGSQGva0PrWAFVAUo3GcO9n7CrCmcm7cc8MHFktEMYXPmGVYX6SrVe\ndaMOJIcmbH4S6JA6lE9jqxqpXqCUFRmor4p7HrkGrcepi7KEuC07iSDvHNB\/AgMB\nAAGjUzBRMB0GA1UdDgQWBBSZiF+wHts7LIXl6gaqnWG5jqlkzjAfBgNVHSMEGDAW\ngBSZiF+wHts7LIXl6gaqnWG5jqlkzjAPBgNVHRMBAf8EBTADAQH\/MA0GCSqGSIb3\nDQEBCwUAA4IBAQCQ5YjniE0hi4+ffXOAsXel9p5jsdSJxmHKdwvLJ2UWcqX0sXZa\nAoSot1UGlIjyLkqfXlApM0wDiAiYvUyDjVJR\/mkCkRnSyRUnAL7r\/xUjUII6QI\/N\nTeMEq2fqJYHEivm+aw7Sp6SIrBY95j2klj+krqVpT6FHhUiSA4wtJ1XOvYuLxFny\n665VAxcyDTtHF6BJzEZ2Lsg0VzWJ0dTvR71XSpdpzfu9V0ToQlDgX9OVyRM1US7b\ns8CAf6WqKmORUS\/\/9Hc+uY9TwQIESGnsWpjL21KzHSHf7mxl\/Eju2D1bzT9inytS\nHf\/ZOgUf7MihMop\/ptogJ+fMXW0cgjCQlVDd\n-----END CERTIFICATE-----\n","timestamp":1784391152648,"uid":"tgdv4f","position":{"x":960,"y":516}}
+2026-07-18T23:12:32,652 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T23:12:32,652 [DEBUG] Received new certificate from connection through 57282
+2026-07-18T23:12:32,662 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T23:12:36,106 [INFO] Allowed Mayoka POS to connect to QZ Tray
+2026-07-18T23:12:36,207 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"c2A3lCYZGgiTYPNjvDsIDgc+fhO2n0\/n2lF6ab35kDFC5MGY8IHG2OIhaLjyBEVkVV9IIp4icUn5+Eagti4kaPqsSpf+aLwE9nZ9rfqFYetO1tz4kgIj2IyH4uTjJ5p6MxmGMXdIawxxXcF+EMQuJkE6rsCSiqvlqsRbLHuGnHfd2wCxqiYK0TyqU1q8RBbPiYGdHuXRu7zwS3GWJ4Sr24dWwNw3+yYQttb4SqfO5ejoWvYtf1pYmeIg6KjNURose6o4\/wiD81a21fkLonh2\/yoIVGXeNnq3n9nML5IKOGx9\/WfR9BMCM3HjgXJZI9YtxtGKA5EVy0KOaLHHgSV1pA==","timestamp":1784391156112,"uid":"ei83p0","position":{"x":960,"y":516},"signAlgorithm":"SHA1"}
+2026-07-18T23:12:36,207 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:12:36,224 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T23:12:37,010 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T23:12:37,012 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T23:12:37,012 [DEBUG] Found 1 printers
+2026-07-18T23:12:37,012 [WARN] Printer not found: pos-80
+2026-07-18T23:12:44,802 [INFO] Connection closed: 1006 - Session Closed
+2026-07-18T23:12:44,802 [INFO] Connection closed: 1006 - Session Closed
+2026-07-18T23:12:44,987 [INFO] Server started on port(s) 8182, 8181
+2026-07-18T23:12:44,987 [DEBUG] Checking for a running instance of QZ Tray on port 8282
+2026-07-18T23:12:45,118 [DEBUG] Checking for a running instance of QZ Tray on port 8383
+2026-07-18T23:12:45,238 [DEBUG] Checking for a running instance of QZ Tray on port 8484
+2026-07-18T23:12:45,397 [DEBUG] Checking for a running instance of QZ Tray on port 8283
+2026-07-18T23:12:45,519 [DEBUG] Checking for a running instance of QZ Tray on port 8384
+2026-07-18T23:12:45,643 [DEBUG] Checking for a running instance of QZ Tray on port 8485
+2026-07-18T23:12:47,789 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:12:51,319 [INFO] Connection opened from /0:0:0:0:0:0:0:1:52413 on socket port 8182
+2026-07-18T23:12:51,326 [DEBUG] Message: {"call":"getVersion","timestamp":1784391171325,"uid":"rfiisc","position":{"x":960,"y":516}}
+2026-07-18T23:12:51,327 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:12:51,329 [DEBUG] Message: {"certificate":"-----BEGIN CERTIFICATE-----\nMIIDRzCCAi+gAwIBAgIUKaII9zWJCOzsfZXOF8LDSFc2J+IwDQYJKoZIhvcNAQEL\nBQAwMzETMBEGA1UEAwwKTWF5b2thIFBPUzEPMA0GA1UECgwGTWF5b2thMQswCQYD\nVQQGEwJJRDAeFw0yNjA3MTgxMzQwNTBaFw0zNjA3MTUxMzQwNTBaMDMxEzARBgNV\nBAMMCk1heW9rYSBQT1MxDzANBgNVBAoMBk1heW9rYTELMAkGA1UEBhMCSUQwggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCgQfVvWrMVhKmi4b73Q0CGQ+3R\nH4d5T59DcXLm0yK+mWLjsJmn\/7DZr4HjzhbWtMH1t7Ip7S08Q1qL\/j+OArpC6zM3\nvD2xxUfu1InzTcIolTDaidBnXUoNAlqT+HU8UncTgsfyQoIcXY2b0C2vxVAvqQaE\nh+\/aEui7Ij2WuCTUhsOm+os4V1FfFpcv+wECRZg+pzpmaSVX2Yaa1LJYRmioARPJ\nxjfHEat+4bYGSQGva0PrWAFVAUo3GcO9n7CrCmcm7cc8MHFktEMYXPmGVYX6SrVe\ndaMOJIcmbH4S6JA6lE9jqxqpXqCUFRmor4p7HrkGrcepi7KEuC07iSDvHNB\/AgMB\nAAGjUzBRMB0GA1UdDgQWBBSZiF+wHts7LIXl6gaqnWG5jqlkzjAfBgNVHSMEGDAW\ngBSZiF+wHts7LIXl6gaqnWG5jqlkzjAPBgNVHRMBAf8EBTADAQH\/MA0GCSqGSIb3\nDQEBCwUAA4IBAQCQ5YjniE0hi4+ffXOAsXel9p5jsdSJxmHKdwvLJ2UWcqX0sXZa\nAoSot1UGlIjyLkqfXlApM0wDiAiYvUyDjVJR\/mkCkRnSyRUnAL7r\/xUjUII6QI\/N\nTeMEq2fqJYHEivm+aw7Sp6SIrBY95j2klj+krqVpT6FHhUiSA4wtJ1XOvYuLxFny\n665VAxcyDTtHF6BJzEZ2Lsg0VzWJ0dTvR71XSpdpzfu9V0ToQlDgX9OVyRM1US7b\ns8CAf6WqKmORUS\/\/9Hc+uY9TwQIESGnsWpjL21KzHSHf7mxl\/Eju2D1bzT9inytS\nHf\/ZOgUf7MihMop\/ptogJ+fMXW0cgjCQlVDd\n-----END CERTIFICATE-----\n","timestamp":1784391171330,"uid":"qwjmh0","position":{"x":960,"y":516}}
+2026-07-18T23:12:51,332 [WARN] Problem building certificate chain (normal if multiple CAs are in use)
+2026-07-18T23:12:51,332 [DEBUG] Received new certificate from connection through 52413
+2026-07-18T23:12:51,338 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T23:12:53,639 [INFO] Allowed Mayoka POS to connect to QZ Tray
+2026-07-18T23:12:53,737 [DEBUG] Message: {"call":"printers.find","params":{"query":"POS-80"},"signature":"BNtx\/nkm9OUAOLvzp2P9kUdxFoKmMThoATxw02y+W7ISluhnkzWBVZ7sA2B2wEXz5QAh4pkhuZrQTsmBhz5qdf4X6lxixtzWceLn1L1PfRVu+ef63k1wZDJ6W3kDuFgnOGHr6UoT3lwfnijgcOa8Ru6MHRYfVXomE9ZY+8U+PoxE1poU8cOvfr84lgcNb5PqUsQbFqrNtI4O6hdJ\/Y8ozJcndYZaS6tZruXxoCz1hPtaNeenD6zjADpHI55\/rx2eKdfZMXFHGttBZ3kRim88Ao8UBJJlfyFdRWG0uMyL1Yzv\/gv6HQk6K+7Fxg4KpM+m01ADX5wGatazdGlmifEcZw==","timestamp":1784391173641,"uid":"fqeifo","position":{"x":960,"y":516},"signAlgorithm":"SHA1"}
+2026-07-18T23:12:53,738 [INFO] Substitutions file missing, skipping: C:\ProgramData\qz\substitutions.json
+2026-07-18T23:12:53,738 [DEBUG] Calculated dialog centered at: java.awt.Point[x=960,y=516]
+2026-07-18T23:12:54,707 [INFO] Allowed Mayoka POS to access connected printers
+2026-07-18T23:12:54,707 [DEBUG] Searching for PrintService matching POS-80
+2026-07-18T23:12:54,709 [DEBUG] Found 1 printers
+2026-07-18T23:12:54,709 [WARN] Printer not found: pos-80

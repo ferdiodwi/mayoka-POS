@@ -39,14 +39,18 @@ export function useQzTray() {
                 await qz.websocket.connect({ retries: 2, delay: 1 });
             }
 
-            // Find the printer
-            // Using true as second argument to search for exact match, or false for partial match
             let foundPrinter = null;
             try {
                 foundPrinter = await qz.printers.find(printerName);
             } catch (findErr) {
-                console.warn(`Printer ${printerName} not found, falling back to default printer`);
-                foundPrinter = await qz.printers.getDefault();
+                console.warn(`Printer ${printerName} not found, falling back to the first available printer.`);
+                const allPrinters = await qz.printers.find();
+                if (allPrinters && allPrinters.length > 0) {
+                    foundPrinter = allPrinters[0];
+                    console.log(`Using printer: ${foundPrinter}`);
+                } else {
+                    throw new Error("Tidak ada printer yang terinstal di komputer ini.");
+                }
             }
 
             // Create config for the found printer
