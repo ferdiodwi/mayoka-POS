@@ -66,7 +66,7 @@ export function useQzTray() {
         } catch (err) {
             console.error('QZ Tray Print Error:', err);
             
-            let errorMsg = 'Pastikan aplikasi QZ Tray sudah berjalan di komputer ini.';
+            let errorMsg = err.message || 'Pastikan aplikasi QZ Tray sudah berjalan di komputer ini.';
             if (err.message && err.message.includes('not found')) {
                 errorMsg = `Printer dengan nama "${printerName}" tidak ditemukan di komputer ini.`;
             }
