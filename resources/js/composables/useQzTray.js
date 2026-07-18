@@ -41,7 +41,13 @@ export function useQzTray() {
 
             // Find the printer
             // Using true as second argument to search for exact match, or false for partial match
-            const foundPrinter = await qz.printers.find(printerName);
+            let foundPrinter = null;
+            try {
+                foundPrinter = await qz.printers.find(printerName);
+            } catch (findErr) {
+                console.warn(`Printer ${printerName} not found, falling back to default printer`);
+                foundPrinter = await qz.printers.getDefault();
+            }
 
             // Create config for the found printer
             const config = qz.configs.create(foundPrinter);
