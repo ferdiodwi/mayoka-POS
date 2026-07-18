@@ -6,8 +6,7 @@ use App\Models\Shift;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Mike42\Escpos\Printer;
-use Mike42\Escpos\PrintConnectors\FilePrintConnector;
-use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
 
 class ShiftController extends Controller
 {
@@ -220,14 +219,7 @@ class ShiftController extends Controller
         $timeStr = $shift->created_at->format('H:i:s');
 
         try {
-            $printerOs = env('PRINTER_OS', 'linux');
-            $printerPath = env('PRINTER_PATH', '/dev/usb/lp0');
-
-            if (strtolower($printerOs) === 'windows') {
-                $connector = new WindowsPrintConnector($printerPath);
-            } else {
-                $connector = new FilePrintConnector($printerPath);
-            }
+            $connector = new DummyPrintConnector();
             $printer = new Printer($connector);
 
             try {
@@ -266,10 +258,14 @@ class ShiftController extends Controller
                 $printer->feed(4);
                 $printer->cut();
             } finally {
+                $data = $connector->getData();
                 $printer->close();
             }
 
-            return response()->json(['message' => 'Laporan saldo kasir berhasil dicetak.']);
+            return response()->json([
+                'message' => 'Laporan saldo kasir berhasil digenerate.',
+                'receipt_base64' => base64_encode($data)
+            ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal print: ' . $e->getMessage()], 500);
         }

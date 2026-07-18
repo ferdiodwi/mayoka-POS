@@ -15,6 +15,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\QzTrayController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,6 +26,10 @@ use Illuminate\Support\Facades\Route;
 
 // Auth (public)
 Route::post('/login', [AuthController::class, 'login']);
+
+// QZ Tray Security Endpoints (Public to allow localhost QZ Tray integration)
+Route::get('/qz-tray/cert', [QzTrayController::class, 'getCertificate']);
+Route::get('/qz-tray/sign', [QzTrayController::class, 'signRequest']);
 
 // Authenticated routes
 Route::middleware(['auth:web', 'branch_scope'])->group(function () {

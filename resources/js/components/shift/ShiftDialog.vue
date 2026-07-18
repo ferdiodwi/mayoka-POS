@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue';
 import { useShift } from '@/composables/useShift';
 import { apiPost } from '@/composables/useApi';
 import { useToast } from 'primevue/usetoast';
+import { useQzTray } from '@/composables/useQzTray';
 
 const props = defineProps({
     visible: Boolean,
@@ -16,6 +17,7 @@ const emit = defineEmits(['update:visible', 'shifted']);
 
 const toast = useToast();
 const { activeShift, openShift, closeShift } = useShift();
+const { printReceipt: printViaQzTray } = useQzTray();
 
 const cashStart = ref(0);
 const cashEnd = ref(0);
@@ -72,7 +74,10 @@ async function handleCloseShift() {
         
         // Auto print shift report
         try {
-            await apiPost(`/api/shifts/${result.shift.id}/print`);
+            const res = await apiPost(`/api/shifts/${result.shift.id}/print`);
+            if (res.receipt_base64) {
+                await printViaQzTray(res.receipt_base64);
+            }
             toast.add({ severity: 'success', summary: 'Cetak Berhasil', detail: 'Laporan shift sedang dicetak.', life: 3000 });
         } catch (printErr) {
             toast.add({ severity: 'warn', summary: 'Cetak Laporan Gagal', detail: 'Shift berhasil ditutup, tetapi gagal mencetak ke printer.', life: 5000 });

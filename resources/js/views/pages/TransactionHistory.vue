@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { apiGet, apiPost } from '@/composables/useApi';
 import ReturnDialog from '@/components/pos/ReturnDialog.vue';
 import { useToast } from 'primevue/usetoast';
+import { useQzTray } from '@/composables/useQzTray';
 
 const toast = useToast();
 const loading = ref(false);
@@ -10,6 +11,7 @@ const transactions = ref([]);
 const receiptData = ref(null);
 const activeTxId = ref(null);
 const showReceipt = ref(false);
+const { printReceipt: printViaQzTray } = useQzTray();
 const currentPage = ref(1);
 const totalRecords = ref(0);
 const rowsPerPage = ref(20);
@@ -72,11 +74,13 @@ async function printReceipt() {
     if (!activeTxId.value) return;
     
     try {
-        await apiPost(`/api/transactions/${activeTxId.value}/print`);
-        toast.add({ severity: 'success', summary: 'Cetak Berhasil', detail: 'Perintah cetak terkirim ke printer.', life: 3000 });
+        const res = await apiPost(`/api/transactions/${activeTxId.value}/print`);
+        if (res.receipt_base64) {
+            await printViaQzTray(res.receipt_base64);
+        }
         showReceipt.value = false;
     } catch (err) {
-        toast.add({ severity: 'error', summary: 'Cetak Gagal', detail: err.message || 'Gagal terhubung ke printer', life: 5000 });
+        toast.add({ severity: 'error', summary: 'Cetak Gagal', detail: err.message || 'Gagal terhubung ke API cetak', life: 5000 });
     }
 }
 
@@ -211,12 +215,6 @@ onMounted(fetchTransactions);
         </template>
     </Dialog>
 </template>
-
-<style scoped>
-.print-spacer {
-    display: none;
-}
-</style>
 
 <style scoped>
 .print-spacer {

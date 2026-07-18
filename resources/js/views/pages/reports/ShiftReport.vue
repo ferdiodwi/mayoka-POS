@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { apiGet, apiPost } from '@/composables/useApi';
 import { useToast } from 'primevue/usetoast';
+import { useQzTray } from '@/composables/useQzTray';
 
 const toast = useToast();
 const loading = ref(false);
@@ -13,6 +14,8 @@ const showReceipt = ref(false);
 const receiptData = ref(null);
 const activeShiftId = ref(null);
 const printing = ref(false);
+
+const { printReceipt: printViaQzTray } = useQzTray();
 
 function formatRp(v) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v);
@@ -48,11 +51,13 @@ async function executePrint() {
     if (!activeShiftId.value) return;
     printing.value = true;
     try {
-        await apiPost(`/api/shifts/${activeShiftId.value}/print`);
-        toast.add({ severity: 'success', summary: 'Cetak Berhasil', detail: 'Laporan shift terkirim ke printer.', life: 3000 });
+        const res = await apiPost(`/api/shifts/${activeShiftId.value}/print`);
+        if (res.receipt_base64) {
+            await printViaQzTray(res.receipt_base64);
+        }
         showReceipt.value = false;
     } catch (err) {
-        toast.add({ severity: 'error', summary: 'Cetak Gagal', detail: err.message || 'Gagal terhubung ke printer', life: 5000 });
+        toast.add({ severity: 'error', summary: 'Cetak Gagal', detail: err.message || 'Gagal terhubung ke API cetak', life: 5000 });
     } finally {
         printing.value = false;
     }

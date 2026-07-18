@@ -11,8 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Mike42\Escpos\Printer;
-use Mike42\Escpos\PrintConnectors\FilePrintConnector;
-use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
 use Mike42\Escpos\EscposImage;
 
 class TransactionController extends Controller
@@ -169,18 +168,23 @@ class TransactionController extends Controller
 
             $receiptData = $this->buildReceiptData($transaction);
 
-            // Try to print via raw ESC/POS
+            // Try to generate base64 receipt
+            $receiptBase64 = null;
             $printError = null;
             try {
-                $this->printRawReceipt($receiptData);
+                $receiptBase64 = $this->printRawReceipt($receiptData);
             } catch (\Exception $e) {
                 $printError = $e->getMessage();
+                \Log::error("Print error during checkout: " . $printError);
             }
+
+            \Log::info("Checkout Base64 length: " . strlen((string)$receiptBase64));
 
             return response()->json([
                 'message' => 'Transaksi berhasil!',
                 'transaction' => $transaction->load('items'),
                 'receipt' => $receiptData,
+                'receipt_base64' => $receiptBase64,
                 'print_error' => $printError,
             ], 201);
 
@@ -219,8 +223,11 @@ class TransactionController extends Controller
         $receiptData = $this->buildReceiptData($transaction);
 
         try {
-            $this->printRawReceipt($receiptData);
-            return response()->json(['message' => 'Struk berhasil dicetak.']);
+            $base64Receipt = $this->printRawReceipt($receiptData);
+            return response()->json([
+                'message' => 'Struk berhasil digenerate.',
+                'receipt_base64' => $base64Receipt
+            ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal print: ' . $e->getMessage()], 500);
         }
@@ -278,7 +285,7 @@ class TransactionController extends Controller
             }
         }
 
-        $storeAddress = implode("\n", $addressLines);
+        $storeAddress = empty($addressLines) ? '' : implode("\n", $addressLines);
 
         $footerText = 'Terima Kasih Atas Kunjungan Anda';
         if ($transaction->branch && !empty($transaction->branch->receipt_footer)) {
@@ -305,20 +312,11 @@ class TransactionController extends Controller
     }
 
     /**
-     * Print receipt using ESC/POS directly to /dev/usb/lp0
+     * Generate receipt ESC/POS using DummyPrintConnector and return Base64
      */
-    private function printRawReceipt(array $r): void
+    private function printRawReceipt(array $r): string
     {
-        $printerOs = env('PRINTER_OS', 'linux');
-        $printerPath = env('PRINTER_PATH', '/dev/usb/lp0');
-
-        if (strtolower($printerOs) === 'windows') {
-            $connector = new WindowsPrintConnector($printerPath);
-        } else {
-            // Linux/Mac default
-            $connector = new FilePrintConnector($printerPath);
-        }
-
+        $connector = new DummyPrintConnector();
         $printer = new Printer($connector);
 
         try {
@@ -417,8 +415,11 @@ class TransactionController extends Controller
             // Cut and close
             $printer->cut();
         } finally {
+            $data = $connector->getData();
             $printer->close();
         }
+
+        return base64_encode($data);
     }
 
     /**

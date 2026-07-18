@@ -5,9 +5,11 @@ import { useShift } from '@/composables/useShift';
 import { apiPost } from '@/composables/useApi';
 import { useToast } from 'primevue/usetoast';
 import { formatRp } from '@/utils/format';
+import { useQzTray } from '@/composables/useQzTray';
 
 const emit = defineEmits(['success']);
 const toast = useToast();
+const { printReceipt: printViaQzTray } = useQzTray();
 const { cartItems, grandTotal, subtotal, transactionDiscount, setTransactionDiscount, clearCart, isEmpty } = useCart();
 const { activeShift } = useShift();
 
@@ -97,9 +99,13 @@ async function handleCheckout() {
         });
 
         if (result.print_error) {
-            toast.add({ severity: 'warn', summary: 'Gagal Print Struk', detail: result.print_error, life: 7000 });
-        } else {
-            toast.add({ severity: 'info', summary: 'Printer', detail: 'Struk berhasil dicetak.', life: 3000 });
+            toast.add({ severity: 'warn', summary: 'Gagal Generate Struk', detail: result.print_error, life: 7000 });
+        } else if (result.receipt_base64) {
+            try {
+                await printViaQzTray(result.receipt_base64);
+            } catch (printErr) {
+                console.error("Auto-print failed:", printErr);
+            }
         }
 
         clearCart();
