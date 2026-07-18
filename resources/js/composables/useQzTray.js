@@ -22,7 +22,6 @@ export function useQzTray() {
                     .catch(reject);
             });
 
-            qz.security.setSignatureAlgorithm("SHA512");
             qz.security.setSignaturePromise((toSign) => {
                 return function(resolve, reject) {
                     fetch('/api/qz-tray/sign?request=' + encodeURIComponent(toSign))

@@ -42,9 +42,9 @@ class QzTrayController extends Controller
 
         $privateKey = file_get_contents($privateKeyPath);
         
-        // Compute SHA-512 signature
+        // Compute SHA-1 signature (Max compatibility for all QZ Tray versions)
         $signature = '';
-        openssl_sign($message, $signature, $privateKey, OPENSSL_ALGO_SHA512);
+        openssl_sign($message, $signature, $privateKey, OPENSSL_ALGO_SHA1);
 
         // Base64 encode the signature
         $base64Signature = base64_encode($signature);
