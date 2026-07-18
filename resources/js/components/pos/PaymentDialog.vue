@@ -373,3 +373,71 @@ watch(() => props.visible, (val) => {
     display: none;
 }
 </style>
+    <Dialog :visible="showReceipt" header="Struk Transaksi" modal :style="{ width: '420px' }" @update:visible="closeAll">
+        <div v-if="receiptData" id="payment-receipt-print-area" class="font-mono text-sm">
+            <div class="text-center mb-3">
+                <p class="font-bold text-lg m-0">{{ receiptData.store_name }}</p>
+                <p class="text-xs text-muted-color m-0">{{ receiptData.store_address }}</p>
+                <p class="text-xs m-0 mt-1">{{ receiptData.date }}</p>
+                <p class="text-xs m-0">No: {{ receiptData.invoice_number }}</p>
+                <p class="text-xs m-0">Kasir: {{ receiptData.cashier }}</p>
+            </div>
+            <hr class="border-dashed" />
+
+            <div v-for="(item, i) in receiptData.items" :key="i" class="py-1">
+                <div class="flex justify-between">
+                    <span>{{ item.description }}</span>
+                </div>
+                <div class="flex justify-between text-muted-color">
+                    <span>{{ item.qty }} x {{ formatRp(item.unit_price) }}</span>
+                    <span>{{ formatRp(item.subtotal) }}</span>
+                </div>
+                <div v-for="(addon, ai) in item.addons" :key="ai" class="flex justify-between text-xs text-muted-color ml-2">
+                    <span>+ {{ addon.description }}</span>
+                    <span>{{ formatRp(addon.price) }}</span>
+                </div>
+            </div>
+
+            <hr class="border-dashed" />
+
+            <div class="flex justify-between py-1">
+                <span>Subtotal</span>
+                <span>{{ formatRp(receiptData.subtotal) }}</span>
+            </div>
+            <div v-if="receiptData.discount > 0" class="flex justify-between py-1 text-red-500">
+                <span>Diskon</span>
+                <span>-{{ formatRp(receiptData.discount) }}</span>
+            </div>
+            <div class="flex justify-between py-1 font-bold text-lg">
+                <span>TOTAL</span>
+                <span>{{ formatRp(receiptData.total) }}</span>
+            </div>
+
+            <hr class="border-dashed" />
+
+            <div class="flex justify-between py-1">
+                <span>Bayar ({{ receiptData.payment_method.toUpperCase() }})</span>
+                <span>{{ formatRp(receiptData.cash_paid) }}</span>
+            </div>
+            <div v-if="receiptData.payment_method === 'cash'" class="flex justify-between py-1">
+                <span>Kembali</span>
+                <span>{{ formatRp(receiptData.cash_change) }}</span>
+            </div>
+
+            <hr class="border-dashed" />
+            <p class="text-center text-xs mt-2 m-0">Terima Kasih Atas Kunjungan Anda</p>
+            </div>
+        </div>
+
+        <template #footer>
+            <Button label="Tutup" severity="secondary" @click="closeAll" />
+            <Button label="Cetak" icon="pi pi-print" @click="printReceipt" />
+        </template>
+    </Dialog>
+</template>
+
+<style scoped>
+.print-spacer {
+    display: none;
+}
+</style>

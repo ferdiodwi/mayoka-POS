@@ -217,3 +217,9 @@ onMounted(fetchTransactions);
     display: none;
 }
 </style>
+
+<style scoped>
+.print-spacer {
+    display: none;
+}
+</style>
