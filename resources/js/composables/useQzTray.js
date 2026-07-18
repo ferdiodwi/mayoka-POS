@@ -6,10 +6,10 @@ export function useQzTray() {
 
     /**
      * Print base64 ESC/POS data via QZ Tray
+     * Automatically finds the first available POS/thermal printer.
      * @param {string} base64Data 
-     * @param {string} printerName (Optional, defaults to 'POS-80' or a .env value if configured)
      */
-    const printReceipt = async (base64Data, printerName = 'POS-80') => {
+    const printReceipt = async (base64Data) => {
         try {
             // Setup QZ Tray Security Signatures
             qz.security.setCertificatePromise((resolve, reject) => {
@@ -39,19 +39,26 @@ export function useQzTray() {
                 await qz.websocket.connect({ retries: 2, delay: 1 });
             }
 
-            let foundPrinter = null;
-            try {
-                foundPrinter = await qz.printers.find(printerName);
-            } catch (findErr) {
-                console.warn(`Printer ${printerName} not found, falling back to the first available printer.`);
-                const allPrinters = await qz.printers.find();
-                if (allPrinters && allPrinters.length > 0) {
-                    foundPrinter = allPrinters[0];
-                    console.log(`Using printer: ${foundPrinter}`);
-                } else {
-                    throw new Error("Tidak ada printer yang terinstal di komputer ini.");
-                }
+            // Get ALL installed printers, then pick the best match
+            const allPrinters = await qz.printers.find();
+            console.log('All available printers:', allPrinters);
+
+            if (!allPrinters || allPrinters.length === 0) {
+                throw new Error('Tidak ada printer yang terinstal di komputer ini.');
             }
+
+            // Try to find a POS/thermal printer by common naming patterns
+            const posKeywords = ['POS-', 'POS_', 'EPSON', 'THERMAL', 'RECEIPT', 'XP-', 'RP-'];
+            let foundPrinter = allPrinters.find(p =>
+                posKeywords.some(keyword => p.toUpperCase().includes(keyword))
+            );
+
+            // If no POS-type printer found, just use the first available printer
+            if (!foundPrinter) {
+                foundPrinter = allPrinters[0];
+            }
+
+            console.log('Selected printer:', foundPrinter);
 
             // Create config for the found printer
             const config = qz.configs.create(foundPrinter);
@@ -64,27 +71,22 @@ export function useQzTray() {
             }];
 
             await qz.print(config, data);
-            
-            toast.add({ 
-                severity: 'success', 
-                summary: 'Sukses', 
-                detail: 'Struk berhasil dikirim ke printer kasir.', 
-                life: 3000 
+
+            toast.add({
+                severity: 'success',
+                summary: 'Sukses',
+                detail: `Struk berhasil dikirim ke ${foundPrinter}.`,
+                life: 3000
             });
 
         } catch (err) {
             console.error('QZ Tray Print Error:', err);
-            
-            let errorMsg = err.message || 'Pastikan aplikasi QZ Tray sudah berjalan di komputer ini.';
-            if (err.message && err.message.includes('not found')) {
-                errorMsg = `Printer dengan nama "${printerName}" tidak ditemukan di komputer ini.`;
-            }
 
-            toast.add({ 
-                severity: 'error', 
-                summary: 'Gagal Cetak', 
-                detail: errorMsg, 
-                life: 5000 
+            toast.add({
+                severity: 'error',
+                summary: 'Gagal Cetak',
+                detail: err.message || 'Pastikan aplikasi QZ Tray sudah berjalan di komputer ini.',
+                life: 5000
             });
         }
     };
