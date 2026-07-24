@@ -7,6 +7,7 @@ import { useBranch } from '@/composables/useBranch';
 import { useShift } from '@/composables/useShift';
 import { useToast } from 'primevue/usetoast';
 import ShiftDialog from '@/components/shift/ShiftDialog.vue';
+import PrinterSettingsDialog from '@/components/pos/PrinterSettingsDialog.vue';
 import AppConfigurator from './AppConfigurator.vue';
 
 const router = useRouter();
@@ -20,6 +21,7 @@ const userMenuRef = ref(null);
 const branchMenuRef = ref(null);
 const shiftDialogVisible = ref(false);
 const shiftDialogMode = ref('open');
+const printerDialogVisible = ref(false);
 
 const branchMenuItems = computed(() => {
     return branches.value.map(b => ({
@@ -118,9 +120,12 @@ onMounted(async () => {
                     severity="success" outlined @click="openShiftDialog('open')" />
             </div>
 
-            <!-- Config menu (Dark mode & Theme Palette) -->
+            <!-- Config menu (Printer, Dark mode & Theme Palette) -->
             <div class="layout-config-menu">
-                <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
+                <button type="button" class="layout-topbar-action" @click="printerDialogVisible = true" title="Pengaturan Printer Kasir">
+                    <i class="pi pi-print"></i>
+                </button>
+                <button type="button" class="layout-topbar-action" @click="toggleDarkMode" title="Ganti Tema Terang/Gelap">
                     <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
                 </button>
                 <div class="relative">
@@ -168,6 +173,9 @@ onMounted(async () => {
         :mode="shiftDialogMode"
         @shifted="onShifted"
     />
+
+    <!-- Printer Settings Dialog -->
+    <PrinterSettingsDialog v-model:visible="printerDialogVisible" />
 
     <!-- Full-page Loading Overlay -->
     <div v-if="branchLoading" class="fixed inset-0 z-[9999] bg-surface-0/90 dark:bg-surface-900/90 backdrop-blur-sm flex flex-col items-center justify-center">
