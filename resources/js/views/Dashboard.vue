@@ -279,4 +279,14 @@ onUnmounted(() => {
             </div>
         </div>
     </div>
+
+    <!-- Error State -->
+    <div v-else class="flex flex-col items-center justify-center py-20 text-center">
+        <i class="pi pi-exclamation-circle text-5xl text-red-500 mb-4"></i>
+        <h2 class="text-2xl font-bold mb-2">Gagal Memuat Dashboard</h2>
+        <p class="text-muted-color max-w-md">
+            Terjadi kesalahan saat mengambil data dari server. Pastikan Anda sudah menjalankan <code>php artisan migrate</code> jika baru saja melakukan pembaruan (update) sistem.
+        </p>
+        <Button label="Coba Lagi" icon="pi pi-refresh" class="mt-4" @click="loadDashboard" />
+    </div>
 </template>

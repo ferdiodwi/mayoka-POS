@@ -12,19 +12,12 @@ const selectedProducts = ref([]);
 const priceLevel = ref('h1');
 const searchQuery = ref('');
 const filterCategory = ref(null);
-const labelSize = ref('medium'); // small, medium, large
 const branchName = ref('');
 
 const priceLevelOptions = [
     { label: 'Harga 1 (H1)', value: 'h1' },
     { label: 'Harga 2 (H2)', value: 'h2' },
     { label: 'Harga 3 (H3)', value: 'h3' },
-];
-
-const labelSizeOptions = [
-    { label: 'Kecil (5×3 cm)', value: 'small' },
-    { label: 'Standar (6×3.5 cm)', value: 'medium' },
-    { label: 'Besar (8×5 cm)', value: 'large' },
 ];
 
 const filteredProducts = computed(() => {
@@ -44,12 +37,14 @@ const filteredProducts = computed(() => {
 });
 
 const labelDimensions = computed(() => {
-    // 1cm ≈ 37.8px
-    switch (labelSize.value) {
-        case 'small': return { width: '189px', height: '113px', fontSize: '0.55rem', priceSize: '1.1rem', nameSize: '0.6rem' };
-        case 'large': return { width: '302px', height: '189px', fontSize: '0.75rem', priceSize: '1.8rem', nameSize: '0.85rem' };
-        default: return { width: '227px', height: '132px', fontSize: '0.6rem', priceSize: '1.3rem', nameSize: '0.68rem' }; // 6cm x 3.5cm
-    }
+    // 6cm x 3.5cm (1cm ≈ 37.8px)
+    return { 
+        width: '227px', 
+        height: '132px', 
+        fontSize: '0.7rem', 
+        priceSize: '1.5rem', 
+        nameSize: '0.8rem' 
+    };
 });
 
 onMounted(async () => {
@@ -159,11 +154,6 @@ function printLabels() {
                     <div class="flex flex-col gap-1">
                         <label class="text-xs font-semibold text-muted-color">LEVEL HARGA</label>
                         <Select v-model="priceLevel" :options="priceLevelOptions" optionLabel="label" optionValue="value"
-                            class="w-44" />
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-muted-color">UKURAN LABEL</label>
-                        <Select v-model="labelSize" :options="labelSizeOptions" optionLabel="label" optionValue="value"
                             class="w-44" />
                     </div>
                     <div class="flex gap-2">
