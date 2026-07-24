@@ -13,13 +13,15 @@ class Product extends Model
 
     protected $fillable = [
         'category_id', 'product_code', 'name', 'barcode', 'type',
-        'cost_price', 'stock', 'min_stock', 'is_active',
+        'cost_price', 'last_cost_price', 'has_hpp_warning', 'stock', 'min_stock', 'is_active',
     ];
 
     protected function casts(): array
     {
         return [
             'cost_price' => 'decimal:2',
+            'last_cost_price' => 'decimal:2',
+            'has_hpp_warning' => 'boolean',
             'is_active' => 'boolean',
         ];
     }

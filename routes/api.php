@@ -129,6 +129,7 @@ Route::middleware(['auth:web', 'branch_scope'])->group(function () {
 
     // Reports & Dashboard
     Route::middleware('permission:reports.read')->group(function () {
+        Route::get('/reports/alerts-count', [ReportController::class, 'alertsCount']);
         Route::get('/reports/dashboard', [ReportController::class, 'dashboard']);
         Route::get('/reports/sales', [ReportController::class, 'salesReport']);
         Route::get('/reports/cashier', [ReportController::class, 'cashierReport']);

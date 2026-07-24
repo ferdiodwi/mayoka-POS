@@ -1,15 +1,42 @@
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useAuth } from '@/composables/useAuth';
+import { apiGet } from '@/composables/useApi';
 import AppMenuItem from './AppMenuItem.vue';
 
 const { hasPermission, isOwner } = useAuth();
+const totalAlerts = ref(0);
 
-const rawMenu = [
+async function loadAlerts() {
+    try {
+        const res = await apiGet('/api/reports/alerts-count');
+        totalAlerts.value = res.total_alerts || 0;
+    } catch (e) {
+        // ignore
+    }
+}
+
+onMounted(() => {
+    loadAlerts();
+    if (window.Echo) {
+        window.Echo.channel('dashboard-channel')
+            .listen('DashboardUpdated', () => {
+                loadAlerts();
+            });
+    }
+});
+
+onUnmounted(() => {
+    if (window.Echo) {
+        window.Echo.leaveChannel('dashboard-channel');
+    }
+});
+
+const rawMenu = computed(() => [
     {
         label: 'Menu Utama',
         items: [
-            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/', permission: 'reports.read' },
+            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/', permission: 'reports.read', badge: totalAlerts.value > 0 ? totalAlerts.value : null },
             { label: 'Point of Sale', icon: 'pi pi-fw pi-shopping-cart', to: '/pos' },
         ]
     },
@@ -52,10 +79,10 @@ const rawMenu = [
             { label: 'Manajemen Cabang', icon: 'pi pi-fw pi-building', to: '/branches', ownerOnly: true },
         ]
     },
-];
+]);
 
 const model = computed(() => {
-    return rawMenu.map(group => {
+    return rawMenu.value.map(group => {
         return {
             ...group,
             items: group.items.filter(item => {

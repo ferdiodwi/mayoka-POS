@@ -19,7 +19,7 @@ class PurchaseController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Purchase::with(['user:id,name', 'items.product:id,name,unit'])
+        $query = Purchase::with(['user:id,name', 'items.product:id,name'])
             ->orderByDesc('purchase_date')
             ->orderByDesc('id');
 
@@ -135,8 +135,14 @@ class PurchaseController extends Controller
                         $newHpp = $costPerBaseUnit;
                     }
 
+                    $hasWarning = $newHpp > $hppBefore;
+
                     // Update cost_price FIRST, then stock
-                    $product->update(['cost_price' => round($newHpp, 2)]);
+                    $product->update([
+                        'cost_price' => round($newHpp, 2),
+                        'last_cost_price' => $hppBefore,
+                        'has_hpp_warning' => $hasWarning,
+                    ]);
                     $product->increment('stock', $stockAddition);
 
                     // Record stock movement

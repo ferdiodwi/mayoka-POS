@@ -166,6 +166,7 @@ class ProductController extends Controller
 
         DB::transaction(function () use ($product, $validated) {
             $productData = collect($validated)->except('units')->toArray();
+            $productData['has_hpp_warning'] = false;
             $product->update($productData);
 
             // Sync units (delete existing, recreate)
@@ -175,6 +176,8 @@ class ProductController extends Controller
                 $product->units()->create($unitData);
             }
         });
+
+        event(new \App\Events\DashboardUpdated());
 
         return response()->json([
             'message' => 'Produk berhasil diperbarui.',

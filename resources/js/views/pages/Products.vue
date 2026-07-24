@@ -134,7 +134,7 @@ function openEdit(item) {
             unitsData.push({ level: i, unit_name: '', qty_per_previous: 0, base_multiplier: 1, price_h1: 0, price_h2: 0, price_h3: 0 });
         }
     }
-    form.value = { ...item, category_id: item.category_id, units: unitsData };
+    form.value = { ...item, category_id: item.category_id, units: unitsData, last_cost_price: item.last_cost_price || 0 };
     editingId.value = item.id;
     dialogVisible.value = true;
 }
@@ -542,9 +542,18 @@ onUnmounted(() => {
                         <small class="text-muted-color mt-2 block">*Kosongkan nama satuan jika tidak digunakan.</small>
                     </div>
                 </div>
-                <div class="flex flex-col gap-2">
-                    <label class="font-semibold">HPP (Rp)</label>
-                    <InputNumber v-model="form.cost_price" mode="currency" currency="IDR" locale="id-ID" :min="0" />
+                <div class="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div v-if="dialogMode === 'edit'" class="flex flex-col gap-2">
+                        <label class="font-semibold text-muted-color">HPP Lama (Sebelum Kulakan)</label>
+                        <div class="p-2 px-3 bg-surface-100 dark:bg-surface-800 rounded-lg border border-surface-200 dark:border-surface-700 font-bold text-lg text-surface-600 dark:text-surface-300 flex items-center h-[42px]">
+                            {{ formatCurrency(form.last_cost_price || 0) }}
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2" :class="dialogMode === 'edit' ? '' : 'md:col-span-2'">
+                        <label class="font-semibold">{{ dialogMode === 'edit' ? 'HPP Baru (Saat Ini)' : 'HPP (Modal Dasar)' }}</label>
+                        <InputNumber v-model="form.cost_price" mode="currency" currency="IDR" locale="id-ID" :min="0" class="!text-lg font-bold" />
+                    </div>
                 </div>
 
                 <div v-if="dialogMode === 'edit'" class="flex items-center gap-2 col-span-1 md:col-span-2">

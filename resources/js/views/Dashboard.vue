@@ -247,23 +247,32 @@ onUnmounted(() => {
                 </DataTable>
             </div>
 
-            <!-- Recent Transactions -->
-            <div class="card mb-0 flex flex-col h-full">
-                <h3 class="text-lg font-semibold mt-0 mb-4">Transaksi Terakhir</h3>
-                <div v-if="data.recent_transactions.length === 0" class="text-center py-6 text-muted-color">
-                    Belum ada transaksi.
+            <!-- HPP Warnings -->
+            <div class="card mb-0 flex flex-col h-full border-t-4 border-t-orange-500 dark:border-t-orange-400">
+                <h3 class="text-lg font-semibold mt-0 mb-4">
+                    <i class="pi pi-bell text-orange-500 mr-2"></i>Peringatan HPP Naik
+                </h3>
+                <div v-if="data.hpp_warnings.length === 0" class="text-center py-6 text-green-500">
+                    <i class="pi pi-check-circle text-3xl block mb-2"></i>
+                    Tidak ada peringatan harga.
                 </div>
-                <DataTable v-else :value="data.recent_transactions" dataKey="id" class="p-datatable-sm" scrollable scrollHeight="300px">
-                    <Column field="invoice_number" header="Invoice" style="width: 10rem" />
-                    <Column header="Kasir">
-                        <template #body="{ data: row }">{{ row.user?.name }}</template>
-                    </Column>
-                    <Column header="Total">
-                        <template #body="{ data: row }">{{ formatRp(row.total) }}</template>
-                    </Column>
-                    <Column header="Metode" style="width: 5rem">
+                <DataTable v-else :value="data.hpp_warnings" dataKey="id" class="p-datatable-sm" scrollable scrollHeight="300px">
+                    <Column field="name" header="Produk" />
+                    <Column header="HPP Lama" style="width: 7rem">
                         <template #body="{ data: row }">
-                            <Tag :value="row.payment_method.toUpperCase()" :severity="row.payment_method === 'cash' ? 'success' : row.payment_method === 'qris' ? 'info' : 'warn'" />
+                            <span class="text-muted-color line-through text-xs">{{ formatRp(row.last_cost_price) }}</span>
+                        </template>
+                    </Column>
+                    <Column header="HPP Baru" style="width: 7rem">
+                        <template #body="{ data: row }">
+                            <span class="text-orange-500 dark:text-orange-400 font-bold">{{ formatRp(row.cost_price) }}</span>
+                        </template>
+                    </Column>
+                    <Column header="Aksi" style="width: 6rem" alignFrozen="right">
+                        <template #body="{ data: row }">
+                            <RouterLink to="/products" class="text-primary hover:underline text-sm font-semibold flex items-center gap-1">
+                                Ubah <i class="pi pi-arrow-right text-[10px]"></i>
+                            </RouterLink>
                         </template>
                     </Column>
                 </DataTable>

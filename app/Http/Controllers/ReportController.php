@@ -20,6 +20,22 @@ use App\Exports\SalesExport;
 
 class ReportController extends Controller
 {
+    public function alertsCount(): JsonResponse
+    {
+        $lowStockCount = Product::where('type', 'barang')
+            ->where('is_active', true)
+            ->whereColumn('stock', '<=', 'min_stock')
+            ->count();
+
+        $hppWarningCount = Product::where('has_hpp_warning', true)
+            ->where('is_active', true)
+            ->count();
+
+        return response()->json([
+            'total_alerts' => $lowStockCount + $hppWarningCount,
+        ]);
+    }
+
     /**
      * Dashboard stats (owner).
      */
@@ -75,6 +91,13 @@ class ReportController extends Controller
             ->orderBy('stock')
             ->get();
 
+        // HPP increase warnings
+        $hppWarnings = Product::where('has_hpp_warning', true)
+            ->where('is_active', true)
+            ->select('id', 'name', 'cost_price', 'last_cost_price')
+            ->orderByDesc('updated_at')
+            ->get();
+
         // Recent transactions
         $recentTransactions = Transaction::with('user:id,name')
             ->orderByDesc('created_at')
@@ -121,6 +144,7 @@ class ReportController extends Controller
             'month_revenue' => (float) $monthRevenue,
             'top_products' => $topProducts,
             'low_stock' => $lowStock,
+            'hpp_warnings' => $hppWarnings,
             'recent_transactions' => $recentTransactions,
             'chart_data' => $chartData,
         ]);

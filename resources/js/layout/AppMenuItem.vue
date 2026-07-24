@@ -62,11 +62,13 @@ const onMouseEnter = () => {
         <a v-if="(!item.to || item.items) && item.visible !== false" :href="item.url" @click="itemClick($event, item)" :class="item.class" :target="item.target" tabindex="0" @mouseenter="onMouseEnter">
             <i :class="item.icon" class="layout-menuitem-icon" />
             <span class="layout-menuitem-text">{{ item.label }}</span>
+            <span v-if="item.badge" class="ml-2 inline-flex items-center justify-center bg-red-500 text-white rounded-full text-[11px] font-bold px-1.5 h-5 min-w-[1.25rem]">{{ item.badge }}</span>
             <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items" />
         </a>
         <router-link v-if="item.to && !item.items && item.visible !== false" @click="itemClick($event, item)" exactActiveClass="active-route" :class="item.class" tabindex="0" :to="item.to" @mouseenter="onMouseEnter">
             <i :class="item.icon" class="layout-menuitem-icon" />
             <span class="layout-menuitem-text">{{ item.label }}</span>
+            <span v-if="item.badge" class="ml-2 inline-flex items-center justify-center bg-red-500 text-white rounded-full text-[11px] font-bold px-1.5 h-5 min-w-[1.25rem]">{{ item.badge }}</span>
             <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items" />
         </router-link>
         <Transition v-if="item.items && item.visible !== false" name="layout-submenu">
