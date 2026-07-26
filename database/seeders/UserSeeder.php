@@ -30,13 +30,5 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        User::create([
-            'branch_id' => 1,
-            'name' => 'Albert',
-            'username' => 'albert',
-            'password' => 'password',
-            'role' => 'kasir',
-            'is_active' => true,
-        ]);
     }
 }
