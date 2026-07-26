@@ -31,6 +31,8 @@ async function fetchReport() {
     try {
         const data = await apiGet(`/api/reports/shifts?date_from=${toApiDate(dateFrom.value)}&date_to=${toApiDate(dateTo.value)}`);
         shifts.value = data.shifts;
+    } catch (err) {
+        toast.add({ severity: 'error', summary: 'Error', detail: err.message || 'Gagal memuat laporan shift.', life: 5000 });
     } finally {
         loading.value = false;
     }

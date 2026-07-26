@@ -186,9 +186,9 @@ class ReportController extends Controller
 
         $dailyReturnedCosts = ReturnItem::whereHas('returnTransaction', fn ($q) =>
                 $q->whereBetween(DB::raw('DATE(created_at)'), [$from, $to]))
-            ->join('return_transactions', 'return_items.return_transaction_id', '=', 'return_transactions.id')
+            ->join('returns', 'return_items.return_id', '=', 'returns.id')
             ->join('transaction_items', 'return_items.transaction_item_id', '=', 'transaction_items.id')
-            ->select(DB::raw('DATE(return_transactions.created_at) as date'), DB::raw('SUM(return_items.qty * transaction_items.cost_price) as total_cost'))
+            ->select(DB::raw('DATE(returns.created_at) as date'), DB::raw('SUM(return_items.qty * transaction_items.cost_price) as total_cost'))
             ->groupBy('date')
             ->pluck('total_cost', 'date')
             ->toArray();
@@ -333,7 +333,12 @@ class ReportController extends Controller
         $to = $request->get('date_to', now()->toDateString());
 
         $shifts = Shift::with('user:id,name')
-            ->whereBetween(DB::raw('DATE(started_at)'), [$from, $to])
+            ->where(function ($q) use ($from, $to) {
+                // Shifts started within the date range
+                $q->whereBetween(DB::raw('DATE(started_at)'), [$from, $to])
+                  // OR shifts that are still open (not yet closed)
+                  ->orWhere('status', 'open');
+            })
             ->orderByDesc('started_at')
             ->get();
 
@@ -364,7 +369,7 @@ class ReportController extends Controller
 
             return [
                 'id' => $s->id,
-                'cashier' => $s->user->name,
+                'cashier' => $s->user?->name ?? 'Unknown',
                 'started_at' => $s->started_at?->format('d/m/Y H:i'),
                 'ended_at' => $s->ended_at?->format('d/m/Y H:i'),
                 'cash_start' => (float) $s->cash_start,
