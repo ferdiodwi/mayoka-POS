@@ -23,10 +23,10 @@ class UserSeeder extends Seeder
 
         User::create([
             'branch_id' => 1,
-            'name' => 'Ferdio',
+            'name' => 'ferdiodwi',
             'username' => 'ferdio',
             'password' => 'password',
-            'role' => 'kasir',
+            'role' => 'owner',
             'is_active' => true,
         ]);
 
