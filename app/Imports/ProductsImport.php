@@ -42,10 +42,14 @@ class ProductsImport implements ToCollection, WithHeadingRow
                 $minStock = $type === 'jasa' ? 0 : (int) ($row['min_stok'] ?? 0);
 
                 $barcode = isset($row['barcode']) && trim($row['barcode']) !== '' ? trim($row['barcode']) : null;
+                $branchId = config('app.active_branch_id') ?? 1;
 
-                // Check if barcode already exists to prevent duplicate entry error
-                if ($barcode && Product::where('barcode', $barcode)->exists()) {
-                    continue; // Skip this product if barcode already exists
+                // Check if barcode already exists IN THE SAME BRANCH to prevent duplicate entry error
+                if ($barcode && Product::withoutGlobalScope('branch')
+                        ->where('barcode', $barcode)
+                        ->where('branch_id', $branchId)
+                        ->exists()) {
+                    continue; // Skip this product if barcode already exists in this branch
                 }
 
                 // Create Product
@@ -59,6 +63,7 @@ class ProductsImport implements ToCollection, WithHeadingRow
                     'stock' => $stock,
                     'min_stock' => $minStock,
                     'is_active' => true,
+                    'branch_id' => $branchId,
                 ]);
 
                 // Create Units
