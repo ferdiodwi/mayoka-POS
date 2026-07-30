@@ -7,6 +7,7 @@ use App\Models\Shift;
 use App\Models\StockMovement;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
+use App\Events\ProductStockUpdated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -448,8 +449,149 @@ class TransactionController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
+        // Include soft-deleted (voided) transactions if requested
+        if ($request->boolean('show_voided')) {
+            $query->withTrashed();
+        }
+
         $transactions = $query->orderBy('created_at', 'desc')->paginate(20);
 
         return response()->json($transactions);
+    }
+
+    /**
+     * Void (soft-delete) a transaction and restore stock.
+     */
+    public function void(Request $request, Transaction $transaction): JsonResponse
+    {
+        $user = $request->user();
+
+        // Permission check: owner can always void; kasir needs transactions.delete
+        if ($user->role !== 'owner' && !$user->hasPermission('transactions.delete')) {
+            return response()->json(['message' => 'Anda tidak memiliki akses untuk membatalkan transaksi.'], 403);
+        }
+
+        // Cannot void an already voided transaction
+        if ($transaction->trashed()) {
+            return response()->json(['message' => 'Transaksi ini sudah dibatalkan sebelumnya.'], 422);
+        }
+
+        $request->validate([
+            'void_reason' => 'nullable|string|max:255',
+        ]);
+
+        DB::transaction(function () use ($transaction, $user, $request) {
+            // Restore stock for all product items
+            foreach ($transaction->items as $item) {
+                if ($item->item_type === 'product' && $item->product_id) {
+                    $product = Product::find($item->product_id);
+                    if ($product) {
+                        $product->increment('stock', $item->qty);
+
+                        // Record stock movement (void restoration)
+                        StockMovement::create([
+                            'product_id' => $product->id,
+                            'type'       => 'in',
+                            'qty'        => $item->qty,
+                            'reference'  => 'VOID:' . $transaction->invoice_number,
+                            'notes'      => 'Stok dikembalikan karena transaksi dibatalkan (void)',
+                            'user_id'    => $user->id,
+                        ]);
+
+                        // Broadcast stock update for POS realtime sync
+                        ProductStockUpdated::dispatch($product->id, $product->stock);
+                    }
+                }
+            }
+
+            // Mark who voided and why, then soft-delete
+            $transaction->update([
+                'voided_by'   => $user->id,
+                'void_reason' => $request->void_reason,
+            ]);
+            $transaction->delete(); // soft delete (sets deleted_at)
+        });
+
+        return response()->json(['message' => 'Transaksi berhasil dibatalkan dan stok telah dikembalikan.']);
+    }
+
+    /**
+     * Restore a voided (soft-deleted) transaction and deduct stock again.
+     */
+    public function restore(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+
+        // Only owner can restore
+        if ($user->role !== 'owner' && !$user->hasPermission('transactions.delete')) {
+            return response()->json(['message' => 'Anda tidak memiliki akses untuk memulihkan transaksi.'], 403);
+        }
+
+        $transaction = Transaction::withTrashed()->findOrFail($id);
+
+        if (!$transaction->trashed()) {
+            return response()->json(['message' => 'Transaksi ini tidak dalam kondisi dibatalkan.'], 422);
+        }
+
+        DB::transaction(function () use ($transaction) {
+            // Restore soft delete
+            $transaction->restore();
+
+            // Clear void markers
+            $transaction->update([
+                'voided_by'   => null,
+                'void_reason' => null,
+            ]);
+
+            // Deduct stock again for product items
+            foreach ($transaction->items as $item) {
+                if ($item->item_type === 'product' && $item->product_id) {
+                    $product = Product::find($item->product_id);
+                    if ($product) {
+                        $product->decrement('stock', $item->qty);
+
+                        // Record stock movement (restore deduction)
+                        StockMovement::create([
+                            'product_id' => $product->id,
+                            'type'       => 'out',
+                            'qty'        => $item->qty,
+                            'reference'  => 'RESTORE:' . $transaction->invoice_number,
+                            'notes'      => 'Stok dipotong kembali karena transaksi dipulihkan dari void',
+                            'user_id'    => request()->user()->id,
+                        ]);
+
+                        // Broadcast stock update for POS realtime sync
+                        ProductStockUpdated::dispatch($product->id, $product->stock);
+                    }
+                }
+            }
+        });
+
+        return response()->json(['message' => 'Transaksi berhasil dipulihkan dan stok disesuaikan kembali.']);
+    }
+
+    /**
+     * Permanently delete a voided transaction from the database (hard delete).
+     * Only allowed for already soft-deleted (voided) transactions.
+     */
+    public function forceDelete(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+
+        // Only owner can hard-delete
+        if ($user->role !== 'owner') {
+            return response()->json(['message' => 'Hanya Owner yang dapat menghapus transaksi secara permanen.'], 403);
+        }
+
+        $transaction = Transaction::withTrashed()->findOrFail($id);
+
+        if (!$transaction->trashed()) {
+            return response()->json(['message' => 'Transaksi harus di-void terlebih dahulu sebelum dihapus permanen.'], 422);
+        }
+
+        // Hard delete — cascade will handle transaction_items via FK constraint
+        $transaction->forceDelete();
+
+        return response()->json(['message' => 'Transaksi berhasil dihapus secara permanen dari database.']);
     }
 }

@@ -177,17 +177,38 @@ async function saveAdjust() {
 }
 
 function confirmDeactivate(item) {
+    const isActivating = !item.is_active;
     confirm.require({
-        message: `Nonaktifkan produk "${item.name}"?`,
+        message: isActivating ? `Aktifkan produk "${item.name}"?` : `Nonaktifkan produk "${item.name}"?`,
         header: 'Konfirmasi',
         icon: 'pi pi-exclamation-triangle',
         rejectLabel: 'Batal',
-        acceptLabel: 'Nonaktifkan',
-        acceptClass: 'p-button-danger',
+        acceptLabel: isActivating ? 'Aktifkan' : 'Nonaktifkan',
+        acceptClass: isActivating ? 'p-button-success' : 'p-button-warning',
         accept: async () => {
             try {
                 const data = await apiDelete(`/api/products/${item.id}`);
                 toast.add({ severity: 'success', summary: 'Berhasil', detail: data.message, life: 3000 });
+                await fetchProducts();
+            } catch (err) {
+                toast.add({ severity: 'error', summary: 'Gagal', detail: err.message, life: 4000 });
+            }
+        },
+    });
+}
+
+function confirmForceDelete(item) {
+    confirm.require({
+        message: `Hapus permanen produk "${item.name}" dari database? Data yang dihapus tidak dapat dikembalikan.`,
+        header: 'Hapus Permanen',
+        icon: 'pi pi-trash',
+        rejectLabel: 'Batal',
+        acceptLabel: 'Hapus',
+        acceptClass: 'p-button-danger',
+        accept: async () => {
+            try {
+                const data = await apiDelete(`/api/products/${item.id}/force`);
+                toast.add({ severity: 'success', summary: 'Dihapus', detail: data.message, life: 3000 });
                 await fetchProducts();
             } catch (err) {
                 toast.add({ severity: 'error', summary: 'Gagal', detail: err.message, life: 4000 });
@@ -408,14 +429,16 @@ onUnmounted(() => {
                         :severity="data.is_active ? 'success' : 'danger'" />
                 </template>
             </Column>
-            <Column header="Aksi" style="width: 10rem" v-if="hasPermission('products.update') || hasPermission('products.delete')">
+            <Column header="Aksi" style="width: 12rem" v-if="hasPermission('products.update') || hasPermission('products.delete')">
                 <template #body="{ data }">
                     <div class="flex gap-1">
                         <Button v-if="hasPermission('products.update')" icon="pi pi-pencil" severity="info" text rounded size="small" @click="openEdit(data)" />
                         <Button v-if="hasPermission('products.update') && data.type === 'barang'" icon="pi pi-sort-alt" severity="warn" text rounded
                             size="small" v-tooltip="'Adjustment Stok'" @click="openAdjust(data)" />
-                        <Button v-if="hasPermission('products.delete') && data.is_active" icon="pi pi-ban" severity="danger" text rounded size="small"
-                            @click="confirmDeactivate(data)" />
+                        <Button v-if="hasPermission('products.delete') && data.is_active" icon="pi pi-ban" severity="warning" text rounded size="small"
+                            v-tooltip="'Nonaktifkan'" @click="confirmDeactivate(data)" />
+                        <Button v-if="hasPermission('products.delete')" icon="pi pi-trash" severity="danger" text rounded size="small"
+                            v-tooltip="'Hapus Permanen'" @click="confirmForceDelete(data)" />
                     </div>
                 </template>
             </Column>

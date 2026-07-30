@@ -5,15 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Transaction extends Model
 {
-    use \App\Traits\BelongsToBranch;
+    use \App\Traits\BelongsToBranch, SoftDeletes;
 
     protected $fillable = [
         'invoice_number', 'user_id', 'shift_id', 'customer_id', 'price_level',
         'subtotal', 'discount', 'total',
         'payment_method', 'cash_paid', 'cash_change', 'notes',
+        'voided_by', 'void_reason',
     ];
 
     protected function casts(): array
@@ -47,6 +49,11 @@ class Transaction extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    public function voidedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'voided_by')->withoutGlobalScope('branch');
+    }
+
     /**
      * Generate next invoice number: INV-YYYYMMDD-XXXX
      */
@@ -55,7 +62,9 @@ class Transaction extends Model
         $date = now()->format('Ymd');
         $prefix = "INV-{$date}-";
 
+        // Include soft-deleted (voided) transactions to avoid reusing their invoice numbers
         $last = static::withoutGlobalScope('branch')
+            ->withTrashed()
             ->where('invoice_number', 'like', "{$prefix}%")
             ->orderBy('invoice_number', 'desc')
             ->first();

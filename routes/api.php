@@ -76,6 +76,9 @@ Route::middleware(['auth:web', 'branch_scope'])->group(function () {
     Route::get('/transactions/{transaction}/receipt', [TransactionController::class, 'receipt']);
     Route::post('/transactions/{transaction}/print', [TransactionController::class, 'print']);
     Route::post('/transactions/{transaction}/return', [App\Http\Controllers\ReturnController::class, 'store']);
+    Route::delete('/transactions/{transaction}/void', [TransactionController::class, 'void']);
+    Route::post('/transactions/{id}/restore', [TransactionController::class, 'restore']);
+    Route::delete('/transactions/{id}/force-delete', [TransactionController::class, 'forceDelete']);
 
     // User management
     Route::get('/users', [UserController::class, 'index'])->middleware('permission:users.read');
@@ -111,6 +114,7 @@ Route::middleware(['auth:web', 'branch_scope'])->group(function () {
     Route::post('/products', [ProductController::class, 'store'])->middleware('permission:products.create');
     Route::put('/products/{product}', [ProductController::class, 'update'])->middleware('permission:products.update');
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->middleware('permission:products.delete');
+    Route::delete('/products/{product}/force', [ProductController::class, 'forceDelete'])->middleware('permission:products.delete');
     Route::post('/products/{product}/stock-adjust', [ProductController::class, 'stockAdjust'])->middleware('permission:products.update');
 
     // Print prices

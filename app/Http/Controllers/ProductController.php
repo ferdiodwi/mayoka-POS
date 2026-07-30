@@ -191,6 +191,32 @@ class ProductController extends Controller
         return response()->json(['message' => 'Produk berhasil dinonaktifkan.']);
     }
 
+    public function forceDelete(Request $request, Product $product): JsonResponse
+    {
+        // Only owner or kasir with products.delete permission can force delete
+        $user = $request->user();
+        if ($user->role !== 'owner' && !$user->hasPermission('products.delete')) {
+            return response()->json(['message' => 'Anda tidak memiliki akses untuk menghapus produk secara permanen.'], 403);
+        }
+
+        // Cek secara manual apakah produk sudah pernah ditransaksikan
+        // Karena di migration kita menggunakan nullOnDelete(), database tidak akan melempar error otomatis.
+        $hasTransactions = \Illuminate\Support\Facades\DB::table('transaction_items')
+            ->where('product_id', $product->id)
+            ->exists();
+            
+        if ($hasTransactions) {
+            return response()->json(['message' => 'Gagal menghapus! Produk ini sudah pernah dibeli (ada di riwayat transaksi). Silakan gunakan fitur Nonaktifkan saja agar laporan tidak rusak.'], 422);
+        }
+
+        try {
+            $product->delete();
+            return response()->json(['message' => 'Produk berhasil dihapus permanen.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Terjadi kesalahan saat menghapus produk: ' . $e->getMessage()], 500);
+        }
+    }
+
     /**
      * Manual stock adjustment (owner only).
      */

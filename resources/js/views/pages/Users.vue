@@ -32,6 +32,7 @@ const permissionModules = [
     { label: 'Jasa Tambahan', value: 'addons', crud: true },
     { label: 'Pembelian Barang', value: 'purchases', crud: true },
     { label: 'Pengeluaran', value: 'expenses', crud: true },
+    { label: 'Transaksi', value: 'transactions', crud: true },
     { label: 'Manajemen User', value: 'users', crud: true },
     { label: 'Laporan & Dashboard', value: 'reports', crud: false },
 ];

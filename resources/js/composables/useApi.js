@@ -44,8 +44,8 @@ export async function apiPut(url, body) {
     return apiFetch(url, { method: 'PUT', body: JSON.stringify(body) });
 }
 
-export async function apiDelete(url) {
-    return apiFetch(url, { method: 'DELETE' });
+export async function apiDelete(url, body = null) {
+    return apiFetch(url, { method: 'DELETE', ...(body ? { body: JSON.stringify(body) } : {}) });
 }
 
 export async function apiPatch(url, body = {}) {
