@@ -9,7 +9,7 @@ class PrintPrice extends Model
     use \App\Traits\BelongsToBranch;
 
     protected $fillable = [
-        'paper_size', 'color_type', 'side_type',
+        'type', 'paper_size', 'color_type', 'side_type',
         'price_per_sheet', 'cost_per_sheet',
     ];
 
@@ -35,8 +35,9 @@ class PrintPrice extends Model
      */
     public function getLabelAttribute(): string
     {
+        $type = ucfirst($this->type ?? 'print');
         $color = $this->color_type === 'bw' ? 'Hitam Putih' : 'Warna';
         $side = $this->side_type === 'single' ? '1 Sisi' : 'Bolak-balik';
-        return "{$this->paper_size} — {$color} — {$side}";
+        return "{$type} — {$this->paper_size} — {$color} — {$side}";
     }
 }

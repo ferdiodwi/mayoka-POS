@@ -67,9 +67,9 @@ export function usePosData() {
     /**
      * Calculate print price from cached data (no API call needed).
      */
-    function calculatePrintPrice(paperSize, colorType, sideType, qty) {
+    function calculatePrintPrice(type, paperSize, colorType, sideType, qty) {
         const pp = printPrices.value.find(
-            (p) => p.paper_size === paperSize && p.color_type === colorType && p.side_type === sideType
+            (p) => p.type === type && p.paper_size === paperSize && p.color_type === colorType && p.side_type === sideType
         );
         if (!pp) return null;
 

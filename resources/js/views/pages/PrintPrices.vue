@@ -16,7 +16,7 @@ const submitting = ref(false);
 // Price dialog
 const priceDialogVisible = ref(false);
 const priceDialogMode = ref('create');
-const priceForm = ref({ paper_size: 'A4', color_type: 'bw', side_type: 'single', price_per_sheet: 0, cost_per_sheet: 0 });
+const priceForm = ref({ type: 'print', paper_size: 'A4', color_type: 'bw', side_type: 'single', price_per_sheet: 0, cost_per_sheet: 0 });
 const editingPriceId = ref(null);
 
 // Import logic
@@ -33,7 +33,9 @@ const paperSizes = [
 ];
 const colorTypes = [{ label: 'Hitam Putih', value: 'bw' }, { label: 'Warna', value: 'color' }];
 const sideTypes = [{ label: '1 Sisi', value: 'single' }, { label: 'Bolak-balik', value: 'duplex' }];
+const serviceTypes = [{ label: 'Print', value: 'print' }, { label: 'Fotocopy', value: 'fotocopy' }];
 
+function typeLabel(v) { return v === 'fotocopy' ? 'Fotocopy' : 'Print'; }
 function colorLabel(v) { return v === 'bw' ? 'Hitam Putih' : 'Warna'; }
 function sideLabel(v) { return v === 'single' ? '1 Sisi' : 'Bolak-balik'; }
 function formatRp(v) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v); }
@@ -51,7 +53,7 @@ async function fetchData() {
 // --- Price CRUD ---
 function openCreatePrice() {
     priceDialogMode.value = 'create';
-    priceForm.value = { paper_size: 'A4', color_type: 'bw', side_type: 'single', price_per_sheet: 0, cost_per_sheet: 0 };
+    priceForm.value = { type: 'print', paper_size: 'A4', color_type: 'bw', side_type: 'single', price_per_sheet: 0, cost_per_sheet: 0 };
     editingPriceId.value = null;
     priceDialogVisible.value = true;
 }
@@ -174,6 +176,12 @@ onMounted(fetchData);
 
         <DataTable :value="printPrices" :loading="loading"
             dataKey="id" stripedRows emptyMessage="Belum ada data harga cetak.">
+            <Column field="type" header="Tipe" sortable style="width: 8rem">
+                <template #body="{ data }">
+                    <Tag :value="typeLabel(data.type)"
+                        :severity="data.type === 'print' ? 'primary' : 'success'" />
+                </template>
+            </Column>
             <Column field="paper_size" header="Ukuran" sortable style="width: 6rem" />
             <Column header="Tinta" sortable sortField="color_type" style="width: 8rem">
                 <template #body="{ data }">
@@ -207,6 +215,10 @@ onMounted(fetchData);
             :header="priceDialogMode === 'create' ? 'Tambah Harga Cetak' : 'Edit Harga Cetak'"
             modal :style="{ width: '480px' }">
             <div class="flex flex-col gap-4 pt-4">
+                <div v-if="priceDialogMode === 'create'" class="flex flex-col gap-2">
+                    <label class="font-semibold">Tipe Layanan</label>
+                    <Select v-model="priceForm.type" :options="serviceTypes" optionLabel="label" optionValue="value" />
+                </div>
                 <div v-if="priceDialogMode === 'create'" class="flex flex-col gap-2">
                     <label class="font-semibold">Ukuran Kertas</label>
                     <Select v-model="priceForm.paper_size" :options="paperSizes" optionLabel="label" optionValue="value" />
@@ -242,7 +254,7 @@ onMounted(fetchData);
                     <p class="m-0 text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">Instruksi Import:</p>
                     <ol class="m-0 pl-4 text-sm text-blue-600 dark:text-blue-400 space-y-1">
                         <li>Download template Excel.</li>
-                        <li>Isi kombinasi Ukuran, Warna, Sisi, dan Harga.</li>
+                        <li>Isi kombinasi Tipe Layanan (print/fotocopy), Ukuran, Warna, Sisi, dan Harga.</li>
                         <li>Upload file yang sudah diisi ke sini.</li>
                     </ol>
                     <Button label="Download Template" icon="pi pi-download" class="mt-4 w-full" size="small" outlined @click="downloadTemplate" />

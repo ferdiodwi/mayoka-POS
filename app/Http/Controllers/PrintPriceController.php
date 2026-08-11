@@ -24,6 +24,7 @@ class PrintPriceController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'type' => 'required|in:print,fotocopy',
             'paper_size' => 'required|in:A4,F4,A3,Kertas Sendiri',
             'color_type' => 'required|in:bw,color',
             'side_type' => 'required|in:single,duplex',
@@ -32,14 +33,15 @@ class PrintPriceController extends Controller
         ]);
 
         // Check unique combination
-        $exists = PrintPrice::where('paper_size', $validated['paper_size'])
+        $exists = PrintPrice::where('type', $validated['type'])
+            ->where('paper_size', $validated['paper_size'])
             ->where('color_type', $validated['color_type'])
             ->where('side_type', $validated['side_type'])
             ->exists();
 
         if ($exists) {
             return response()->json([
-                'message' => 'Kombinasi harga cetak ini sudah ada.',
+                'message' => 'Kombinasi harga cetak ini sudah ada untuk layanan tersebut.',
             ], 422);
         }
 
@@ -78,13 +80,15 @@ class PrintPriceController extends Controller
     public function calculate(Request $request): JsonResponse
     {
         $request->validate([
+            'type' => 'required|in:print,fotocopy',
             'paper_size' => 'required|in:A4,F4,A3,Kertas Sendiri',
             'color_type' => 'required|in:bw,color',
             'side_type' => 'required|in:single,duplex',
             'qty' => 'required|integer|min:1',
         ]);
 
-        $printPrice = PrintPrice::where('paper_size', $request->paper_size)
+        $printPrice = PrintPrice::where('type', $request->type)
+            ->where('paper_size', $request->paper_size)
             ->where('color_type', $request->color_type)
             ->where('side_type', $request->side_type)
             ->first();
@@ -109,6 +113,7 @@ class PrintPriceController extends Controller
     public function downloadTemplate()
     {
         $headers = [
+            'tipe_layanan',
             'ukuran_kertas',
             'tinta',
             'sisi',
@@ -117,6 +122,7 @@ class PrintPriceController extends Controller
         ];
 
         $example1 = [
+            'print',
             'A4',
             'bw',
             'single',
@@ -125,6 +131,7 @@ class PrintPriceController extends Controller
         ];
 
         $example2 = [
+            'fotocopy',
             'A4',
             'color',
             'duplex',

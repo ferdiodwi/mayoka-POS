@@ -11,7 +11,7 @@ const props = defineProps({
 
 const emit = defineEmits(['item-added']);
 const toast = useToast();
-const { searchProducts, updateProductStock, uniquePaperSizes, calculatePrintPrice } = usePosData();
+const { printPrices, searchProducts, updateProductStock, uniquePaperSizes, calculatePrintPrice } = usePosData();
 const { addProductItem } = useCart();
 
 // --- Refs ---
@@ -19,6 +19,7 @@ const searchRef = ref(null);
 const unitRef = ref(null);
 const qtyRef = ref(null);
 const discRef = ref(null);
+const serviceRef = ref(null);
 const paperRef = ref(null);
 const colorRef = ref(null);
 const sideRef = ref(null);
@@ -38,6 +39,7 @@ const lookupVisible = ref(false);
 const entryPhase = ref('search'); // 'search' | 'unit' | 'qty' | 'disc'
 const isPriceManual = ref(false);
 
+const printServiceType = ref('print');
 const printPaperSize = ref('');
 const printColorType = ref('bw');
 const printSideType = ref('single');
@@ -79,6 +81,34 @@ const stockDisplay = computed(() => {
     return parts.length > 0 ? parts.join(' ') : `0 ${sorted[sorted.length-1]?.unit_name || ''}`;
 });
 
+const availableServiceTypes = computed(() => {
+    if (!printPrices.value) return [];
+    const types = printPrices.value.map(p => p.type);
+    return [...new Set(types)].map(t => ({ value: t, label: t === 'fotocopy' ? 'Fotocopy' : 'Print' }));
+});
+
+const availablePaperSizes = computed(() => {
+    if (!printPrices.value) return [];
+    const sizes = printPrices.value.filter(p => p.type === printServiceType.value).map(p => p.paper_size);
+    return [...new Set(sizes)];
+});
+
+const availableColorTypes = computed(() => {
+    if (!printPrices.value) return [];
+    const colors = printPrices.value
+        .filter(p => p.type === printServiceType.value && p.paper_size === printPaperSize.value)
+        .map(p => p.color_type);
+    return [...new Set(colors)].map(c => ({ value: c, label: c === 'bw' ? 'Hitam Putih' : 'Warna' }));
+});
+
+const availableSideTypes = computed(() => {
+    if (!printPrices.value) return [];
+    const sides = printPrices.value
+        .filter(p => p.type === printServiceType.value && p.paper_size === printPaperSize.value && p.color_type === printColorType.value)
+        .map(p => p.side_type);
+    return [...new Set(sides)].map(s => ({ value: s, label: s === 'single' ? '1 Sisi' : 'Bolak-balik' }));
+});
+
 // --- Watchers ---
 watch(searchQuery, (val) => {
     if (!val || val.length < 1) {
@@ -101,12 +131,12 @@ watch(() => props.priceLevel, () => {
     updatePrice();
 });
 
-watch([qty, printPaperSize, printColorType, printSideType], () => {
+watch([qty, printServiceType, printPaperSize, printColorType, printSideType], () => {
     if (selectedProduct.value && selectedProduct.value.type === 'print') {
         if (isPriceManual.value && qty.value === 1) return; // Allow manual override unless qty changes? No, if manual, just return? Actually, if manual, recalculating would overwrite. So return.
         if (isPriceManual.value) return; 
         
-        const calc = calculatePrintPrice(printPaperSize.value, printColorType.value, printSideType.value, qty.value);
+        const calc = calculatePrintPrice(printServiceType.value, printPaperSize.value, printColorType.value, printSideType.value, qty.value);
         if (calc) {
             price.value = calc.effectivePrice;
             selectedProduct.value.pp = calc;
@@ -152,7 +182,7 @@ function resetEntry() {
 function activatePrintMode() {
     selectProduct({
         id: 'print-generic',
-        name: 'Jasa Cetak / Print (Pilih Opsi)',
+        name: 'Jasa Cetak / Print',
         type: 'print',
         stock: 0,
         cost_price: 0,
@@ -185,12 +215,13 @@ function selectProduct(product) {
     selectedUnitIndex.value = 0;
     
     if (product.type === 'print') {
-        printPaperSize.value = uniquePaperSizes.value.length > 0 ? uniquePaperSizes.value[0] : 'A4';
-        printColorType.value = 'bw';
-        printSideType.value = 'single';
+        printServiceType.value = availableServiceTypes.value.length > 0 ? availableServiceTypes.value[0].value : 'print';
+        printPaperSize.value = availablePaperSizes.value.length > 0 ? availablePaperSizes.value[0] : 'A4';
+        printColorType.value = availableColorTypes.value.length > 0 ? availableColorTypes.value[0].value : 'bw';
+        printSideType.value = availableSideTypes.value.length > 0 ? availableSideTypes.value[0].value : 'single';
         
         // Trigger calculation explicitly since watch might not run immediately before price update
-        const calc = calculatePrintPrice(printPaperSize.value, printColorType.value, printSideType.value, qty.value);
+        const calc = calculatePrintPrice(printServiceType.value, printPaperSize.value, printColorType.value, printSideType.value, qty.value);
         if (calc) {
             price.value = calc.effectivePrice;
             product.pp = calc;
@@ -204,9 +235,9 @@ function selectProduct(product) {
     
     // Move to next step based on type
     if (product.type === 'print') {
-        entryPhase.value = 'print_paper';
+        entryPhase.value = 'print_service';
         nextTick(() => {
-            const el = paperRef.value?.$el || paperRef.value;
+            const el = serviceRef.value?.$el || serviceRef.value;
             if (el) el.focus();
         });
     } else {
@@ -272,6 +303,7 @@ function confirmDisc() {
         const printPriceId = p.pp ? p.pp.printPriceId : null;
         
         addPrintItem({
+            serviceType: printServiceType.value,
             paperSize: printPaperSize.value,
             colorType: printColorType.value,
             sideType: printSideType.value,
@@ -284,7 +316,8 @@ function confirmDisc() {
             discount: discount.value,
             notes: itemNotes.value
         });
-        const labelStr = `Print ${printPaperSize.value} ${printColorType.value === 'bw' ? 'Hitam Putih' : 'Warna'}`;
+        const typeStr = printServiceType.value === 'fotocopy' ? 'Fotocopy' : 'Print';
+        const labelStr = `${typeStr} ${printPaperSize.value} ${printColorType.value === 'bw' ? 'Hitam Putih' : 'Warna'}`;
         toast.add({ severity: 'success', summary: 'Ditambahkan', detail: `${labelStr} x${qty.value}`, life: 1500 });
     } else {
         addProductItem({
@@ -360,9 +393,40 @@ function handleUnitKeydown(e) {
     }
 }
 
+function handleServiceKeydown(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        // Reset sub-dropdowns based on new selection
+        if (!availablePaperSizes.value.includes(printPaperSize.value)) {
+            printPaperSize.value = availablePaperSizes.value.length > 0 ? availablePaperSizes.value[0] : '';
+        }
+        if (!availableColorTypes.value.some(c => c.value === printColorType.value)) {
+            printColorType.value = availableColorTypes.value.length > 0 ? availableColorTypes.value[0].value : '';
+        }
+        if (!availableSideTypes.value.some(s => s.value === printSideType.value)) {
+            printSideType.value = availableSideTypes.value.length > 0 ? availableSideTypes.value[0].value : '';
+        }
+        entryPhase.value = 'print_paper';
+        nextTick(() => {
+            const el = paperRef.value?.$el || paperRef.value;
+            if (el) el.focus();
+        });
+    } else if (e.key === 'Escape') {
+        resetEntry();
+        nextTick(() => searchRef.value?.$el?.focus());
+    }
+}
+
 function handlePaperKeydown(e) {
     if (e.key === 'Enter') {
         e.preventDefault();
+        // Reset sub-dropdowns based on new selection
+        if (!availableColorTypes.value.some(c => c.value === printColorType.value)) {
+            printColorType.value = availableColorTypes.value.length > 0 ? availableColorTypes.value[0].value : '';
+        }
+        if (!availableSideTypes.value.some(s => s.value === printSideType.value)) {
+            printSideType.value = availableSideTypes.value.length > 0 ? availableSideTypes.value[0].value : '';
+        }
         entryPhase.value = 'print_color';
         nextTick(() => {
             const el = colorRef.value?.$el || colorRef.value;
@@ -377,6 +441,10 @@ function handlePaperKeydown(e) {
 function handleColorKeydown(e) {
     if (e.key === 'Enter') {
         e.preventDefault();
+        // Reset sub-dropdowns based on new selection
+        if (!availableSideTypes.value.some(s => s.value === printSideType.value)) {
+            printSideType.value = availableSideTypes.value.length > 0 ? availableSideTypes.value[0].value : '';
+        }
         entryPhase.value = 'print_side';
         nextTick(() => {
             const el = sideRef.value?.$el || sideRef.value;
@@ -481,23 +549,39 @@ defineExpose({ focusSearch });
             <!-- Print Options Inline -->
             <template v-if="selectedProduct && selectedProduct.type === 'print'">
                 <div class="w-32 flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-muted-color">LAYANAN</label>
+                    <select ref="serviceRef" v-model="printServiceType" @change="() => {
+                        isPriceManual = false;
+                        if (!availablePaperSizes.includes(printPaperSize)) printPaperSize = availablePaperSizes.length > 0 ? availablePaperSizes[0] : '';
+                        if (!availableColorTypes.some(c => c.value === printColorType)) printColorType = availableColorTypes.length > 0 ? availableColorTypes[0].value : '';
+                        if (!availableSideTypes.some(s => s.value === printSideType)) printSideType = availableSideTypes.length > 0 ? availableSideTypes[0].value : '';
+                    }" @keydown="handleServiceKeydown" class="w-full h-10 px-2 rounded-md border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-900 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none" :class="entryPhase === 'print_service' ? 'ring-2 ring-primary' : ''">
+                        <option v-for="opt in availableServiceTypes" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                    </select>
+                </div>
+                <div class="w-32 flex flex-col gap-1">
                     <label class="text-xs font-semibold text-muted-color">UKURAN</label>
-                    <select ref="paperRef" v-model="printPaperSize" @change="isPriceManual = false" @keydown="handlePaperKeydown" class="w-full h-10 px-2 rounded-md border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-900 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none" :class="entryPhase === 'print_paper' ? 'ring-2 ring-primary' : ''">
-                        <option v-for="sz in uniquePaperSizes" :key="sz" :value="sz">{{ sz }}</option>
+                    <select ref="paperRef" v-model="printPaperSize" @change="() => {
+                        isPriceManual = false;
+                        if (!availableColorTypes.some(c => c.value === printColorType)) printColorType = availableColorTypes.length > 0 ? availableColorTypes[0].value : '';
+                        if (!availableSideTypes.some(s => s.value === printSideType)) printSideType = availableSideTypes.length > 0 ? availableSideTypes[0].value : '';
+                    }" @keydown="handlePaperKeydown" class="w-full h-10 px-2 rounded-md border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-900 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none" :class="entryPhase === 'print_paper' ? 'ring-2 ring-primary' : ''">
+                        <option v-for="sz in availablePaperSizes" :key="sz" :value="sz">{{ sz }}</option>
                     </select>
                 </div>
                 <div class="w-28 flex flex-col gap-1">
                     <label class="text-xs font-semibold text-muted-color">TINTA</label>
-                    <select ref="colorRef" v-model="printColorType" @change="isPriceManual = false" @keydown="handleColorKeydown" class="w-full h-10 px-2 rounded-md border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-900 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none" :class="entryPhase === 'print_color' ? 'ring-2 ring-primary' : ''">
-                        <option value="bw">Hitam Putih</option>
-                        <option value="color">Warna</option>
+                    <select ref="colorRef" v-model="printColorType" @change="() => {
+                        isPriceManual = false;
+                        if (!availableSideTypes.some(s => s.value === printSideType)) printSideType = availableSideTypes.length > 0 ? availableSideTypes[0].value : '';
+                    }" @keydown="handleColorKeydown" class="w-full h-10 px-2 rounded-md border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-900 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none" :class="entryPhase === 'print_color' ? 'ring-2 ring-primary' : ''">
+                        <option v-for="opt in availableColorTypes" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                     </select>
                 </div>
                 <div class="w-28 flex flex-col gap-1">
                     <label class="text-xs font-semibold text-muted-color">SISI</label>
                     <select ref="sideRef" v-model="printSideType" @change="isPriceManual = false" @keydown="handleSideKeydown" class="w-full h-10 px-2 rounded-md border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-900 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none" :class="entryPhase === 'print_side' ? 'ring-2 ring-primary' : ''">
-                        <option value="single">1 Sisi</option>
-                        <option value="duplex">Bolak-balik</option>
+                        <option v-for="opt in availableSideTypes" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                     </select>
                 </div>
             </template>

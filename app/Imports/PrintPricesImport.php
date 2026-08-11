@@ -21,6 +21,10 @@ class PrintPricesImport implements ToCollection, WithHeadingRow
 
                 $paperSize = trim($row['ukuran_kertas']);
                 
+                // Parse type
+                $typeRaw = strtolower(trim($row['tipe_layanan'] ?? 'print'));
+                $type = (strpos($typeRaw, 'foto') !== false || $typeRaw === 'fotocopy') ? 'fotocopy' : 'print';
+
                 // Parse color
                 $colorRaw = strtolower(trim($row['tinta'] ?? 'bw'));
                 $colorType = (strpos($colorRaw, 'warna') !== false || $colorRaw === 'color') ? 'color' : 'bw';
@@ -40,6 +44,7 @@ class PrintPricesImport implements ToCollection, WithHeadingRow
                 // Update or Create
                 PrintPrice::updateOrCreate(
                     [
+                        'type' => $type,
                         'paper_size' => $paperSize,
                         'color_type' => $colorType,
                         'side_type' => $sideType,
