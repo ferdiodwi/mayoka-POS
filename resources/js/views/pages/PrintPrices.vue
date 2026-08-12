@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/composables/useApi';
@@ -34,7 +34,36 @@ const paperSizes = [
 const colorTypes = [{ label: 'Hitam Putih', value: 'bw' }, { label: 'Warna', value: 'color' }];
 const sideTypes = [{ label: '1 Sisi', value: 'single' }, { label: 'Bolak-balik', value: 'duplex' }];
 
+const uniqueTypes = computed(() => {
+    if (!printPrices.value) return [];
+    const types = printPrices.value.map(p => p.type ? p.type.toLowerCase() : '').filter(Boolean);
+    return [...new Set(types)]; // Mempertahankan urutan kemunculan atau alfabetis tergantung data awal
+});
+
 function typeLabel(v) { return v ? v.toUpperCase() : '-'; }
+function getTagStyle(type) {
+    if (!type) return {};
+    const t = type.toLowerCase();
+    
+    // 5 warna berbeda untuk 5 tipe pertama
+    const colors = [
+        'var(--p-sky-500)',     // Biru
+        'var(--p-emerald-500)', // Hijau
+        'var(--p-orange-500)',  // Oranye
+        'var(--p-red-500)',     // Merah
+        'var(--p-purple-500)'   // Ungu
+    ];
+
+    const index = uniqueTypes.value.indexOf(t);
+    
+    // Tipe 1-5 dapat warna di atas, tipe ke-6 dan seterusnya abu-abu
+    if (index !== -1 && index < 5) {
+        return { backgroundColor: colors[index], color: '#ffffff' };
+    }
+
+    // Default abu-abu untuk yang ke-6 dst
+    return { backgroundColor: 'var(--p-surface-500)', color: '#ffffff' };
+}
 function colorLabel(v) { return v === 'bw' ? 'Hitam Putih' : 'Warna'; }
 function sideLabel(v) { return v === 'single' ? '1 Sisi' : 'Bolak-balik'; }
 function formatRp(v) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v); }
@@ -173,12 +202,12 @@ onMounted(fetchData);
             </div>
         </div>
 
-        <DataTable :value="printPrices" :loading="loading"
+        <DataTable :value="printPrices" :loading="loading" sortField="type" :sortOrder="1"
             dataKey="id" stripedRows emptyMessage="Belum ada data harga cetak.">
             <Column field="type" header="Tipe" sortable style="width: 8rem">
                 <template #body="{ data }">
                     <Tag :value="typeLabel(data.type)"
-                        :severity="data.type === 'print' ? 'primary' : (data.type === 'fotocopy' ? 'success' : 'info')" />
+                        :style="getTagStyle(data.type)" />
                 </template>
             </Column>
             <Column field="paper_size" header="Ukuran" sortable style="width: 6rem" />
