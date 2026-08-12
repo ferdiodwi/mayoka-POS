@@ -84,7 +84,7 @@ const stockDisplay = computed(() => {
 const availableServiceTypes = computed(() => {
     if (!printPrices.value) return [];
     const types = printPrices.value.map(p => p.type);
-    return [...new Set(types)].map(t => ({ value: t, label: t === 'fotocopy' ? 'Fotocopy' : 'Print' }));
+    return [...new Set(types)].map(t => ({ value: t, label: t.toUpperCase() }));
 });
 
 const availablePaperSizes = computed(() => {
@@ -316,7 +316,7 @@ function confirmDisc() {
             discount: discount.value,
             notes: itemNotes.value
         });
-        const typeStr = printServiceType.value === 'fotocopy' ? 'Fotocopy' : 'Print';
+        const typeStr = printServiceType.value.toUpperCase();
         const labelStr = `${typeStr} ${printPaperSize.value} ${printColorType.value === 'bw' ? 'Hitam Putih' : 'Warna'}`;
         toast.add({ severity: 'success', summary: 'Ditambahkan', detail: `${labelStr} x${qty.value}`, life: 1500 });
     } else {

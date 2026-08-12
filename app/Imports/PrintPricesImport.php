@@ -22,8 +22,8 @@ class PrintPricesImport implements ToCollection, WithHeadingRow
                 $paperSize = trim($row['ukuran_kertas']);
                 
                 // Parse type
-                $typeRaw = strtolower(trim($row['tipe_layanan'] ?? 'print'));
-                $type = (strpos($typeRaw, 'foto') !== false || $typeRaw === 'fotocopy') ? 'fotocopy' : 'print';
+                $type = trim($row['tipe_layanan'] ?? 'print');
+                if (empty($type)) $type = 'print';
 
                 // Parse color
                 $colorRaw = strtolower(trim($row['tinta'] ?? 'bw'));

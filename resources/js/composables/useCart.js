@@ -12,7 +12,7 @@ export function useCart() {
         const colorLabel = colorType === 'bw' ? 'Hitam Putih' : 'Warna';
         const sideLabel = sideType === 'single' ? '1 Sisi' : 'Bolak-balik';
         const customLabel = isCustom ? ' (Kertas Sendiri/Custom)' : '';
-        const typeStr = serviceType === 'fotocopy' ? 'Fotocopy' : 'Print';
+        const typeStr = serviceType.toUpperCase();
         let desc = `${typeStr} ${paperSize} — ${colorLabel} — ${sideLabel}${customLabel}`;
         if (notes) desc += ` (${notes})`;
 
