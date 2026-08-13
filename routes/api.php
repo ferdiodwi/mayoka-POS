@@ -69,6 +69,9 @@ Route::middleware(['auth:web', 'branch_scope'])->group(function () {
     // Addon services list (kasir + owner)
     Route::get('/addon-services', [AddonServiceController::class, 'index']);
 
+    // Categories list (kasir needs this for Cetak Label Harga filter)
+    Route::get('/categories/list', [CategoryController::class, 'index']);
+
     // Transactions (kasir + owner)
     Route::post('/transactions/checkout', [TransactionController::class, 'checkout']);
     Route::get('/transactions', [TransactionController::class, 'index']);

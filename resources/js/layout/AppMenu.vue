@@ -36,7 +36,7 @@ const rawMenu = computed(() => [
     {
         label: 'Menu Utama',
         items: [
-            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/', permission: 'reports.read', badge: totalAlerts.value > 0 ? totalAlerts.value : null },
+            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/', permission: 'dashboard.read', badge: totalAlerts.value > 0 ? totalAlerts.value : null },
             { label: 'Point of Sale', icon: 'pi pi-fw pi-shopping-cart', to: '/pos' },
         ]
     },
@@ -48,28 +48,28 @@ const rawMenu = computed(() => [
             { label: 'Pelanggan', icon: 'pi pi-fw pi-users', to: '/customers', permission: 'customers.read' },
             { label: 'Harga Cetak', icon: 'pi pi-fw pi-print', to: '/print-prices', permission: 'print_prices.read' },
             { label: 'Jasa Tambahan', icon: 'pi pi-fw pi-plus-circle', to: '/addon-services', permission: 'addons.read' },
-            { label: 'Cetak Label Harga', icon: 'pi pi-fw pi-tag', to: '/price-labels', permission: 'products.read' },
+            { label: 'Cetak Label Harga', icon: 'pi pi-fw pi-tag', to: '/price-labels', permission: 'price_labels.read' },
         ]
     },
     {
         label: 'Keuangan',
         items: [
-            { label: 'Data Supplier', icon: 'pi pi-fw pi-truck', to: '/suppliers', permission: 'purchases.read' },
+            { label: 'Data Supplier', icon: 'pi pi-fw pi-truck', to: '/suppliers', permission: 'suppliers.read' },
             { label: 'Pembelian Barang', icon: 'pi pi-fw pi-shopping-bag', to: '/purchases', permission: 'purchases.read' },
-            { label: 'Stok Opname', icon: 'pi pi-fw pi-check-square', to: '/stock-opname', permission: 'purchases.read' },
+            { label: 'Stok Opname', icon: 'pi pi-fw pi-check-square', to: '/stock-opname', permission: 'stock_opname.read' },
             { label: 'Pengeluaran', icon: 'pi pi-fw pi-credit-card', to: '/expenses', permission: 'expenses.read' },
-            { label: 'Laba Rugi', icon: 'pi pi-fw pi-chart-line', to: '/reports/profit-loss', permission: 'reports.read' },
-            { label: 'Arus Kas (Cash Flow)', icon: 'pi pi-fw pi-wallet', to: '/reports/cash-flow', permission: 'reports.read' },
+            { label: 'Laba Rugi', icon: 'pi pi-fw pi-chart-line', to: '/reports/profit-loss', permission: 'profit_loss.read' },
+            { label: 'Arus Kas (Cash Flow)', icon: 'pi pi-fw pi-wallet', to: '/reports/cash-flow', permission: 'cash_flow.read' },
         ]
     },
     {
         label: 'Laporan',
         items: [
-            { label: 'Riwayat Transaksi', icon: 'pi pi-fw pi-history', to: '/transactions' },
-            { label: 'Laporan Penjualan', icon: 'pi pi-fw pi-chart-bar', to: '/reports/sales', permission: 'reports.read' },
-            { label: 'Laporan Kasir', icon: 'pi pi-fw pi-users', to: '/reports/cashier', permission: 'reports.read' },
-            { label: 'Laporan Shift', icon: 'pi pi-fw pi-clock', to: '/reports/shifts', permission: 'reports.read' },
-            { label: 'Rekap Stok', icon: 'pi pi-fw pi-warehouse', to: '/reports/stock', permission: 'reports.read' },
+            { label: 'Riwayat Transaksi', icon: 'pi pi-fw pi-history', to: '/transactions', permission: 'transactions.read' },
+            { label: 'Laporan Penjualan', icon: 'pi pi-fw pi-chart-bar', to: '/reports/sales', permission: 'sales_report.read' },
+            { label: 'Laporan Kasir', icon: 'pi pi-fw pi-users', to: '/reports/cashier', permission: 'cashier_report.read' },
+            { label: 'Laporan Shift', icon: 'pi pi-fw pi-clock', to: '/reports/shifts', permission: 'shift_report.read' },
+            { label: 'Rekap Stok', icon: 'pi pi-fw pi-warehouse', to: '/reports/stock', permission: 'stock_report.read' },
         ]
     },
     {

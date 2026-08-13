@@ -2,8 +2,10 @@
 import { ref, onMounted, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { apiGet } from '@/composables/useApi';
+import { useAuth } from '@/composables/useAuth';
 
 const toast = useToast();
+const { user } = useAuth();
 
 const products = ref([]);
 const categories = ref([]);
@@ -54,23 +56,19 @@ onMounted(async () => {
 async function fetchData() {
     loading.value = true;
     try {
-        const [prodRes, catRes, branchRes] = await Promise.all([
-            apiGet('/api/products/catalog'),
-            apiGet('/api/categories'),
-            apiGet('/api/branches'),
-        ]);
+        // Get branch name from logged-in user data (works for both kasir & owner)
+        branchName.value = user.value?.branch_name || '';
+
+        const prodRes = await apiGet('/api/products/catalog');
         // Only show 'barang' type products (physical goods with prices)
         products.value = prodRes.products.filter(p => p.type === 'barang');
-        categories.value = catRes.categories;
 
-        // Get active branch name
-        if (branchRes.branches && branchRes.branches.length > 0) {
-            // Use the first (active) branch, or find by activeBranchId
-            const activeBranchId = localStorage.getItem('activeBranchId');
-            const branch = activeBranchId 
-                ? branchRes.branches.find(b => b.id == activeBranchId) || branchRes.branches[0]
-                : branchRes.branches[0];
-            branchName.value = branch.name || '';
+        // Try to load categories for filter (may fail if kasir has no categories.read permission)
+        try {
+            const catRes = await apiGet('/api/categories/list');
+            categories.value = catRes.categories || [];
+        } catch {
+            categories.value = [];
         }
     } catch (e) {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Gagal memuat data produk.', life: 3000 });

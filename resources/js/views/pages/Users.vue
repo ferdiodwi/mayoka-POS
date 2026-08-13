@@ -24,17 +24,52 @@ const roleOptions = [
     { label: 'Owner', value: 'owner' },
 ];
 
-const permissionModules = [
-    { label: 'Kategori', value: 'categories', crud: true },
-    { label: 'Produk & Stok', value: 'products', crud: true },
-    { label: 'Pelanggan', value: 'customers', crud: true },
-    { label: 'Harga Cetak', value: 'print_prices', crud: true },
-    { label: 'Jasa Tambahan', value: 'addons', crud: true },
-    { label: 'Pembelian Barang', value: 'purchases', crud: true },
-    { label: 'Pengeluaran', value: 'expenses', crud: true },
-    { label: 'Transaksi', value: 'transactions', crud: true },
-    { label: 'Manajemen User', value: 'users', crud: true },
-    { label: 'Laporan & Dashboard', value: 'reports', crud: false },
+const permissionGroups = [
+    {
+        label: 'Menu Utama',
+        items: [
+            { label: 'Dashboard', value: 'dashboard', crud: false },
+            // Point of Sale selalu bisa diakses kasir, tidak perlu izin khusus
+        ]
+    },
+    {
+        label: 'Master Data',
+        items: [
+            { label: 'Kategori', value: 'categories', crud: true },
+            { label: 'Produk', value: 'products', crud: true },
+            { label: 'Pelanggan', value: 'customers', crud: true },
+            { label: 'Harga Cetak', value: 'print_prices', crud: true },
+            { label: 'Jasa Tambahan', value: 'addons', crud: true },
+            { label: 'Cetak Label Harga', value: 'price_labels', crud: false },
+        ]
+    },
+    {
+        label: 'Keuangan',
+        items: [
+            { label: 'Data Supplier', value: 'suppliers', crud: true },
+            { label: 'Pembelian Barang', value: 'purchases', crud: true },
+            { label: 'Stok Opname', value: 'stock_opname', crud: true },
+            { label: 'Pengeluaran', value: 'expenses', crud: true },
+            { label: 'Laba Rugi', value: 'profit_loss', crud: false },
+            { label: 'Arus Kas (Cash Flow)', value: 'cash_flow', crud: false },
+        ]
+    },
+    {
+        label: 'Laporan',
+        items: [
+            { label: 'Riwayat Transaksi', value: 'transactions', crud: false },
+            { label: 'Laporan Penjualan', value: 'sales_report', crud: false },
+            { label: 'Laporan Kasir', value: 'cashier_report', crud: false },
+            { label: 'Laporan Shift', value: 'shift_report', crud: false },
+            { label: 'Rekap Stok', value: 'stock_report', crud: false },
+        ]
+    },
+    {
+        label: 'Manajemen',
+        items: [
+            { label: 'Manajemen User', value: 'users', crud: true },
+        ]
+    },
 ];
 
 function getCsrfToken() {
@@ -233,27 +268,35 @@ onMounted(() => {
                         optionValue="id" placeholder="Pilih cabang" />
                 </div>
                 
-                <!-- Permissions Checklist for Kasir -->
                 <div v-if="form.role === 'kasir'" class="flex flex-col gap-2 p-3 border border-surface-200 dark:border-surface-700 rounded-lg bg-surface-50 dark:bg-surface-800">
-                    <label class="font-semibold text-sm mb-2">Hak Akses Matriks (CRUD)</label>
+                    <label class="font-semibold text-sm mb-2">Hak Akses Per Menu</label>
                     <table class="w-full text-left text-sm border-collapse">
                         <thead>
                             <tr>
                                 <th class="pb-2 font-semibold">Modul</th>
-                                <th class="pb-2 font-semibold text-center" title="Read (Lihat)">Lihat</th>
-                                <th class="pb-2 font-semibold text-center" title="Create (Tambah)">Tambah</th>
-                                <th class="pb-2 font-semibold text-center" title="Update (Edit)">Edit</th>
-                                <th class="pb-2 font-semibold text-center" title="Delete (Hapus)">Hapus</th>
+                                <th class="pb-2 font-semibold text-center">Lihat</th>
+                                <th class="pb-2 font-semibold text-center">Tambah</th>
+                                <th class="pb-2 font-semibold text-center">Edit</th>
+                                <th class="pb-2 font-semibold text-center">Hapus</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="mod in permissionModules" :key="mod.value" class="border-t border-surface-200 dark:border-surface-700">
-                                <td class="py-2">{{ mod.label }}</td>
-                                <td class="py-2 text-center"><Checkbox :inputId="mod.value + '.read'" :value="mod.value + '.read'" v-model="form.permissions" /></td>
-                                <td class="py-2 text-center"><Checkbox v-if="mod.crud" :inputId="mod.value + '.create'" :value="mod.value + '.create'" v-model="form.permissions" /></td>
-                                <td class="py-2 text-center"><Checkbox v-if="mod.crud" :inputId="mod.value + '.update'" :value="mod.value + '.update'" v-model="form.permissions" /></td>
-                                <td class="py-2 text-center"><Checkbox v-if="mod.crud" :inputId="mod.value + '.delete'" :value="mod.value + '.delete'" v-model="form.permissions" /></td>
-                            </tr>
+                            <template v-for="group in permissionGroups" :key="group.label">
+                                <!-- Group header row -->
+                                <tr>
+                                    <td colspan="5" class="pt-3 pb-1">
+                                        <span class="text-xs font-bold uppercase tracking-widest text-muted-color">{{ group.label }}</span>
+                                    </td>
+                                </tr>
+                                <!-- Module rows -->
+                                <tr v-for="mod in group.items" :key="mod.value" class="border-t border-surface-200 dark:border-surface-700">
+                                    <td class="py-2 pl-2">{{ mod.label }}</td>
+                                    <td class="py-2 text-center"><Checkbox :inputId="mod.value + '.read'" :value="mod.value + '.read'" v-model="form.permissions" /></td>
+                                    <td class="py-2 text-center"><Checkbox v-if="mod.crud" :inputId="mod.value + '.create'" :value="mod.value + '.create'" v-model="form.permissions" /></td>
+                                    <td class="py-2 text-center"><Checkbox v-if="mod.crud" :inputId="mod.value + '.update'" :value="mod.value + '.update'" v-model="form.permissions" /></td>
+                                    <td class="py-2 text-center"><Checkbox v-if="mod.crud" :inputId="mod.value + '.delete'" :value="mod.value + '.delete'" v-model="form.permissions" /></td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>

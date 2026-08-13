@@ -48,6 +48,7 @@ class AuthController extends Controller
                 'username' => $user->username,
                 'role' => $user->role,
                 'branch_id' => $user->branch_id,
+                'branch_name' => $user->branch?->name,
                 'permissions' => $user->permissions ?? [],
             ],
         ]);
@@ -73,8 +74,11 @@ class AuthController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
+        $user = $request->user()->load('branch');
         return response()->json([
-            'user' => $request->user(),
+            'user' => array_merge($user->toArray(), [
+                'branch_name' => $user->branch?->name,
+            ]),
         ]);
     }
 }
