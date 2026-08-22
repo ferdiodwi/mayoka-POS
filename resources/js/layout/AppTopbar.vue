@@ -48,6 +48,12 @@ function toggleUserMenu(event) {
 }
 
 async function handleLogout() {
+    if (activeShift.value) {
+        toast.add({ severity: 'error', summary: 'Akses Ditolak', detail: 'Anda belum menutup shift. Silakan tutup shift dan hitung uang fisik terlebih dahulu sebelum keluar.', life: 5000 });
+        openShiftDialog('close');
+        return;
+    }
+
     try {
         await logout();
         router.push('/auth/login');

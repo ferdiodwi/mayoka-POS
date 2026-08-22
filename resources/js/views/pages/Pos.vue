@@ -175,7 +175,22 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 h-[calc(100vh-120px)]">
+    <!-- BLOKIR POS JIKA SHIFT KEMARIN BELUM DITUTUP -->
+    <div v-if="isOldShift" class="absolute inset-0 z-[100] flex items-center justify-center bg-surface-900/80 backdrop-blur-sm">
+        <div class="bg-surface-0 dark:bg-surface-800 p-8 rounded-2xl shadow-2xl max-w-lg text-center mx-4 flex flex-col items-center">
+            <i class="pi pi-lock text-red-500 text-6xl mb-4"></i>
+            <h2 class="text-3xl font-bold text-red-500 m-0 mb-2">POS TERKUNCI</h2>
+            <p class="text-lg text-surface-600 dark:text-surface-300 mb-6">
+                Anda memiliki shift yang masih berstatus BUKA dari tanggal <strong>{{ activeShift?.started_at?.substring(0, 10) }}</strong>. <br/><br/>
+                Sistem mendeteksi hari sudah berganti. Anda <strong>wajib</strong> menghitung sisa uang laci dan menutup shift tersebut sebelum dapat melakukan transaksi penjualan di hari ini.
+            </p>
+            <div class="px-4 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold rounded-lg border border-red-200 dark:border-red-800 w-full animate-pulse">
+                <i class="pi pi-arrow-up mr-2"></i> Klik tombol "Tutup Shift" di menu atas!
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 h-[calc(100vh-120px)]" :class="{ 'pointer-events-none opacity-20': isOldShift }">
         <!-- Left Panel: Entry + Table -->
         <div class="col-span-1 lg:col-span-9 flex flex-col gap-2 overflow-hidden">
             <!-- Header: Customer + Price Level -->

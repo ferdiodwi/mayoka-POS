@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue';
 import { useShift } from '@/composables/useShift';
 import { apiPost } from '@/composables/useApi';
 import { useToast } from 'primevue/usetoast';
+import { useConfirm } from 'primevue/useconfirm';
 import { useQzTray } from '@/composables/useQzTray';
 
 const props = defineProps({
@@ -16,6 +17,7 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'shifted']);
 
 const toast = useToast();
+const confirm = useConfirm();
 const { activeShift, openShift, closeShift } = useShift();
 const { printReceipt: printViaQzTray } = useQzTray();
 
@@ -44,11 +46,7 @@ function formatCurrency(value) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
 }
 
-async function handleOpenShift() {
-    if (cashStart.value < 0) {
-        toast.add({ severity: 'warn', summary: 'Peringatan', detail: 'Modal awal tidak boleh negatif.', life: 3000 });
-        return;
-    }
+async function executeOpenShift() {
     submitting.value = true;
     try {
         await openShift(cashStart.value);
@@ -62,9 +60,46 @@ async function handleOpenShift() {
     }
 }
 
+async function handleOpenShift() {
+    if (cashStart.value < 0) {
+        toast.add({ severity: 'warn', summary: 'Peringatan', detail: 'Modal awal tidak boleh negatif.', life: 3000 });
+        return;
+    }
+
+    if (cashStart.value === 0) {
+        confirm.require({
+            message: 'Anda memasukkan Modal Awal Rp 0. Apakah Anda yakin tidak ada uang kembalian sama sekali di laci?',
+            header: 'Konfirmasi Modal Awal',
+            icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'Ya, Lanjutkan',
+            rejectLabel: 'Batal',
+            accept: () => {
+                executeOpenShift();
+            }
+        });
+        return;
+    }
+
+    executeOpenShift();
+}
+
 async function handleCloseShift() {
     if (cashEnd.value < 0) {
         toast.add({ severity: 'warn', summary: 'Peringatan', detail: 'Uang akhir tidak boleh negatif.', life: 3000 });
+        return;
+    }
+
+    const expected = parseFloat(activeShift.value.live_expected_cash ?? activeShift.value.cash_start) || 0;
+    
+    // Cegah input Rp 0 jika seharusnya ada kas
+    if (cashEnd.value === 0 && expected > 0) {
+        toast.add({ severity: 'error', summary: 'Uang Fisik Rp 0', detail: 'Uang fisik tidak boleh Rp 0 jika seharusnya ada kas. Silakan hitung uang di laci Anda!', life: 5000 });
+        return;
+    }
+
+    // Wajib isi catatan jika ada selisih
+    if (cashDifference.value !== 0 && !notes.value.trim()) {
+        toast.add({ severity: 'error', summary: 'Catatan Wajib Diisi', detail: 'Terdapat selisih kas! Anda wajib memberikan penjelasan di kolom Catatan.', life: 5000 });
         return;
     }
     submitting.value = true;
@@ -105,6 +140,8 @@ watch(() => props.visible, (val) => {
 <template>
     <Dialog :visible="visible" @update:visible="emit('update:visible', $event)"
         :header="dialogTitle" modal :closable="mode !== 'open'" :style="{ width: '480px' }">
+        
+        <ConfirmDialog></ConfirmDialog>
 
         <!-- Open Shift Mode -->
         <div v-if="mode === 'open'" class="flex flex-col gap-4 pt-2">

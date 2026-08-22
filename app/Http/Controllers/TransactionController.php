@@ -451,7 +451,7 @@ class TransactionController extends Controller
 
         // Include soft-deleted (voided) transactions if requested
         if ($request->boolean('show_voided')) {
-            $query->withTrashed();
+            $query->onlyTrashed();
         }
 
         $transactions = $query->orderBy('created_at', 'desc')->paginate(20);

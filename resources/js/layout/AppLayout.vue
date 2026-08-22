@@ -1,11 +1,28 @@
 <script setup>
 import { useLayout } from '@/layout/composables/layout';
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
+import { useShift } from '@/composables/useShift';
 import AppFooter from './AppFooter.vue';
 import AppSidebar from './AppSidebar.vue';
 import AppTopbar from './AppTopbar.vue';
 
 const { layoutConfig, layoutState, hideMobileMenu } = useLayout();
+const { activeShift } = useShift();
+
+function handleBeforeUnload(e) {
+    if (activeShift.value) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+}
+
+onMounted(() => {
+    window.addEventListener('beforeunload', handleBeforeUnload);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+});
 
 const containerClass = computed(() => {
     return {
