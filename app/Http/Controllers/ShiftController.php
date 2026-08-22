@@ -255,6 +255,12 @@ class ShiftController extends Controller
                     $printer->text(sprintf("%-11s: %s\n", "SELISIH", $diffStr));
                 }
 
+                if (!empty($shift->notes)) {
+                    $printer->text("--------------------------------\n");
+                    $printer->text("CATATAN:\n");
+                    $printer->text(wordwrap($shift->notes, 32, "\n", true) . "\n");
+                }
+
                 $printer->feed(4);
                 $printer->cut();
             } finally {
