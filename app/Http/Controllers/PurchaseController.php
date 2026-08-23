@@ -84,10 +84,14 @@ class PurchaseController extends Controller
         ]);
 
         $purchase = DB::transaction(function () use ($request) {
-            // Generate purchase number: PUR-YYYYMMDD-XXXX
+            // Generate purchase number: PUR-YYYYMMDD-XXXX (per-cabang, per-hari)
             $today = now()->format('Ymd');
-            $count = Purchase::whereDate('purchase_date', now()->toDateString())->count() + 1;
-            $purchaseNumber = sprintf('PUR-%s-%04d', $today, $count);
+            $branchId = config('app.active_branch_id') ?? 1;
+            $count = Purchase::withoutGlobalScope('branch')
+                ->where('branch_id', $branchId)
+                ->whereDate('purchase_date', now()->toDateString())
+                ->count() + 1;
+            $purchaseNumber = sprintf('PUR-%s-B%d-%04d', $today, $branchId, $count);
 
             $totalAmount = 0;
             $items = [];
